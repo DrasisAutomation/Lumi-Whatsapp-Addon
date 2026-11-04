@@ -37,12 +37,12 @@ RUN chmod a+x /run.sh \
     && chmod a+x /etc/services.d/whatsapp/finish
 
 ENV NODE_ENV=production \
-    PORT=8099 \
+    PORT=8653 \
     DATA_DIR=/data
 
-EXPOSE 8099
+EXPOSE 8653
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=3 \
-    CMD curl -fsS http://127.0.0.1:8099/api/health || exit 1
+    CMD curl -fsS http://127.0.0.1:8653/api/health || exit 1
 
 CMD [ "/run.sh" ]

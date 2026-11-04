@@ -9,7 +9,7 @@ CONF_URL = "url"
 CONF_API_KEY = "api_key"
 CONF_VERIFY_SSL = "verify_ssl"
 
-DEFAULT_ADDON_URL = "http://local-whatsapp:8099"
+DEFAULT_ADDON_URL = "http://local-whatsapp:8653"
 DEFAULT_TIMEOUT_SECONDS = 30
 UPDATE_INTERVAL_SECONDS = 30
 

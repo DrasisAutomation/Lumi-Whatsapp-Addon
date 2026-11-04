@@ -118,7 +118,7 @@ class TestWhatsAppIntegration(unittest.IsolatedAsyncioTestCase):
             side_effect=WhatsAppAuthError("Invalid token"),
         ):
             err_res = await flow.async_step_user(
-                {CONF_URL: "http://local-whatsapp:8099", CONF_API_KEY: "bad_token"}
+                {CONF_URL: "http://local-whatsapp:8653", CONF_API_KEY: "bad_token"}
             )
             self.assertEqual(err_res["errors"]["base"], "invalid_auth")
 
@@ -128,16 +128,16 @@ class TestWhatsAppIntegration(unittest.IsolatedAsyncioTestCase):
             return_value={"title": "WhatsApp", "version": "1.0.0", "accounts_count": 1},
         ):
             ok_res = await flow.async_step_user(
-                {CONF_URL: "http://local-whatsapp:8099/", CONF_API_KEY: "valid_secret_token"}
+                {CONF_URL: "http://local-whatsapp:8653/", CONF_API_KEY: "valid_secret_token"}
             )
             self.assertEqual(ok_res["type"], "create_entry")
-            self.assertEqual(ok_res["data"][CONF_URL], "http://local-whatsapp:8099")
+            self.assertEqual(ok_res["data"][CONF_URL], "http://local-whatsapp:8653")
             self.assertEqual(ok_res["data"][CONF_API_KEY], "valid_secret_token")
 
         # 4. Supervisor hassio discovery step pre-fills discovered URL
         hassio_res = await flow.async_step_hassio({"slug": "local_whatsapp"})
         self.assertEqual(hassio_res["type"], "form")
-        self.assertEqual(flow._discovered_url, "http://local-whatsapp:8099")
+        self.assertEqual(flow._discovered_url, "http://local-whatsapp:8653")
 
     async def test_coordinator_entities_and_live_websocket_events(self) -> None:
         """Test Coordinator refresh, all 7 Sensors + 1 Binary Sensor, DeviceInfo, and WebSocket events."""
@@ -145,10 +145,10 @@ class TestWhatsAppIntegration(unittest.IsolatedAsyncioTestCase):
         entry = ConfigEntry(
             entry_id="entry_123",
             title="WhatsApp",
-            data={CONF_URL: "http://local-whatsapp:8099", CONF_API_KEY: "secret_token"},
+            data={CONF_URL: "http://local-whatsapp:8653", CONF_API_KEY: "secret_token"},
         )
 
-        mock_client = WhatsAppAddonApiClient("http://local-whatsapp:8099", "secret_token")
+        mock_client = WhatsAppAddonApiClient("http://local-whatsapp:8653", "secret_token")
         mock_client.get_health = AsyncMock(return_value={"status": "ok", "version": "1.0.0"})
         mock_client.get_accounts = AsyncMock(return_value=SAMPLE_ACCOUNTS)
 
@@ -230,10 +230,10 @@ class TestWhatsAppIntegration(unittest.IsolatedAsyncioTestCase):
         entry = ConfigEntry(
             entry_id="entry_svc",
             title="WhatsApp",
-            data={CONF_URL: "http://local-whatsapp:8099", CONF_API_KEY: "secret_token"},
+            data={CONF_URL: "http://local-whatsapp:8653", CONF_API_KEY: "secret_token"},
         )
 
-        mock_client = WhatsAppAddonApiClient("http://local-whatsapp:8099", "secret_token")
+        mock_client = WhatsAppAddonApiClient("http://local-whatsapp:8653", "secret_token")
         mock_client.send_message = AsyncMock(return_value={"ok": True, "message": {"status": "sent"}})
         mock_client.send_image = AsyncMock(return_value={"ok": True, "message": {"status": "sent"}})
         mock_client.send_video = AsyncMock(return_value={"ok": True, "message": {"status": "sent"}})
@@ -336,9 +336,9 @@ class TestWhatsAppIntegration(unittest.IsolatedAsyncioTestCase):
         entry = ConfigEntry(
             entry_id="entry_diag",
             title="WhatsApp",
-            data={CONF_URL: "http://local-whatsapp:8099", CONF_API_KEY: "super_secret_key_999"},
+            data={CONF_URL: "http://local-whatsapp:8653", CONF_API_KEY: "super_secret_key_999"},
         )
-        mock_client = WhatsAppAddonApiClient("http://local-whatsapp:8099", "super_secret_key_999")
+        mock_client = WhatsAppAddonApiClient("http://local-whatsapp:8653", "super_secret_key_999")
         mock_client.get_diagnostics = AsyncMock(
             return_value={"health": {"status": "ok"}, "qrDataUrl": "secret_qr"}
         )

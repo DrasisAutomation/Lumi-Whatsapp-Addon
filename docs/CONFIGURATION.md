@@ -47,7 +47,7 @@ Any attempt to reference files outside those three directories (for example `/co
 When adding or reconfiguring the **WhatsApp** integration under **Settings** &rarr; **Devices & services**:
 
 - **Add-on API URL**:
-  - If running Home Assistant OS / Supervised with the local add-on installed from a custom repository, use `http://local-whatsapp:8099` or the add-on's hostname displayed on the Add-on **Info** tab (e.g., `http://<repo_hash>-whatsapp:8099`), or `http://127.0.0.1:8099` if port `8099` is mapped to the host.
+  - If running Home Assistant OS / Supervised with the local add-on installed from a custom repository, use `http://local-whatsapp:8653` or the add-on's hostname displayed on the Add-on **Info** tab (e.g., `http://<repo_hash>-whatsapp:8653`), or `http://127.0.0.1:8653` if port `8653` is mapped to the host.
 - **API Bearer Token**:
   - Must match the `api_key` in the add-on configuration (or the auto-generated token shown in the Add-on Web UI **Diagnostics** tab).
 - **Verify SSL Certificate**:

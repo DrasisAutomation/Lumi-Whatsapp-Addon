@@ -60,7 +60,7 @@ allowed_local_hosts:
 1. Verify the **WhatsApp** add-on is running (**Settings &rarr; Add-ons &rarr; WhatsApp**).
 2. Open the Add-on **Web UI** &rarr; **Diagnostics** tab.
 3. Copy the exact **API Bearer Token** displayed under **HACS Integration Connection Details**.
-4. Try the internal URL `http://local-whatsapp:8099`, `http://localhost:8099`, or the add-on's specific hostname shown in the Add-on **Info** tab (e.g., `http://54c23642-whatsapp:8099`).
+4. Try the internal URL `http://local-whatsapp:8653`, `http://localhost:8653`, or the add-on's specific hostname shown in the Add-on **Info** tab (e.g., `http://54c23642-whatsapp:8653`).
 
 ---
 

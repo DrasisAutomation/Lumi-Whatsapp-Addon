@@ -3,7 +3,7 @@
 const { createWhatsAppServer } = require('./server');
 
 async function main() {
-  const port = Number(process.env.PORT) || 8099;
+  const port = Number(process.env.PORT) || 8653;
   const instance = await createWhatsAppServer();
   const { server, logger, close } = instance;
 

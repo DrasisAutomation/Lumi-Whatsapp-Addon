@@ -3,7 +3,7 @@
 ## 1. Authentication & Network Isolation
 
 1. **Home Assistant Ingress Only for Web UI**:
-   - The Web UI is served exclusively through Home Assistant Supervisor Ingress (`ingress: true`, port `8099`).
+   - The Web UI is served exclusively through Home Assistant Supervisor Ingress (`ingress: true`, port `8653`).
    - Direct browser requests that do not originate from the Supervisor Ingress proxy (`172.30.32.2` with `X-Ingress-Path`) or carry a valid `Authorization: Bearer <API_KEY>` header are rejected with `401 UNAUTHORIZED`.
 2. **Constant-Time Bearer Token Verification**:
    - All `/api/*` and `/ws` calls from the HACS integration authenticate with a 256-bit Bearer token verified via `crypto.timingSafeEqual` to prevent timing side-channel attacks.

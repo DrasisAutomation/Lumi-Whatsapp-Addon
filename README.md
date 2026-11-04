@@ -55,7 +55,7 @@ https://github.com/DrasisAutomation/Lumi-Whatsapp-Addon
 6. Install **Lumi Whatsapp**.
 7. **Restart Home Assistant**.
 8. Open **Settings &rarr; Devices & services &rarr; Add Integration**.
-9. Search for **Lumi Whatsapp** and complete the setup using the internal URL (`http://local-whatsapp:8099`) and the **API Bearer Token** shown in the Add-on Web UI **Diagnostics** tab.
+9. Search for **Lumi Whatsapp** and complete the setup using the internal URL (`http://local-whatsapp:8653`) and the **API Bearer Token** shown in the Add-on Web UI **Diagnostics** tab.
 
 ---
 

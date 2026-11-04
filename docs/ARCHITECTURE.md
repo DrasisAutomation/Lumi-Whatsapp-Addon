@@ -16,7 +16,7 @@ flowchart LR
     end
 
     subgraph ADDON["Home Assistant Add-on: WhatsApp (Node.js Container)"]
-        INGRESS["Ingress Web Dashboard\n(Port 8099 - HA Ingress Only)"]
+        INGRESS["Ingress Web Dashboard\n(Port 8653 - HA Ingress Only)"]
         API["Internal REST & WS API\n(Bearer Token Auth + Rate Limiting)"]
         SM["Multi-Account Session Manager\n(default, office, personal, ...)"]
         QUEUE["Persistent Per-Account Queue\n(Atomic JSONL/SQLite Store + Backoff)"]
@@ -63,14 +63,14 @@ A single GitHub repository (`https://github.com/DrasisAutomation/Lumi-Whatsapp-A
 ## 3. Networking & Authentication Model
 
 ### 3.1 Add-on Ingress (Web UI)
-- The add-on enables `ingress: true` on port `8099` in `whatsapp_addon/config.yaml`.
-- Home Assistant Supervisor proxies authenticated user browser traffic from the Home Assistant sidebar/add-on panel to `172.30.32.x:8099` with `X-Ingress-Path` and restricts Ingress requests strictly to the Supervisor proxy IP (`172.30.32.2`) unless authenticated with the configured API Bearer token.
+- The add-on enables `ingress: true` on port `8653` in `whatsapp_addon/config.yaml`.
+- Home Assistant Supervisor proxies authenticated user browser traffic from the Home Assistant sidebar/add-on panel to `172.30.32.x:8653` with `X-Ingress-Path` and restricts Ingress requests strictly to the Supervisor proxy IP (`172.30.32.2`) unless authenticated with the configured API Bearer token.
 - No unauthenticated public port is exposed by default.
 
 ### 3.2 Integration-to-Add-on Internal API Communication
 - **Primary Path (Supervisor Add-on Discovery / Internal Network)**:
-  - The add-on exposes its internal REST and WebSocket API on port `8099` (accessible inside the Hassio Docker network via `http://<addon_hostname>:8099` or optionally via mapped local port if running HA Core/Container outside Supervisor).
-  - When `hassio_api: true` discovery is available, the integration can discover the add-on's internal hostname and connection settings, or the user can enter the URL (defaulting to `http://local-whatsapp:8099` or `http://localhost:8099`) and the shared `api_key` configured in the add-on options.
+  - The add-on exposes its internal REST and WebSocket API on port `8653` (accessible inside the Hassio Docker network via `http://<addon_hostname>:8653` or optionally via mapped local port if running HA Core/Container outside Supervisor).
+  - When `hassio_api: true` discovery is available, the integration can discover the add-on's internal hostname and connection settings, or the user can enter the URL (defaulting to `http://local-whatsapp:8653` or `http://localhost:8653`) and the shared `api_key` configured in the add-on options.
 - **Bearer Token Security**:
   - Every `/api/*` request (outside Supervisor Ingress requests from `172.30.32.2`) requires `Authorization: Bearer <API_TOKEN>` (validated using constant-time comparison `crypto.timingSafeEqual`).
   - WebSocket connections (`/ws`) authenticate via `Authorization: Bearer <API_TOKEN>` header (from the Python integration) or via validated Supervisor Ingress peer IP (`172.30.32.2` for the browser dashboard).

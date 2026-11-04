@@ -64,7 +64,7 @@ This single GitHub repository (`https://github.com/DrasisAutomation/Lumi-Whatsap
 9. Go to **Settings** &rarr; **Devices & services** &rarr; **Add Integration**.
 10. Search for **Lumi Whatsapp** and select it.
 11. Enter:
-    - **Add-on API URL**: `http://local-whatsapp:8099` (or the hostname shown in your Add-on's Info/Diagnostics page, e.g., `http://54c23642-whatsapp:8099`).
+    - **Add-on API URL**: `http://local-whatsapp:8653` (or the hostname shown in your Add-on's Info/Diagnostics page, e.g., `http://54c23642-whatsapp:8653`).
     - **API Bearer Token**: Copy the token from the Add-on Web UI **Diagnostics** tab (or the `api_key` you configured in the Add-on Configuration tab).
 12. Click **Submit**. Each WhatsApp account will immediately appear as a Home Assistant Device (`Lumi Whatsapp - Default Account`) with 7 Sensors and 1 Binary Sensor.
 

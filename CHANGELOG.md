@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Monorepo configuration supporting both Home Assistant Add-on Store (`repository.yaml`) and HACS Custom Integration (`hacs.json`).
   - System architecture specification (`docs/ARCHITECTURE.md`) and security-hardened `.gitignore`.
 - **Milestone 2 (Home Assistant Add-on & Docker Build)**:
-  - `whatsapp_addon/config.yaml`, `build.yaml`, `Dockerfile`, `run.sh`, and s6 service scripts supporting `amd64` and `aarch64` with Ingress on port `8099`.
+  - `whatsapp_addon/config.yaml`, `build.yaml`, `Dockerfile`, `run.sh`, and s6 service scripts supporting `amd64` and `aarch64` with Ingress on port `8653`.
   - Structured redacted logging (`pino`), input validation, and health endpoint (`GET /api/health`).
 - **Milestone 3 (WhatsApp QR Pairing & Persistent Sessions)**:
   - Multi-account `@whiskeysockets/baileys` engine (`connection.js`, `session-manager.js`) with crash-safe atomic write-then-rename credential storage (`useAtomicMultiFileAuthState`) and `creds.json.bak` backup.

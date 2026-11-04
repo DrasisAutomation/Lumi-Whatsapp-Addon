@@ -16,7 +16,7 @@
    - Open WhatsApp on your phone -> **Settings / Menu** -> **Linked Devices** -> **Link a Device** and scan the displayed QR code.
 4. **Connect the HACS Integration**:
    - In Home Assistant, go to **Settings** -> **Devices & services** -> **Add Integration** -> **Lumi Whatsapp**.
-   - Enter the internal add-on URL (`http://local-whatsapp:8099` or the discovered hostname) and the `api_key`.
+   - Enter the internal add-on URL (`http://local-whatsapp:8653` or the discovered hostname) and the `api_key`.
 
 ## Configuration Options
 

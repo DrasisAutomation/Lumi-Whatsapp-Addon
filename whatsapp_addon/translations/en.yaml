@@ -34,4 +34,4 @@ configuration:
     description: >-
       Optional list of trusted LAN hostnames or IP addresses permitted when fetching media via HTTP/HTTPS URLs.
 network:
-  8099/tcp: Internal REST and WebSocket API port for the Lumi Whatsapp integration
+  8653/tcp: Internal REST and WebSocket API port for the Lumi Whatsapp integration

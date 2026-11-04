@@ -114,7 +114,7 @@ class WhatsAppConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             discovery_info.get("slug") if isinstance(discovery_info, dict) else "whatsapp"
         )
         host = slug.replace("_", "-")
-        self._discovered_url = f"http://{host}:8099"
+        self._discovered_url = f"http://{host}:8653"
         await self.async_set_unique_id(f"{DOMAIN}_{self._discovered_url}")
         self._abort_if_unique_id_configured()
         return await self.async_step_user()

@@ -14,7 +14,7 @@ if bashio::fs.file_exists '/data/options.json'; then
 fi
 
 export DATA_DIR="/data"
-export PORT="8099"
+export PORT="8653"
 
 cd /opt/whatsapp_addon
 exec node src/index.js
