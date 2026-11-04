@@ -48,7 +48,7 @@ flowchart LR
 
 ## 2. Monorepo Compatibility with Home Assistant Add-on Store & HACS
 
-A single GitHub repository (`https://github.com/DrasisAutomation/ha-whatsapp`) serves both installation mechanisms simultaneously without conflict:
+A single GitHub repository (`https://github.com/DrasisAutomation/Lumi-Whatsapp-Addon`) serves both installation mechanisms simultaneously without conflict:
 
 1. **Home Assistant Supervisor Add-on Store**:
    - Reads `/repository.yaml` at the root.

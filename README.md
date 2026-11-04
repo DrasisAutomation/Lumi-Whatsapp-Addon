@@ -22,7 +22,7 @@
 Both the **Home Assistant Add-on Store** and **HACS Custom Repositories** support installing **Lumi Whatsapp** directly from this repository URL:
 
 ```text
-https://github.com/DrasisAutomation/ha-whatsapp
+https://github.com/DrasisAutomation/Lumi-Whatsapp-Addon
 ```
 
 ### A. Add-on Installation
@@ -34,7 +34,7 @@ https://github.com/DrasisAutomation/ha-whatsapp
 5. Open the **three-dot menu** (top right) and select **Repositories**.
 6. Add:
    ```text
-   https://github.com/DrasisAutomation/ha-whatsapp
+   https://github.com/DrasisAutomation/Lumi-Whatsapp-Addon
    ```
 7. Click **Add**.
 8. Find **Lumi Whatsapp** in the store and click **Install**.
@@ -49,7 +49,7 @@ https://github.com/DrasisAutomation/ha-whatsapp
 3. Select the **three-dot menu** (top right) and select **Custom repositories**.
 4. Add the same GitHub repository URL:
    ```text
-   https://github.com/DrasisAutomation/ha-whatsapp
+   https://github.com/DrasisAutomation/Lumi-Whatsapp-Addon
    ```
 5. Select **Integration** as the category and click **Add**.
 6. Install **Lumi Whatsapp**.

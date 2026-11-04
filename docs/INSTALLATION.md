@@ -4,7 +4,7 @@
   <img src="../logo.png" alt="Lumi Whatsapp Logo" width="120" />
 </p>
 
-This single GitHub repository (`https://github.com/DrasisAutomation/ha-whatsapp`) contains both the **Lumi Whatsapp Home Assistant Add-on** (`whatsapp_addon/` + `repository.yaml`) and the **Lumi Whatsapp HACS Custom Integration** (`custom_components/whatsapp/` + `hacs.json`).
+This single GitHub repository (`https://github.com/DrasisAutomation/Lumi-Whatsapp-Addon`) contains both the **Lumi Whatsapp Home Assistant Add-on** (`whatsapp_addon/` + `repository.yaml`) and the **Lumi Whatsapp HACS Custom Integration** (`custom_components/whatsapp/` + `hacs.json`).
 
 ---
 
@@ -17,7 +17,7 @@ This single GitHub repository (`https://github.com/DrasisAutomation/ha-whatsapp`
 5. Open the **three-dot menu** (top right) and select **Repositories**.
 6. Paste the repository URL:
    ```text
-   https://github.com/DrasisAutomation/ha-whatsapp
+   https://github.com/DrasisAutomation/Lumi-Whatsapp-Addon
    ```
 7. Click **Add**, then close the dialog and refresh the Add-on Store page if needed.
 8. Scroll to **Lumi Whatsapp Add-on Repository** and click **Lumi Whatsapp**.
@@ -55,7 +55,7 @@ This single GitHub repository (`https://github.com/DrasisAutomation/ha-whatsapp`
 3. Select **Custom repositories**.
 4. In **Repository**, enter:
    ```text
-   https://github.com/DrasisAutomation/ha-whatsapp
+   https://github.com/DrasisAutomation/Lumi-Whatsapp-Addon
    ```
 5. In **Category / Type**, select **Integration**.
 6. Click **Add**.

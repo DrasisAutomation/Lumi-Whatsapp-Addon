@@ -4,7 +4,7 @@ build_from:
 labels:
   org.opencontainers.image.title: "Home Assistant Add-on: Lumi Whatsapp"
   org.opencontainers.image.description: "Lumi Whatsapp – Multi-account WhatsApp engine and Ingress dashboard for Home Assistant"
-  org.opencontainers.image.source: "https://github.com/DrasisAutomation/ha-whatsapp"
+  org.opencontainers.image.source: "https://github.com/DrasisAutomation/Lumi-Whatsapp-Addon"
   org.opencontainers.image.licenses: "MIT"
 args:
   TEMPIO_VERSION: "2021.09.0"

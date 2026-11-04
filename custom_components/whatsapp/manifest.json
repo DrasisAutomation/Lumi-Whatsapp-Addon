@@ -4,9 +4,9 @@
   "codeowners": ["@DrasisAutomation"],
   "config_flow": true,
   "dependencies": [],
-  "documentation": "https://github.com/DrasisAutomation/ha-whatsapp",
+  "documentation": "https://github.com/DrasisAutomation/Lumi-Whatsapp-Addon",
   "iot_class": "local_push",
-  "issue_tracker": "https://github.com/DrasisAutomation/ha-whatsapp/issues",
+  "issue_tracker": "https://github.com/DrasisAutomation/Lumi-Whatsapp-Addon/issues",
   "requirements": [],
   "version": "1.0.0"
 }

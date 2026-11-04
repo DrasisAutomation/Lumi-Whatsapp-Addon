@@ -95,6 +95,9 @@ for (const relPath of requiredFiles) {
 console.log(`✔ All ${requiredFiles.length} required files across Milestones 1–10 exist and are non-empty.`);
 
 // 2. Validate version consistency across config.yaml, package.json, and manifest.json
+const repoYaml = fs.readFileSync(path.join(rootDir, 'repository.yaml'), 'utf8');
+assert.match(repoYaml, /^name:\s*.+/m, 'repository.yaml missing name');
+assert.match(repoYaml, /^url:\s*["']?https:\/\/github\.com\/DrasisAutomation\/Lumi-Whatsapp-Addon["']?/m, 'repository.yaml missing valid GitHub URL');
 const pkg = JSON.parse(fs.readFileSync(path.join(rootDir, 'whatsapp_addon/package.json'), 'utf8'));
 const manifest = JSON.parse(fs.readFileSync(path.join(rootDir, 'custom_components/whatsapp/manifest.json'), 'utf8'));
 const configYaml = fs.readFileSync(path.join(rootDir, 'whatsapp_addon/config.yaml'), 'utf8');
