@@ -1,0 +1,332 @@
+send_message:
+  name: Send WhatsApp Text Message
+  description: Send a WhatsApp text message to a phone number or JID using a connected account.
+  fields:
+    clientId:
+      name: Account ID (clientId)
+      description: Identifier of the WhatsApp account configured in the add-on (e.g. default, office).
+      required: false
+      default: "default"
+      example: "default"
+      selector:
+        text:
+    to:
+      name: Recipient
+      description: Recipient phone number in international format (e.g. 919876543210) or WhatsApp JID.
+      required: true
+      example: "919876543210"
+      selector:
+        text:
+    body:
+      name: Message Body
+      description: Object containing the message text (e.g. {"text": "Hello from Home Assistant"}) or plain string.
+      required: true
+      example: '{"text": "Hello from Home Assistant"}'
+      selector:
+        object:
+
+send_image:
+  name: Send WhatsApp Image / CCTV Snapshot
+  description: Upload and send an image or camera snapshot (JPEG, PNG, WebP) from a local Home Assistant path (/config/www, /media, /share) or HTTPS URL.
+  fields:
+    clientId:
+      name: Account ID (clientId)
+      description: Identifier of the WhatsApp account to send from.
+      required: false
+      default: "default"
+      example: "default"
+      selector:
+        text:
+    to:
+      name: Recipient
+      description: Recipient phone number (e.g. 919876543210) or Group JID.
+      required: true
+      example: "919876543210"
+      selector:
+        text:
+    image:
+      name: Image Path or URL
+      description: Local path under /config/www, /media, or /share (waits automatically for fresh camera snapshots) or remote HTTPS URL.
+      required: true
+      example: "/config/www/snapshots/cctv.jpg"
+      selector:
+        text:
+    caption:
+      name: Caption
+      description: Optional text caption attached to the image.
+      required: false
+      example: "Motion detected at entrance!"
+      selector:
+        text:
+    cooldownSeconds:
+      name: Alert Cooldown (seconds)
+      description: Optional per-recipient cooldown window in seconds to suppress duplicate motion snapshot alerts.
+      required: false
+      example: 30
+      selector:
+        number:
+          min: 0
+          max: 3600
+          unit_of_measurement: seconds
+
+send_video:
+  name: Send WhatsApp Video
+  description: Upload and send an MP4 video file from /config/www, /media, /share, or an HTTPS URL.
+  fields:
+    clientId:
+      name: Account ID (clientId)
+      description: Identifier of the WhatsApp account to send from.
+      required: false
+      default: "default"
+      example: "default"
+      selector:
+        text:
+    to:
+      name: Recipient
+      description: Recipient phone number or Group JID.
+      required: true
+      example: "919876543210"
+      selector:
+        text:
+    video:
+      name: Video Path or URL
+      description: Local MP4 file path or remote HTTPS URL.
+      required: true
+      example: "/media/clips/front_door.mp4"
+      selector:
+        text:
+    caption:
+      name: Caption
+      description: Optional text caption for the video.
+      required: false
+      example: "Front door motion clip"
+      selector:
+        text:
+
+send_document:
+  name: Send WhatsApp Document
+  description: Upload and send a PDF or document file from /config/www, /media, /share, or an HTTPS URL.
+  fields:
+    clientId:
+      name: Account ID (clientId)
+      description: Identifier of the WhatsApp account to send from.
+      required: false
+      default: "default"
+      example: "default"
+      selector:
+        text:
+    to:
+      name: Recipient
+      description: Recipient phone number or Group JID.
+      required: true
+      example: "919876543210"
+      selector:
+        text:
+    document:
+      name: Document Path or URL
+      description: Local file path or remote HTTPS URL.
+      required: true
+      example: "/share/reports/energy_report.pdf"
+      selector:
+        text:
+    fileName:
+      name: Display File Name
+      description: Optional file name shown to the recipient in WhatsApp.
+      required: false
+      example: "energy_report.pdf"
+      selector:
+        text:
+    caption:
+      name: Caption
+      description: Optional caption accompanying the document.
+      required: false
+      example: "Monthly Home Energy Report"
+      selector:
+        text:
+
+send_audio:
+  name: Send WhatsApp Audio or Voice Note
+  description: Upload and send an audio file or voice note (OGG/Opus, MP3, WAV, M4A).
+  fields:
+    clientId:
+      name: Account ID (clientId)
+      description: Identifier of the WhatsApp account to send from.
+      required: false
+      default: "default"
+      example: "default"
+      selector:
+        text:
+    to:
+      name: Recipient
+      description: Recipient phone number or Group JID.
+      required: true
+      example: "919876543210"
+      selector:
+        text:
+    audio:
+      name: Audio Path or URL
+      description: Local audio path under /config/www, /media, /share or HTTPS URL.
+      required: true
+      example: "/media/tts/alert.ogg"
+      selector:
+        text:
+    ptt:
+      name: Send as Voice Note (PTT)
+      description: When enabled, sends the audio as a playable WhatsApp voice note bubble.
+      required: false
+      default: false
+      selector:
+        boolean:
+
+send_location:
+  name: Send WhatsApp Location Pin
+  description: Send a geographical GPS location pin to a recipient or group.
+  fields:
+    clientId:
+      name: Account ID (clientId)
+      description: Identifier of the WhatsApp account to send from.
+      required: false
+      default: "default"
+      example: "default"
+      selector:
+        text:
+    to:
+      name: Recipient
+      description: Recipient phone number or Group JID.
+      required: true
+      example: "919876543210"
+      selector:
+        text:
+    latitude:
+      name: Latitude
+      description: GPS latitude between -90 and 90.
+      required: true
+      example: 28.6139
+      selector:
+        number:
+          min: -90
+          max: 90
+          step: any
+    longitude:
+      name: Longitude
+      description: GPS longitude between -180 and 180.
+      required: true
+      example: 77.2090
+      selector:
+        number:
+          min: -180
+          max: 180
+          step: any
+    name:
+      name: Location Name
+      description: Optional title for the location pin.
+      required: false
+      example: "Home"
+      selector:
+        text:
+    address:
+      name: Address
+      description: Optional street address description.
+      required: false
+      example: "Main Residence"
+      selector:
+        text:
+
+get_contacts:
+  name: Get WhatsApp Contacts
+  description: Retrieve cached WhatsApp contacts for the specified account.
+  fields:
+    clientId:
+      name: Account ID (clientId)
+      description: Identifier of the WhatsApp account.
+      required: false
+      default: "default"
+      example: "default"
+      selector:
+        text:
+
+get_groups:
+  name: Get WhatsApp Groups
+  description: Retrieve all joined WhatsApp groups and their group JIDs for the specified account.
+  fields:
+    clientId:
+      name: Account ID (clientId)
+      description: Identifier of the WhatsApp account.
+      required: false
+      default: "default"
+      example: "default"
+      selector:
+        text:
+
+check_number:
+  name: Check WhatsApp Number Registration
+  description: Check whether a phone number is registered on WhatsApp and return its canonical JID.
+  fields:
+    clientId:
+      name: Account ID (clientId)
+      description: Identifier of the WhatsApp account to query from.
+      required: false
+      default: "default"
+      example: "default"
+      selector:
+        text:
+    number:
+      name: Phone Number
+      description: Phone number in international format (e.g. 919876543210).
+      required: true
+      example: "919876543210"
+      selector:
+        text:
+
+disconnect:
+  name: Disconnect WhatsApp Account
+  description: Gracefully disconnect a WhatsApp account socket without deleting its stored session credentials.
+  fields:
+    clientId:
+      name: Account ID (clientId)
+      description: Identifier of the WhatsApp account to disconnect.
+      required: false
+      default: "default"
+      example: "default"
+      selector:
+        text:
+
+reconnect:
+  name: Reconnect WhatsApp Account
+  description: Reconnect a WhatsApp account session.
+  fields:
+    clientId:
+      name: Account ID (clientId)
+      description: Identifier of the WhatsApp account to reconnect.
+      required: false
+      default: "default"
+      example: "default"
+      selector:
+        text:
+
+send_message_to_group:
+  name: Send WhatsApp Message to Group
+  description: Send a text message to a WhatsApp Group JID.
+  fields:
+    clientId:
+      name: Account ID (clientId)
+      description: Identifier of the WhatsApp account to send from.
+      required: false
+      default: "default"
+      example: "default"
+      selector:
+        text:
+    groupId:
+      name: Group JID
+      description: Target WhatsApp group JID (e.g. 1203630123456789@g.us).
+      required: true
+      example: "1203630123456789@g.us"
+      selector:
+        text:
+    body:
+      name: Message Body
+      description: Object containing the message text (e.g. {"text": "House alarm armed"}) or plain string.
+      required: true
+      example: '{"text": "House alarm armed"}'
+      selector:
+        object:

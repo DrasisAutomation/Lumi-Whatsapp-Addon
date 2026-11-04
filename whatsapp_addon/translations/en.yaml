@@ -1,0 +1,37 @@
+configuration:
+  api_key:
+    name: API Key (Bearer Token)
+    description: >-
+      Shared secret Bearer token used by the Home Assistant WhatsApp HACS integration
+      to authenticate against this add-on's internal REST and WebSocket API. If left empty,
+      a secure token is automatically generated on first start and stored in /data/api_token.txt.
+  log_level:
+    name: Log Level
+    description: >-
+      Controls the verbosity of the add-on logs (trace, debug, info, warn, error).
+  max_retries:
+    name: Maximum Send Retries
+    description: >-
+      Maximum number of automatic retry attempts with exponential backoff for transient message send failures.
+  retry_base_delay_ms:
+    name: Retry Base Delay (ms)
+    description: >-
+      Initial delay in milliseconds before the first retry attempt (doubles on each subsequent attempt).
+  media_max_size_mb:
+    name: Maximum Media Size (MB)
+    description: >-
+      Maximum allowed file size in megabytes for images, videos, audio, and documents.
+  snapshot_wait_timeout_ms:
+    name: Snapshot Readiness Timeout (ms)
+    description: >-
+      Maximum time in milliseconds to wait for a newly created camera snapshot file to exist and stabilize on disk before uploading.
+  cooldown_seconds:
+    name: Per-Recipient Alert Cooldown (seconds)
+    description: >-
+      Optional minimum cooldown in seconds between identical media snapshot alerts to the same recipient (0 disables global cooldown).
+  allowed_local_hosts:
+    name: Allowed Local Media Hosts
+    description: >-
+      Optional list of trusted LAN hostnames or IP addresses permitted when fetching media via HTTP/HTTPS URLs.
+network:
+  8099/tcp: Internal REST and WebSocket API port for the Home Assistant WhatsApp integration

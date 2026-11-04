@@ -1,0 +1,50 @@
+name: Validate HACS Integration & Python Tests
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "hacs.json"
+      - "custom_components/whatsapp/**"
+      - "tests/**"
+      - ".github/workflows/validate-integration.yml"
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  python-tests:
+    name: Run Python Integration Tests & Schema Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run Python unit & integration tests
+        run: python -m unittest discover -s tests/custom_components/whatsapp -p "test_*.py" -v
+
+      - name: Validate HACS & Home Assistant manifest structure
+        run: |
+          python -c "
+          import json, pathlib
+          root = pathlib.Path('.')
+          hacs = json.loads((root / 'hacs.json').read_text())
+          manifest = json.loads((root / 'custom_components/whatsapp/manifest.json').read_text())
+          strings = json.loads((root / 'custom_components/whatsapp/strings.json').read_text())
+          en = json.loads((root / 'custom_components/whatsapp/translations/en.json').read_text())
+          assert hacs['name'] == 'WhatsApp'
+          assert manifest['domain'] == 'whatsapp'
+          assert manifest['config_flow'] is True
+          assert strings == en
+          print('HACS and manifest validation passed.')
+          "

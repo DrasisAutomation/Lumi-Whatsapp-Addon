@@ -1,0 +1,22 @@
+{
+  "name": "ha-whatsapp-addon",
+  "version": "1.0.0",
+  "description": "Home Assistant WhatsApp Add-on powered by Baileys with multi-account management, persistent queue, media upload, and Ingress Web UI",
+  "main": "src/index.js",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node --test tests/*.test.js"
+  },
+  "dependencies": {
+    "@whiskeysockets/baileys": "6.7.24",
+    "express": "4.21.2",
+    "pino": "9.6.0",
+    "qrcode": "1.5.4",
+    "ws": "8.18.1"
+  },
+  "license": "MIT"
+}

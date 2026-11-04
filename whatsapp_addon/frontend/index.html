@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Home Assistant WhatsApp</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-icon" aria-hidden="true">WA</div>
+        <div>
+          <h1>WhatsApp</h1>
+          <span class="subtitle">Home Assistant Add-on</span>
+        </div>
+      </div>
+
+      <nav class="nav-tabs" role="tablist">
+        <button class="nav-btn active" data-tab="dashboard" role="tab">Dashboard</button>
+        <button class="nav-btn" data-tab="accounts" role="tab">Accounts &amp; QR</button>
+        <button class="nav-btn" data-tab="messaging" role="tab">Messaging</button>
+        <button class="nav-btn" data-tab="history" role="tab">Message History</button>
+        <button class="nav-btn" data-tab="diagnostics" role="tab">Diagnostics</button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="ws-indicator">
+          <span id="ws-dot" class="status-dot disconnected"></span>
+          <span id="ws-label">Connecting live stream...</span>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <h2 id="page-title">Dashboard</h2>
+        <div class="topbar-actions">
+          <button id="refresh-btn" class="btn btn-secondary">Refresh</button>
+        </div>
+      </header>
+
+      <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+      <!-- SECTION A: DASHBOARD -->
+      <section id="tab-dashboard" class="tab-panel active">
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <span class="kpi-label">Connected Accounts</span>
+            <strong id="kpi-connected" class="kpi-value success">0</strong>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">Disconnected Accounts</span>
+            <strong id="kpi-disconnected" class="kpi-value warn">0</strong>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">Messages Sent</span>
+            <strong id="kpi-sent" class="kpi-value">0</strong>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">Messages Received</span>
+            <strong id="kpi-received" class="kpi-value">0</strong>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">Pending in Queue</span>
+            <strong id="kpi-pending" class="kpi-value">0</strong>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">Failed Messages</span>
+            <strong id="kpi-failed" class="kpi-value danger">0</strong>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">Add-on Uptime</span>
+            <strong id="kpi-uptime" class="kpi-value">0s</strong>
+          </div>
+        </div>
+
+        <div class="panel-card">
+          <div class="panel-header">
+            <h3>Active WhatsApp Accounts Overview</h3>
+            <button class="btn btn-primary" data-goto-tab="accounts">Manage Accounts</button>
+          </div>
+          <div id="dashboard-accounts-list" class="accounts-grid"></div>
+        </div>
+      </section>
+
+      <!-- SECTION B: ACCOUNTS -->
+      <section id="tab-accounts" class="tab-panel">
+        <div class="panel-card">
+          <div class="panel-header">
+            <h3>Add WhatsApp Account</h3>
+          </div>
+          <form id="add-account-form" class="form-inline">
+            <div class="form-group">
+              <label for="new-client-id">Account ID (clientId)</label>
+              <input id="new-client-id" type="text" placeholder="e.g. default, office, personal, security" required pattern="[a-zA-Z0-9_-]{1,32}" />
+            </div>
+            <div class="form-group">
+              <label for="new-account-name">Display Name</label>
+              <input id="new-account-name" type="text" placeholder="e.g. Office WhatsApp" />
+            </div>
+            <div class="form-group form-actions-inline">
+              <button type="submit" class="btn btn-primary">Add WhatsApp Account</button>
+            </div>
+          </form>
+        </div>
+
+        <div id="qr-pairing-modal" class="panel-card qr-panel hidden">
+          <div class="panel-header">
+            <h3 id="qr-title">Scan QR Code with WhatsApp</h3>
+            <button id="close-qr-btn" class="btn btn-secondary">Close</button>
+          </div>
+          <div class="qr-body">
+            <div class="qr-image-box">
+              <img id="qr-image" alt="WhatsApp Pairing QR Code" />
+            </div>
+            <div class="qr-instructions">
+              <ol>
+                <li>Open <strong>WhatsApp</strong> on your phone.</li>
+                <li>Tap <strong>Menu</strong> or <strong>Settings</strong> and select <strong>Linked Devices</strong>.</li>
+                <li>Tap <strong>Link a Device</strong>.</li>
+                <li>Point your phone at this screen to capture the QR code.</li>
+              </ol>
+              <p id="qr-status-text" class="muted"></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-card">
+          <div class="panel-header">
+            <h3>Configured Accounts</h3>
+          </div>
+          <div id="accounts-container" class="accounts-grid"></div>
+        </div>
+      </section>
+
+      <!-- SECTION C: MESSAGING -->
+      <section id="tab-messaging" class="tab-panel">
+        <div class="panel-card">
+          <div class="panel-header">
+            <h3>Send WhatsApp Message or Media</h3>
+          </div>
+          <form id="send-message-form" class="form-stack">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="msg-account">Sending Account (clientId)</label>
+                <select id="msg-account" required></select>
+              </div>
+              <div class="form-group">
+                <label for="msg-type">Message Type</label>
+                <select id="msg-type" required>
+                  <option value="text">Text Message</option>
+                  <option value="image">Image (Snapshot / Local Path / URL / Upload)</option>
+                  <option value="video">Video (MP4 Local Path / URL / Upload)</option>
+                  <option value="document">Document (PDF / File Local Path / URL / Upload)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="msg-recipient">Recipient (Phone Number or Group JID)</label>
+                <input id="msg-recipient" type="text" placeholder="e.g. 919876543210 or 1203630...@g.us" required />
+              </div>
+            </div>
+
+            <div id="msg-text-group" class="form-group">
+              <label for="msg-body">Message Text</label>
+              <textarea id="msg-body" rows="4" placeholder="Hello from Home Assistant!"></textarea>
+            </div>
+
+            <div id="msg-media-group" class="form-stack hidden">
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="msg-media-source">Local Path (/config/www, /media, /share) or HTTPS URL</label>
+                  <input id="msg-media-source" type="text" placeholder="/config/www/snapshots/cctv.jpg" />
+                </div>
+                <div class="form-group">
+                  <label for="msg-media-file">Or Upload File Directly</label>
+                  <input id="msg-media-file" type="file" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="msg-caption">Caption (Optional)</label>
+                <input id="msg-caption" type="text" placeholder="Motion detected at entrance!" />
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">Send Message</button>
+            </div>
+          </form>
+
+          <div id="send-result-box" class="result-box hidden">
+            <h4>Last Send Result</h4>
+            <pre id="send-result-pre"></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION D: MESSAGE HISTORY -->
+      <section id="tab-history" class="tab-panel">
+        <div class="panel-card">
+          <div class="panel-header">
+            <h3>Message History &amp; Delivery Receipts</h3>
+            <div class="filter-bar">
+              <select id="history-account-filter">
+                <option value="">All Accounts</option>
+              </select>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Account</th>
+                  <th>Recipient</th>
+                  <th>Type</th>
+                  <th>Message ID</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="history-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION E: DIAGNOSTICS -->
+      <section id="tab-diagnostics" class="tab-panel">
+        <div class="panel-card">
+          <div class="panel-header">
+            <h3>HACS Integration Connection Details</h3>
+          </div>
+          <p class="muted">Use these credentials when configuring the <strong>WhatsApp</strong> integration in Home Assistant (Settings &rarr; Devices &amp; services &rarr; Add Integration &rarr; WhatsApp):</p>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Internal Add-on API URL</label>
+              <input id="diag-internal-url" type="text" readonly value="http://local-whatsapp:8099" />
+            </div>
+            <div class="form-group">
+              <label>API Bearer Token</label>
+              <input id="diag-api-key" type="password" readonly value="" />
+            </div>
+            <div class="form-group form-actions-inline">
+              <button id="toggle-token-btn" type="button" class="btn btn-secondary">Show / Hide</button>
+              <button id="copy-token-btn" type="button" class="btn btn-primary">Copy Token</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="diagnostics-grid">
+          <div class="panel-card">
+            <h3>Runtime &amp; API Health</h3>
+            <pre id="diag-runtime-pre" class="code-block">Loading...</pre>
+          </div>
+          <div class="panel-card">
+            <h3>Session Health &amp; Queue Telemetry</h3>
+            <pre id="diag-sessions-pre" class="code-block">Loading...</pre>
+          </div>
+          <div class="panel-card">
+            <h3>Connection &amp; Authentication Errors</h3>
+            <pre id="diag-conn-errors-pre" class="code-block">None</pre>
+          </div>
+          <div class="panel-card">
+            <h3>Media Upload Failures &amp; Retry Attempts</h3>
+            <pre id="diag-media-errors-pre" class="code-block">None</pre>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

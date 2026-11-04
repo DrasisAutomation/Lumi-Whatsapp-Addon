@@ -1,0 +1,136 @@
+name: Release & Publish GHCR Images
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  verify:
+    name: Run Full Test Suite & Version Check
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22 LTS
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: whatsapp_addon/package-lock.json
+
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Add-on dependencies & run Node.js tests
+        working-directory: whatsapp_addon
+        run: |
+          npm ci
+          npm test
+
+      - name: Run Milestone 1-10 structural validation
+        run: node tests/validate_milestone1.mjs
+
+      - name: Run Python HACS integration tests
+        run: python -m unittest discover -s tests/custom_components/whatsapp -p "test_*.py" -v
+
+      - name: Verify Tag Matches Add-on & Integration Versions
+        id: version
+        run: |
+          TAG_VER="${GITHUB_REF_NAME#v}"
+          node -e "
+            const fs = require('fs');
+            const tagVer = '${TAG_VER}';
+            const pkg = JSON.parse(fs.readFileSync('whatsapp_addon/package.json', 'utf8'));
+            const manifest = JSON.parse(fs.readFileSync('custom_components/whatsapp/manifest.json', 'utf8'));
+            const cfg = fs.readFileSync('whatsapp_addon/config.yaml', 'utf8');
+            const cfgVer = cfg.match(/^version:\s*[\"']?([^\"'\n]+)[\"']?/m)[1].trim();
+            if (pkg.version !== tagVer || manifest.version !== tagVer || cfgVer !== tagVer) {
+              throw new Error(\`Tag v\${tagVer} does not match versions: config.yaml=\${cfgVer}, package.json=\${pkg.version}, manifest.json=\${manifest.version}\`);
+            }
+          "
+          echo "version=${TAG_VER}" >> "$GITHUB_OUTPUT"
+
+  publish-ghcr:
+    name: Build & Publish GHCR (${{ matrix.arch }})
+    needs: verify
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - arch: amd64
+            platform: linux/amd64
+            base_image: ghcr.io/home-assistant/amd64-base:3.20
+          - arch: aarch64
+            platform: linux/arm64
+            base_image: ghcr.io/home-assistant/aarch64-base:3.20
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Compute image tags
+        id: img
+        run: |
+          OWNER_LC=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          IMAGE="ghcr.io/${OWNER_LC}/ha-whatsapp-${{ matrix.arch }}"
+          VER="${{ needs.verify.outputs.version }}"
+          echo "image=${IMAGE}" >> "$GITHUB_OUTPUT"
+          if [[ "${VER}" == *"-"* ]]; then
+            echo "is_prerelease=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "is_prerelease=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build and push versioned image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./whatsapp_addon
+          file: ./whatsapp_addon/Dockerfile
+          platforms: ${{ matrix.platform }}
+          build-args: |
+            BUILD_FROM=${{ matrix.base_image }}
+          push: true
+          tags: |
+            ${{ steps.img.outputs.image }}:${{ needs.verify.outputs.version }}
+            ${{ steps.img.outputs.is_prerelease == 'false' && format('{0}:latest', steps.img.outputs.image) || '' }}
+          cache-from: type=gha,scope=${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.arch }}
+
+  github-release:
+    name: Create GitHub Release
+    needs:
+      - verify
+      - publish-ghcr
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          prerelease: ${{ contains(needs.verify.outputs.version, '-') }}

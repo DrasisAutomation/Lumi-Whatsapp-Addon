@@ -1,0 +1,47 @@
+name: "WhatsApp"
+version: "1.0.0"
+slug: "whatsapp"
+description: "Multi-account WhatsApp linked-device engine with Ingress Web UI, encrypted media & CCTV snapshot uploads, persistent message queue, and authenticated API for Home Assistant."
+url: "https://github.com/DrasisAutomation/ha-whatsapp"
+arch:
+  - amd64
+  - aarch64
+startup: application
+boot: auto
+init: false
+ingress: true
+ingress_port: 8099
+ingress_entry: /
+panel_icon: mdi:whatsapp
+panel_title: WhatsApp
+hassio_api: true
+hassio_role: default
+homeassistant_api: true
+ports:
+  8099/tcp: 8099
+ports_description:
+  8099/tcp: "Authenticated REST & WebSocket API for the WhatsApp HACS integration"
+map:
+  - homeassistant_config:ro
+  - media:ro
+  - share:ro
+image: "ghcr.io/drasisautomation/ha-whatsapp-{arch}"
+options:
+  api_key: ""
+  log_level: "info"
+  max_retries: 3
+  retry_base_delay_ms: 2000
+  media_max_size_mb: 25
+  snapshot_wait_timeout_ms: 10000
+  cooldown_seconds: 0
+  allowed_local_hosts: []
+schema:
+  api_key: password
+  log_level: list(trace|debug|info|warn|error)
+  max_retries: int(0,10)
+  retry_base_delay_ms: int(500,60000)
+  media_max_size_mb: int(1,64)
+  snapshot_wait_timeout_ms: int(1000,30000)
+  cooldown_seconds: int(0,3600)
+  allowed_local_hosts:
+    - str?
