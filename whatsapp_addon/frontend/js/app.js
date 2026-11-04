@@ -7,6 +7,10 @@
     diagnostics: null,
     activeQrClientId: null,
     ws: null,
+    token:
+      localStorage.getItem('lumi_whatsapp_token') ||
+      new URLSearchParams(window.location.search).get('token') ||
+      '',
   };
 
   function getIngressBasePath() {
@@ -36,15 +40,27 @@
   }
 
   async function apiRequest(endpoint, options = {}) {
+    const headers = {
+      'Content-Type': 'application/json',
+      ...(options.headers || {}),
+    };
+    if (state.token) {
+      headers['Authorization'] = `Bearer ${state.token}`;
+    }
     const res = await fetch(apiBaseUrl(endpoint), {
-      headers: {
-        'Content-Type': 'application/json',
-        ...(options.headers || {}),
-      },
+      headers,
       ...options,
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok || data.ok === false) {
+      if (res.status === 401 && !window.location.pathname.includes('/ingress/')) {
+        const entered = prompt('Direct access to Lumi Whatsapp requires an API Bearer token.\nEnter your API Key (from Add-on Configuration / Diagnostics tab):');
+        if (entered && entered.trim()) {
+          state.token = entered.trim();
+          localStorage.setItem('lumi_whatsapp_token', state.token);
+          return apiRequest(endpoint, options);
+        }
+      }
       throw new Error(data?.error?.message || `HTTP ${res.status}`);
     }
     return data;
@@ -382,7 +398,8 @@
   function connectWebSocket() {
     const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const basePath = getIngressBasePath();
-    const wsUrl = `${proto}//${window.location.host}${basePath}ws`;
+    const tokenQuery = state.token ? `?token=${encodeURIComponent(state.token)}` : '';
+    const wsUrl = `${proto}//${window.location.host}${basePath}ws${tokenQuery}`;
 
     const ws = new WebSocket(wsUrl);
     state.ws = ws;

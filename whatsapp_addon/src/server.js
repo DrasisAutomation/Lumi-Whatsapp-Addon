@@ -135,24 +135,12 @@ async function createWhatsAppServer({
     config,
   }));
 
-  // Protect Frontend Dashboard: Must be accessed via Home Assistant Ingress or authenticated session
+  // Serve Frontend Dashboard assets
   const frontendDir = path.resolve(__dirname, '..', 'frontend');
-  app.use(
-    '/',
-    (req, res, next) => {
-      if (isRequestAuthenticated(req, config.apiKey)) {
-        return next();
-      }
-      return res.status(401).json({
-        ok: false,
-        error: {
-          code: 'INGRESS_REQUIRED',
-          message: 'Direct unauthenticated access is disabled. Open the Web UI via Home Assistant Ingress or provide a valid Bearer token.',
-        },
-      });
-    },
-    express.static(frontendDir)
-  );
+  app.use('/', express.static(frontendDir));
+  app.get('/', (req, res) => {
+    res.sendFile(path.join(frontendDir, 'index.html'));
+  });
 
   app.use(errorHandlerMiddleware(logger));
 

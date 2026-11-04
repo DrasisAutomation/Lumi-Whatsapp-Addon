@@ -1,5 +1,5 @@
 name: "Lumi Whatsapp"
-version: "1.0.5"
+version: "1.0.6"
 slug: "whatsapp"
 description: "Lumi Whatsapp – Multi-account WhatsApp linked-device engine with Ingress Web UI, encrypted media & CCTV snapshot uploads, persistent message queue, and authenticated API for Home Assistant."
 url: "https://github.com/DrasisAutomation/Lumi-Whatsapp-Addon"
@@ -11,7 +11,6 @@ boot: auto
 init: false
 ingress: true
 ingress_port: 8653
-ingress_entry: /
 panel_icon: mdi:whatsapp
 panel_title: Lumi Whatsapp
 hassio_api: true

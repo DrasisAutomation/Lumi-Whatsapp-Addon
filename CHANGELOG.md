@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.6] - 2026-11-04
+
+### Fixed
+- Allowed direct access to Web UI static dashboard assets without `INGRESS_REQUIRED` 401 error.
+- Added API Bearer token prompt and query parameter support for direct port `8653` browser sessions and WebSockets.
+- Removed `ingress_entry: /` from `config.yaml` to prevent double-slash proxy 404 in Home Assistant Ingress.
+- Simplified Ingress detection in `auth.js` to rely directly on `X-Ingress-Path` and `X-Hassio-Key` headers without restrictive IP filtering.
+
 ## [1.0.5] - 2026-11-04
 
 ### Fixed
