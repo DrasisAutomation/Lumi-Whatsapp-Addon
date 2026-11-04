@@ -8,9 +8,15 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN apk add --no-cache \
     nodejs \
     npm \
+    git \
+    openssh-client \
     curl \
     ca-certificates \
     tzdata
+
+# Ensure any git+ssh dependencies (such as libsignal-node) resolve over HTTPS without SSH keys
+RUN git config --global url."https://github.com/".insteadOf "ssh://git@github.com/" \
+    && git config --global url."https://github.com/".insteadOf "git@github.com:"
 
 WORKDIR /opt/whatsapp_addon
 
