@@ -1,6 +1,6 @@
 {
   "domain": "whatsapp",
-  "name": "WhatsApp",
+  "name": "Lumi Whatsapp",
   "codeowners": ["@DrasisAutomation"],
   "config_flow": true,
   "dependencies": [],

@@ -2,8 +2,8 @@
   "config": {
     "step": {
       "user": {
-        "title": "Connect to WhatsApp Add-on",
-        "description": "Enter the internal URL and API Bearer token from your Home Assistant WhatsApp Add-on (visible in the Add-on Web UI -> Diagnostics tab).",
+        "title": "Connect to Lumi Whatsapp Add-on",
+        "description": "Enter the internal URL and API Bearer token from your Home Assistant Lumi Whatsapp Add-on (visible in the Add-on Web UI -> Diagnostics tab).",
         "data": {
           "url": "Add-on API URL",
           "api_key": "API Bearer Token",
@@ -12,18 +12,18 @@
       }
     },
     "error": {
-      "cannot_connect": "Failed to connect to the WhatsApp Add-on API. Ensure the add-on is running and the URL is reachable.",
-      "invalid_auth": "Invalid API Bearer token. Check the token in the WhatsApp Add-on Configuration or Diagnostics tab.",
-      "unknown": "Unexpected error communicating with the WhatsApp Add-on."
+      "cannot_connect": "Failed to connect to the Lumi Whatsapp Add-on API. Ensure the add-on is running and the URL is reachable.",
+      "invalid_auth": "Invalid API Bearer token. Check the token in the Lumi Whatsapp Add-on Configuration or Diagnostics tab.",
+      "unknown": "Unexpected error communicating with the Lumi Whatsapp Add-on."
     },
     "abort": {
-      "already_configured": "This WhatsApp Add-on endpoint is already configured."
+      "already_configured": "This Lumi Whatsapp Add-on endpoint is already configured."
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "Update WhatsApp Add-on Connection",
+        "title": "Update Lumi Whatsapp Add-on Connection",
         "data": {
           "url": "Add-on API URL",
           "api_key": "API Bearer Token",
@@ -32,7 +32,7 @@
       }
     },
     "error": {
-      "cannot_connect": "Failed to connect to the WhatsApp Add-on API.",
+      "cannot_connect": "Failed to connect to the Lumi Whatsapp Add-on API.",
       "invalid_auth": "Invalid API Bearer token.",
       "unknown": "Unexpected error."
     }

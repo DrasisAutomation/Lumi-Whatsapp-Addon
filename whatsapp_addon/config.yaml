@@ -1,7 +1,7 @@
-name: "WhatsApp"
+name: "Lumi Whatsapp"
 version: "1.0.0"
 slug: "whatsapp"
-description: "Multi-account WhatsApp linked-device engine with Ingress Web UI, encrypted media & CCTV snapshot uploads, persistent message queue, and authenticated API for Home Assistant."
+description: "Lumi Whatsapp – Multi-account WhatsApp linked-device engine with Ingress Web UI, encrypted media & CCTV snapshot uploads, persistent message queue, and authenticated API for Home Assistant."
 url: "https://github.com/DrasisAutomation/ha-whatsapp"
 arch:
   - amd64
@@ -13,14 +13,14 @@ ingress: true
 ingress_port: 8099
 ingress_entry: /
 panel_icon: mdi:whatsapp
-panel_title: WhatsApp
+panel_title: Lumi Whatsapp
 hassio_api: true
 hassio_role: default
 homeassistant_api: true
 ports:
   8099/tcp: 8099
 ports_description:
-  8099/tcp: "Authenticated REST & WebSocket API for the WhatsApp HACS integration"
+  8099/tcp: "Authenticated REST & WebSocket API for the Lumi Whatsapp HACS integration"
 map:
   - homeassistant_config:ro
   - media:ro

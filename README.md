@@ -1,12 +1,16 @@
-# HA WhatsApp – Complete Home Assistant Add-on + HACS Integration
+# Lumi Whatsapp – Complete Home Assistant Add-on + HACS Integration
+
+<p align="center">
+  <img src="logo.png" alt="Lumi Whatsapp Logo" width="160" />
+</p>
 
 [![Add-on Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](whatsapp_addon/config.yaml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-A complete, self-hosted WhatsApp system for Home Assistant consisting of two components in a single installable repository:
+**Lumi Whatsapp** is a complete, self-hosted WhatsApp system for Home Assistant consisting of two components in a single installable repository:
 
-1. **Home Assistant WhatsApp Add-on (`whatsapp_addon/`)**: Multi-account WhatsApp linked-device engine (powered by `@whiskeysockets/baileys`), Ingress Web UI dashboard, QR code pairing, crash-safe atomic session storage, persistent sequential message queue, CCTV snapshot readiness verification & encrypted media uploads, and authenticated internal REST + WebSocket API.
-2. **Home Assistant WhatsApp HACS Integration (`custom_components/whatsapp/`)**: Native Python integration providing Config Flow setup, Supervisor discovery, per-account Devices, 7 Sensors + 1 Binary Sensor per account, 12 native Home Assistant Actions/Services (`whatsapp.send_message`, `whatsapp.send_image`, etc.), incoming/receipt events (`new_whatsapp_message`, `whatsapp_message_status`, etc.), and redacted diagnostics.
+1. **Lumi Whatsapp Home Assistant Add-on (`whatsapp_addon/`)**: Multi-account WhatsApp linked-device engine (powered by `@whiskeysockets/baileys`), Ingress Web UI dashboard, QR code pairing, crash-safe atomic session storage, persistent sequential message queue, CCTV snapshot readiness verification & encrypted media uploads, and authenticated internal REST + WebSocket API.
+2. **Lumi Whatsapp HACS Integration (`custom_components/whatsapp/`)**: Native Python integration providing Config Flow setup, Supervisor discovery, per-account Devices, 7 Sensors + 1 Binary Sensor per account, 12 native Home Assistant Actions/Services (`whatsapp.send_message`, `whatsapp.send_image`, etc.), incoming/receipt events (`new_whatsapp_message`, `whatsapp_message_status`, etc.), and redacted diagnostics.
 
 > [!IMPORTANT]
 > **Protocol & Account Disclaimer**: This project uses the community-maintained [Baileys (`@whiskeysockets/baileys`)](https://github.com/WhiskeySockets/Baileys) library, which implements WhatsApp's linked-device WebSocket protocol. It is **not** an official WhatsApp Business Cloud API product and is not affiliated with WhatsApp or Meta. 100% compatibility with future protocol changes cannot be guaranteed. Use responsibly for personal smart-home alerts and avoid spam or bulk messaging.
@@ -15,7 +19,7 @@ A complete, self-hosted WhatsApp system for Home Assistant consisting of two com
 
 ## Step-by-Step Installation
 
-Both the **Home Assistant Add-on Store** and **HACS Custom Repositories** support installing directly from this repository URL:
+Both the **Home Assistant Add-on Store** and **HACS Custom Repositories** support installing **Lumi Whatsapp** directly from this repository URL:
 
 ```text
 https://github.com/DrasisAutomation/ha-whatsapp
@@ -33,7 +37,7 @@ https://github.com/DrasisAutomation/ha-whatsapp
    https://github.com/DrasisAutomation/ha-whatsapp
    ```
 7. Click **Add**.
-8. Find **WhatsApp** in the store and click **Install**.
+8. Find **Lumi Whatsapp** in the store and click **Install**.
 9. Start the add-on.
 10. Click **Open Web UI** (via Home Assistant Ingress).
 11. Open **Accounts & QR**, click **Connect / Show QR**, and scan the QR code using **WhatsApp &rarr; Linked Devices &rarr; Link a Device** on your phone.
@@ -48,16 +52,16 @@ https://github.com/DrasisAutomation/ha-whatsapp
    https://github.com/DrasisAutomation/ha-whatsapp
    ```
 5. Select **Integration** as the category and click **Add**.
-6. Install **WhatsApp**.
+6. Install **Lumi Whatsapp**.
 7. **Restart Home Assistant**.
 8. Open **Settings &rarr; Devices & services &rarr; Add Integration**.
-9. Search for **WhatsApp** and complete the setup using the internal URL (`http://local-whatsapp:8099`) and the **API Bearer Token** shown in the Add-on Web UI **Diagnostics** tab.
+9. Search for **Lumi Whatsapp** and complete the setup using the internal URL (`http://local-whatsapp:8099`) and the **API Bearer Token** shown in the Add-on Web UI **Diagnostics** tab.
 
 ---
 
 ## Home Assistant Devices & Entities
 
-Each connected WhatsApp account (e.g., `default`, `office`, `personal`, `security`) is registered as a dedicated Home Assistant Device (`WhatsApp - Default Account`) with:
+Each connected WhatsApp account (e.g., `default`, `office`, `personal`, `security`) is registered as a dedicated Home Assistant Device (`Lumi Whatsapp - Default Account`) with:
 
 - **Binary Sensor**:
   - `binary_sensor.whatsapp_default_connected`

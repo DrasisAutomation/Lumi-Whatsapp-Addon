@@ -537,13 +537,13 @@
       p.classList.toggle('active', p.id === `tab-${tabName}`);
     });
     const titles = {
-      dashboard: 'Dashboard',
-      accounts: 'WhatsApp Accounts & QR Pairing',
-      messaging: 'Send Message & Media',
-      history: 'Message History & Receipts',
-      diagnostics: 'System Diagnostics & Security',
+      dashboard: 'Lumi Whatsapp – Dashboard',
+      accounts: 'Lumi Whatsapp – Accounts & QR Pairing',
+      messaging: 'Lumi Whatsapp – Send Message & Media',
+      history: 'Lumi Whatsapp – Message History & Receipts',
+      diagnostics: 'Lumi Whatsapp – System Diagnostics & Security',
     };
-    document.getElementById('page-title').textContent = titles[tabName] || 'WhatsApp';
+    document.getElementById('page-title').textContent = titles[tabName] || 'Lumi Whatsapp';
   }
 
   document.addEventListener('DOMContentLoaded', () => {

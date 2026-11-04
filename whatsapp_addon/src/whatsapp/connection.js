@@ -107,7 +107,7 @@ class WhatsAppAccountConnection extends EventEmitter {
         },
         printQRInTerminal: false,
         logger: silentPino,
-        browser: Browsers.ubuntu(`HomeAssistant-${this.clientId}`),
+        browser: Browsers.ubuntu(`LumiWhatsapp-${this.clientId}`),
         markOnlineOnConnect: false,
         generateHighQualityLinkPreview: false,
         syncFullHistory: false,

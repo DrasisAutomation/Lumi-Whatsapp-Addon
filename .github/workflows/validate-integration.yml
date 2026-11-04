@@ -42,8 +42,9 @@ jobs:
           manifest = json.loads((root / 'custom_components/whatsapp/manifest.json').read_text())
           strings = json.loads((root / 'custom_components/whatsapp/strings.json').read_text())
           en = json.loads((root / 'custom_components/whatsapp/translations/en.json').read_text())
-          assert hacs['name'] == 'WhatsApp'
+          assert hacs['name'] == 'Lumi Whatsapp'
           assert manifest['domain'] == 'whatsapp'
+          assert manifest['name'] == 'Lumi Whatsapp'
           assert manifest['config_flow'] is True
           assert strings == en
           print('HACS and manifest validation passed.')

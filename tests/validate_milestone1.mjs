@@ -10,12 +10,15 @@ console.log('Running Full Repository Validation (Milestones 1–10) in:', rootDi
 const requiredFiles = [
   'repository.yaml',
   'hacs.json',
+  'logo.png',
   'README.md',
   'LICENSE',
   'CHANGELOG.md',
   '.gitignore',
   // Add-on files
   'whatsapp_addon/config.yaml',
+  'whatsapp_addon/logo.png',
+  'whatsapp_addon/icon.png',
   'whatsapp_addon/Dockerfile',
   'whatsapp_addon/build.yaml',
   'whatsapp_addon/run.sh',
@@ -45,12 +48,17 @@ const requiredFiles = [
   'whatsapp_addon/src/utils/logger.js',
   'whatsapp_addon/src/utils/validation.js',
   'whatsapp_addon/frontend/index.html',
+  'whatsapp_addon/frontend/logo.png',
   'whatsapp_addon/frontend/css/styles.css',
   'whatsapp_addon/frontend/js/app.js',
   'whatsapp_addon/tests/addon.test.js',
   // HACS integration files
   'custom_components/whatsapp/__init__.py',
   'custom_components/whatsapp/manifest.json',
+  'custom_components/whatsapp/logo.png',
+  'custom_components/whatsapp/icon.png',
+  'custom_components/whatsapp/brand/logo.png',
+  'custom_components/whatsapp/brand/icon.png',
   'custom_components/whatsapp/config_flow.py',
   'custom_components/whatsapp/const.py',
   'custom_components/whatsapp/coordinator.py',
@@ -90,6 +98,10 @@ console.log(`✔ All ${requiredFiles.length} required files across Milestones 1�
 const pkg = JSON.parse(fs.readFileSync(path.join(rootDir, 'whatsapp_addon/package.json'), 'utf8'));
 const manifest = JSON.parse(fs.readFileSync(path.join(rootDir, 'custom_components/whatsapp/manifest.json'), 'utf8'));
 const configYaml = fs.readFileSync(path.join(rootDir, 'whatsapp_addon/config.yaml'), 'utf8');
+const hacs = JSON.parse(fs.readFileSync(path.join(rootDir, 'hacs.json'), 'utf8'));
+assert.equal(hacs.name, 'Lumi Whatsapp', 'hacs.json name must be Lumi Whatsapp');
+assert.equal(manifest.name, 'Lumi Whatsapp', 'manifest.json name must be Lumi Whatsapp');
+assert.match(configYaml, /^name:\s*["']?Lumi Whatsapp["']?/m, 'whatsapp_addon/config.yaml name must be Lumi Whatsapp');
 const verMatch = configYaml.match(/^version:\s*["']?([0-9]+\.[0-9]+\.[0-9]+)["']?/m);
 assert.ok(verMatch, 'whatsapp_addon/config.yaml missing semantic version');
 assert.equal(pkg.version, verMatch[1], 'package.json version mismatch');

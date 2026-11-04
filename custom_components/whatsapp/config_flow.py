@@ -42,20 +42,20 @@ async def validate_addon_connection(
     health = await client.get_health()
     accounts = await client.get_accounts()
     return {
-        "title": "WhatsApp",
+        "title": "Lumi Whatsapp",
         "version": health.get("version", "1.0.0"),
         "accounts_count": len(accounts),
     }
 
 
 class WhatsAppConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
-    """Handle a config flow for WhatsApp."""
+    """Handle a config flow for Lumi Whatsapp."""
 
     VERSION = 1
 
     def __init__(self) -> None:
         self._discovered_url: str | None = None
-        self._discovered_name: str = "WhatsApp"
+        self._discovered_name: str = "Lumi Whatsapp"
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None

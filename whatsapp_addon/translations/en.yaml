@@ -2,13 +2,13 @@ configuration:
   api_key:
     name: API Key (Bearer Token)
     description: >-
-      Shared secret Bearer token used by the Home Assistant WhatsApp HACS integration
+      Shared secret Bearer token used by the Home Assistant Lumi Whatsapp HACS integration
       to authenticate against this add-on's internal REST and WebSocket API. If left empty,
       a secure token is automatically generated on first start and stored in /data/api_token.txt.
   log_level:
     name: Log Level
     description: >-
-      Controls the verbosity of the add-on logs (trace, debug, info, warn, error).
+      Controls the verbosity of the Lumi Whatsapp add-on logs (trace, debug, info, warn, error).
   max_retries:
     name: Maximum Send Retries
     description: >-
@@ -34,4 +34,4 @@ configuration:
     description: >-
       Optional list of trusted LAN hostnames or IP addresses permitted when fetching media via HTTP/HTTPS URLs.
 network:
-  8099/tcp: Internal REST and WebSocket API port for the Home Assistant WhatsApp integration
+  8099/tcp: Internal REST and WebSocket API port for the Lumi Whatsapp integration

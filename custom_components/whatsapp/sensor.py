@@ -80,17 +80,17 @@ SENSOR_DESCRIPTIONS: tuple[WhatsAppSensorEntityDescription, ...] = (
 def build_account_device_info(
     entry_id: str, client_id: str, account_data: dict[str, Any], sw_version: str = "1.0.0"
 ) -> DeviceInfo:
-    """Build Home Assistant DeviceInfo for a single WhatsApp account."""
+    """Build Home Assistant DeviceInfo for a single Lumi Whatsapp account."""
     raw_name = account_data.get("name") or f"{client_id.capitalize()} Account"
     device_name = (
         raw_name
-        if raw_name.lower().startswith("whatsapp")
-        else f"WhatsApp - {raw_name}"
+        if raw_name.lower().startswith("lumi whatsapp")
+        else f"Lumi Whatsapp - {raw_name}"
     )
     return DeviceInfo(
         identifiers={(DOMAIN, f"{entry_id}_{client_id}")},
         name=device_name,
-        manufacturer="HA WhatsApp (Baileys)",
+        manufacturer="Lumi Whatsapp",
         model=f"Linked Device ({client_id})",
         sw_version=sw_version,
     )

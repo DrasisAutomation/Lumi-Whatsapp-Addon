@@ -8,11 +8,11 @@ async function main() {
   const { server, logger, close } = instance;
 
   server.listen(port, '0.0.0.0', () => {
-    logger.info({ port }, 'Home Assistant WhatsApp Add-on server listening');
+    logger.info({ port }, 'Home Assistant Lumi Whatsapp Add-on server listening');
   });
 
   const shutdown = async (signal) => {
-    logger.info({ signal }, 'Shutting down WhatsApp Add-on gracefully...');
+    logger.info({ signal }, 'Shutting down Lumi Whatsapp Add-on gracefully...');
     try {
       await close();
     } finally {

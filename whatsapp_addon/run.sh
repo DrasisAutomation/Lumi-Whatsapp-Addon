@@ -1,11 +1,11 @@
 #!/usr/bin/with-contenv bashio
 # ==============================================================================
-# Home Assistant Add-on: WhatsApp
-# Starts the WhatsApp Node.js service with Supervisor configuration
+# Home Assistant Add-on: Lumi Whatsapp
+# Starts the Lumi Whatsapp Node.js service with Supervisor configuration
 # ==============================================================================
 set -e
 
-bashio::log.info "Starting Home Assistant WhatsApp Add-on..."
+bashio::log.info "Starting Home Assistant Add-on: Lumi Whatsapp..."
 
 mkdir -p /data/sessions /data/queue /data/history
 

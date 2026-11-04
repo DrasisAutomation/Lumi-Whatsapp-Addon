@@ -1,10 +1,14 @@
-# Home Assistant WhatsApp – HACS Custom Integration
+# Lumi Whatsapp – Home Assistant HACS Custom Integration
 
-This custom integration (`whatsapp`) connects Home Assistant Core to the companion **Home Assistant WhatsApp Add-on** over an authenticated REST and WebSocket API.
+<p align="center">
+  <img src="logo.png" alt="Lumi Whatsapp Logo" width="140" />
+</p>
+
+This custom integration (`whatsapp`) connects Home Assistant Core to the companion **Lumi Whatsapp Add-on** over an authenticated REST and WebSocket API.
 
 ## Entities Created Per Account (`<clientId>`, e.g., `default`)
 
-- **Device**: `WhatsApp - Default Account`
+- **Device**: `Lumi Whatsapp - Default Account`
 - **Binary Sensor**:
   - `binary_sensor.whatsapp_default_connected`
 - **Sensors**:

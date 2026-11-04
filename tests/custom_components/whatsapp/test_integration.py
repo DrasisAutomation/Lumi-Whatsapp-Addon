@@ -89,9 +89,13 @@ class TestWhatsAppIntegration(unittest.IsolatedAsyncioTestCase):
         comp_dir = REPO_ROOT / "custom_components" / "whatsapp"
         manifest = json.loads((comp_dir / "manifest.json").read_text(encoding="utf-8"))
         self.assertEqual(manifest["domain"], "whatsapp")
-        self.assertEqual(manifest["name"], "WhatsApp")
+        self.assertEqual(manifest["name"], "Lumi Whatsapp")
         self.assertTrue(manifest["config_flow"])
         self.assertEqual(manifest["iot_class"], "local_push")
+        self.assertTrue((comp_dir / "logo.png").exists())
+        self.assertTrue((comp_dir / "icon.png").exists())
+        self.assertTrue((comp_dir / "brand" / "logo.png").exists())
+        self.assertTrue((comp_dir / "brand" / "icon.png").exists())
 
         strings = json.loads((comp_dir / "strings.json").read_text(encoding="utf-8"))
         en_trans = json.loads((comp_dir / "translations" / "en.json").read_text(encoding="utf-8"))
@@ -175,7 +179,8 @@ class TestWhatsAppIntegration(unittest.IsolatedAsyncioTestCase):
         bs = binary_sensors[0]
         self.assertEqual(bs.entity_id, "binary_sensor.whatsapp_default_connected")
         self.assertTrue(bs.is_on)
-        self.assertEqual(bs.device_info["name"], "WhatsApp - Default Account")
+        self.assertEqual(bs.device_info["name"], "Lumi Whatsapp - Default Account")
+        self.assertEqual(bs.device_info["manufacturer"], "Lumi Whatsapp")
 
         # Simulate live WebSocket incoming message event
         coordinator._handle_ws_envelope(
