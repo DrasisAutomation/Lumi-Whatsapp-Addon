@@ -86,6 +86,26 @@ async function createWhatsAppServer({
 
   const app = express();
   app.disable('x-powered-by');
+
+  // Handle Home Assistant Ingress dynamic sub-path routing
+  // Home Assistant forwards requests with X-Ingress-Path header (e.g. /api/hassio_ingress/<token>)
+  // Normalizing req.url strips this prefix so all internal routes (/api/..., /css/..., /) match consistently
+  app.use((req, res, next) => {
+    const rawIngressPath = req.headers['x-ingress-path'];
+    if (rawIngressPath) {
+      const ingressPath = String(rawIngressPath).replace(/\/+$/, '');
+      if (req.url === ingressPath) {
+        req.url = '/';
+      } else if (req.url.startsWith(`${ingressPath}/`)) {
+        req.url = req.url.slice(ingressPath.length);
+        if (!req.url.startsWith('/')) {
+          req.url = `/${req.url}`;
+        }
+      }
+    }
+    next();
+  });
+
   app.use(securityHeadersMiddleware);
   app.use(createRequestTimeoutMiddleware(35000));
   app.use(createRateLimiter({ windowMs: 60000, maxRequests: 240 }));
@@ -140,6 +160,19 @@ async function createWhatsAppServer({
   const wss = new WebSocketServer({ noServer: true });
 
   server.on('upgrade', (request, socket, head) => {
+    const rawIngressPath = request.headers?.['x-ingress-path'];
+    if (rawIngressPath && typeof request.url === 'string') {
+      const ingressPath = String(rawIngressPath).replace(/\/+$/, '');
+      if (request.url === ingressPath) {
+        request.url = '/';
+      } else if (request.url.startsWith(`${ingressPath}/`)) {
+        request.url = request.url.slice(ingressPath.length);
+        if (!request.url.startsWith('/')) {
+          request.url = `/${request.url}`;
+        }
+      }
+    }
+
     if (!isRequestAuthenticated(request, config.apiKey)) {
       socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
       socket.destroy();

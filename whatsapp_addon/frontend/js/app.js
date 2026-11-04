@@ -9,12 +9,21 @@
     ws: null,
   };
 
+  function getIngressBasePath() {
+    let p = window.location.pathname || '/';
+    // If pathname ends with a filename (e.g. index.html), strip it to keep the base directory
+    if (/\/[^/]+\.[^/]+$/.test(p)) {
+      p = p.replace(/\/[^/]+\.[^/]+$/, '/');
+    }
+    if (!p.endsWith('/')) {
+      p += '/';
+    }
+    return p;
+  }
+
   function apiBaseUrl(endpoint) {
     const clean = endpoint.replace(/^\//, '');
-    const basePath = window.location.pathname.endsWith('/')
-      ? window.location.pathname
-      : `${window.location.pathname}/`;
-    return `${basePath}${clean}`;
+    return `${getIngressBasePath()}${clean}`;
   }
 
   function showToast(message, type = 'info') {
@@ -372,9 +381,7 @@
 
   function connectWebSocket() {
     const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const basePath = window.location.pathname.endsWith('/')
-      ? window.location.pathname
-      : `${window.location.pathname}/`;
+    const basePath = getIngressBasePath();
     const wsUrl = `${proto}//${window.location.host}${basePath}ws`;
 
     const ws = new WebSocket(wsUrl);

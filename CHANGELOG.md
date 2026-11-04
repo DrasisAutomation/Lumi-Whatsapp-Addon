@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.5] - 2026-11-04
+
+### Fixed
+- Fixed Home Assistant Ingress sub-path routing: normalized `X-Ingress-Path` in Express middleware so `/api/*` routes and static assets resolve correctly inside Home Assistant iframe.
+- Updated frontend Ingress base URL resolution to reliably strip trailing filenames (e.g. `index.html`) from `window.location.pathname`.
+- Expanded Ingress IP authentication to support all private Home Assistant Docker subnet addresses (`172.30.32.0/23`, `172.16.0.0/12`, loopback).
+
 ## [1.0.4] - 2026-11-04
 
 ### Fixed

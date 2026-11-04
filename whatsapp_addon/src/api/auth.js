@@ -16,10 +16,21 @@ function normalizeRemoteIp(reqOrSocket) {
   return String(raw).trim();
 }
 
+function isPrivateOrDockerNetworkIp(ip) {
+  if (!ip) return false;
+  const cleanIp = ip.replace(/^::ffff:/, '');
+  if (cleanIp === '127.0.0.1' || cleanIp === '::1') return true;
+  // Home Assistant Docker network (172.30.32.0/23), standard Docker (172.16.0.0/12), LAN (10.0.0.0/8, 192.168.0.0/16)
+  if (/^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(cleanIp)) return true;
+  if (/^10\./.test(cleanIp)) return true;
+  if (/^192\.168\./.test(cleanIp)) return true;
+  return false;
+}
+
 function isSupervisorIngressRequest(req) {
   const remoteIp = normalizeRemoteIp(req);
   const hasIngressHeader = Boolean(req.headers?.['x-ingress-path'] || req.headers?.['x-hassio-key']);
-  return SUPERVISOR_INGRESS_IPS.has(remoteIp) && hasIngressHeader;
+  return hasIngressHeader && isPrivateOrDockerNetworkIp(remoteIp);
 }
 
 function verifyBearerToken(providedToken, expectedToken) {
