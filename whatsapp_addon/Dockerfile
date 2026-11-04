@@ -30,11 +30,8 @@ RUN npm ci --omit=dev --no-audit --no-fund && npm cache clean --force
 COPY src ./src
 COPY frontend ./frontend
 COPY run.sh /run.sh
-COPY rootfs /
 
-RUN chmod a+x /run.sh \
-    && chmod a+x /etc/services.d/whatsapp/run \
-    && chmod a+x /etc/services.d/whatsapp/finish
+RUN chmod a+x /run.sh
 
 ENV NODE_ENV=production \
     PORT=8653 \

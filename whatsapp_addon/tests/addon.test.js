@@ -9,7 +9,7 @@ const os = require('node:os');
 const http = require('node:http');
 const EventEmitter = require('node:events');
 const { WebSocket } = require('ws');
-const { DisconnectReason } = require('@whiskeysockets/baileys');
+const { DisconnectReason } = require('../src/whatsapp/baileys');
 
 const {
   validateClientId,

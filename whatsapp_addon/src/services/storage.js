@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const fsp = require('node:fs/promises');
 const path = require('node:path');
 const crypto = require('node:crypto');
-const { initAuthCreds, BufferJSON, proto } = require('@whiskeysockets/baileys');
+const { getBaileys } = require('../whatsapp/baileys');
 
 /**
  * Serialized write lock per file path to prevent concurrent atomic rename collisions.
@@ -114,6 +114,7 @@ function loadAddonConfig(dataDir = process.env.DATA_DIR || path.resolve(process.
  * or container restart never corrupts Signal session keys or credentials.
  */
 async function useAtomicMultiFileAuthState(sessionFolder) {
+  const { initAuthCreds, BufferJSON, proto } = await getBaileys();
   await ensureDir(sessionFolder);
 
   const fixFileName = (file) => file?.replace(/\//g, '__')?.replace(/:/g, '-') || '';

@@ -3,13 +3,7 @@
 const EventEmitter = require('node:events');
 const QRCode = require('qrcode');
 const pino = require('pino');
-const {
-  default: makeWASocket,
-  DisconnectReason,
-  fetchLatestBaileysVersion,
-  makeCacheableSignalKeyStore,
-  Browsers,
-} = require('@whiskeysockets/baileys');
+const { getBaileys, DisconnectReason } = require('./baileys');
 const { useAtomicMultiFileAuthState } = require('../services/storage');
 const { calculateBackoffDelayMs } = require('../services/retry');
 const { BAILEYS_STATUS_MAP } = require('./event-manager');
@@ -82,6 +76,14 @@ class WhatsAppAccountConnection extends EventEmitter {
     this._emitState();
 
     try {
+      const baileys = await getBaileys();
+      const makeWASocket = baileys.default || baileys.makeWASocket;
+      const {
+        fetchLatestBaileysVersion,
+        makeCacheableSignalKeyStore,
+        Browsers,
+      } = baileys;
+
       const { state, saveCreds } = await this.authStateFactory(this.sessionDir);
 
       let version = [2, 3000, 1015901307];
