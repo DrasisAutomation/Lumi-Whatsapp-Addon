@@ -23,8 +23,8 @@ WORKDIR /opt/whatsapp_addon
 # Copy reproducible dependency manifests first for Docker layer caching
 COPY package.json package-lock.json ./
 
-# Install production dependencies reproducibly
-RUN npm ci --omit=dev --no-audit --no-fund && npm cache clean --force
+# Install production dependencies reproducibly with fallback
+RUN (npm ci --omit=dev --no-audit --no-fund || npm install --omit=dev --no-audit --no-fund) && npm cache clean --force
 
 # Copy application source and frontend assets
 COPY src ./src

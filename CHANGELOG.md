@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.4] - 2026-11-04
+
+### Fixed
+- Regenerated clean `package-lock.json` resolving 404 error on `side-channel-weakmap`.
+- Added resilient fallback `npm install` in `Dockerfile` for Home Assistant Supervisor builds.
+
+## [1.0.3] - 2026-11-04
+
+### Fixed
+- Converted Baileys imports to dynamic ESM import (`src/whatsapp/baileys.js`) to support Node 20+ runtime.
+- Removed duplicate s6 service script to prevent duplicate process spawn.
+
+## [1.0.2] - 2026-11-04
+
+### Changed
+- Configured default port to `8653` across add-on and integration to avoid port conflicts.
+
+## [1.0.1] - 2026-11-04
+
+### Added
+- Official Lumi Whatsapp brand identity and logo assets across add-on, Ingress UI, and HACS integration.
+
 ## [1.0.0] - 2026-11-04
 
 ### Added
