@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-11-05
+
+### Added
+- **Interactive Smart Home Remote Bot (`/remote`)**:
+  - Whitelist security check: Only authorized phone numbers can trigger `/remote` and execute home commands; unauthorized senders receive an explicit access-denied alert.
+  - Interactive Room Selection menu with dynamic numbered options (`1️⃣ Living Room`, `2️⃣ Master Bedroom`, etc.).
+  - Real-time Device List with live status badges (`[ON]` / `[OFF]`) polled directly from Home Assistant entities.
+  - Flexible natural command parser supporting single and batch actions: `on 1`, `on-1`, `ON 1`, `ON-1`, `off 1`, `off-1`, `on 1,2,3`, `off 1,2`.
+  - Batch action confirmations formatting every updated device.
+  - Interactive navigation: `/back` returns to room selection, `/end` terminates remote session, `/help` displays full command guide.
+  - 5-Minute Inactivity Auto-Timeout with automatic session reset and user notification.
+- **Voice Note & Audio Broadcasting to Speakers (`/cast`)**:
+  - Interactive `/cast` workflow prompting for a WhatsApp voice note (hold mic) or uploaded audio file (`.mp3`, `.ogg`, `.m4a`).
+  - Automatic Baileys media decryption and audio storage directly in `/config/www/whatsapp_casts/` (served at `/local/whatsapp_casts/`).
+  - Dynamic Speaker Selection Menu listing all configured Home Assistant `media_player` speakers + `🔊 All Speakers (Whole House)`.
+  - Flexible broadcast triggers: `play 1`, `1`, `play 1,2`, `1,2`, `play all`, `all`.
+  - **Volume Preservation**: Strictly broadcasts audio at each target speaker's **current / last active volume level** without overriding volume settings.
+  - Single and multi-speaker execution confirmations.
+- **Web UI Management Tabs**:
+  - **Remote Control Builder**: Manage rooms, assign devices, select device types (`light`, `switch`, `fan`, `climate`, `cover`, `other`), and search live Home Assistant entities with auto-complete datalists.
+  - **Speakers & Audio Broadcasting**: Configure speaker display names, map `media_player.*` entities, and view volume behavior notices.
+  - **Authorized Numbers**: Whitelist authorized WhatsApp phone numbers with custom user labels and format validation.
+  - **Unified JSON Backup & Restore**: Download complete configuration as a single `.json` file (`lumi_remote_config.json`) and 1-click restore/import with full integrity verification and count summary modal.
+- **Safe Dry-Run Architecture**: Home Assistant Core API client features an automated non-destructive dry-run mode for verification and test suites without firing physical relays.
+- **Candidate DNS Probing Expansion**: Added `local_whatsapp` container hostname to candidate probing in `config_flow.py` for flawless out-of-the-box integration setup.
+
 ## [1.0.10] - 2026-11-05
 
 ### Added

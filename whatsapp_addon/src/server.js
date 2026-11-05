@@ -24,6 +24,9 @@ const {
   errorHandlerMiddleware,
 } = require('./api/middleware');
 const { createApiRouter } = require('./api/routes');
+const { BotConfigManager } = require('./bot/config-manager');
+const { HomeAssistantClient } = require('./bot/homeassistant-client');
+const { InteractiveBot } = require('./bot/interactive-bot');
 
 async function createWhatsAppServer({
   customConfig = null,
@@ -84,6 +87,28 @@ async function createWhatsAppServer({
   const initialClientIds = sessionManager.listAccounts().map((a) => a.clientId);
   await queueManager.init(initialClientIds);
 
+  const botDataDir = config.dataDir || path.dirname(config.accountsRegistryPath);
+  const botConfigManager = new BotConfigManager({
+    dataDir: botDataDir,
+    logger,
+  });
+  await botConfigManager.init();
+
+  const haClient = new HomeAssistantClient({
+    dryRun: process.env.DRY_RUN === 'true',
+    logger,
+  });
+
+  const interactiveBot = new InteractiveBot({
+    configManager: botConfigManager,
+    haClient,
+    messageManager,
+    eventManager,
+    dataDir: botDataDir,
+    logger,
+  });
+  interactiveBot.init();
+
   const app = express();
   app.disable('x-powered-by');
 
@@ -133,6 +158,9 @@ async function createWhatsAppServer({
     contactManager,
     diagnostics,
     config,
+    botConfigManager,
+    haClient,
+    interactiveBot,
   }));
 
   // Serve Frontend Dashboard assets with dynamic Ingress <base> injection
@@ -218,6 +246,7 @@ async function createWhatsAppServer({
   });
 
   const close = async () => {
+    interactiveBot?.close();
     queueManager.stop();
     await sessionManager.stopAll();
     for (const client of wss.clients) {
@@ -242,6 +271,9 @@ async function createWhatsAppServer({
     sessionManager,
     queueManager,
     messageManager,
+    botConfigManager,
+    haClient,
+    interactiveBot,
     close,
   };
 }

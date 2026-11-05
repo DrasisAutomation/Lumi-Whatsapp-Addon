@@ -51,9 +51,10 @@ async def validate_addon_connection(
             "127.0.0.1",
             "localhost",
             "whatsapp",
+            "local_whatsapp",
+            "local-whatsapp",
             "172.30.32.1",
             "host.docker.internal",
-            "local-whatsapp",
         ):
             candidate = f"{scheme}://{host}:{port}"
             if candidate not in candidates:

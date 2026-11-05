@@ -6,6 +6,8 @@
     messages: [],
     diagnostics: null,
     activeQrClientId: null,
+    botConfig: { authorizedNumbers: [], rooms: [], speakers: [] },
+    haEntities: [],
     ws: null,
     token:
       localStorage.getItem('lumi_whatsapp_token') ||
@@ -511,9 +513,195 @@
       renderDashboardAndAccounts();
       renderHistoryTable();
       renderDiagnostics();
+
+      await Promise.all([loadBotConfig(), loadHaEntities()]);
     } catch (err) {
       showToast(`Failed to load data: ${err.message}`, 'error');
     }
+  }
+
+  /* ───────────────────────────────────────────────────────────────────
+     SMART HOME BOT, ROOMS, SPEAKERS & AUTHORIZED NUMBERS
+     ─────────────────────────────────────────────────────────────────── */
+  async function loadBotConfig() {
+    try {
+      const res = await apiRequest('api/bot/config');
+      state.botConfig = res.config || { authorizedNumbers: [], rooms: [], speakers: [] };
+      renderBotConfig();
+    } catch (err) {
+      console.warn('Could not load bot config:', err.message);
+    }
+  }
+
+  async function loadHaEntities() {
+    try {
+      const res = await apiRequest('api/bot/ha-entities');
+      state.haEntities = res.entities || [];
+      populateEntityDatalists();
+    } catch (err) {
+      console.warn('Could not load HA entities:', err.message);
+    }
+  }
+
+  function populateEntityDatalists() {
+    const allDatalist = document.getElementById('ha-all-entities-datalist');
+    const mediaDatalist = document.getElementById('ha-media-entities-datalist');
+    if (allDatalist) allDatalist.innerHTML = '';
+    if (mediaDatalist) mediaDatalist.innerHTML = '';
+
+    for (const ent of state.haEntities) {
+      if (allDatalist) {
+        const opt = document.createElement('option');
+        opt.value = ent.entity_id;
+        opt.label = `${ent.friendly_name} [${ent.state}]`;
+        allDatalist.appendChild(opt);
+      }
+      if (mediaDatalist && ent.domain === 'media_player') {
+        const opt = document.createElement('option');
+        opt.value = ent.entity_id;
+        opt.label = `${ent.friendly_name} [${ent.state}]`;
+        mediaDatalist.appendChild(opt);
+      }
+    }
+  }
+
+  function renderBotConfig() {
+    renderRooms();
+    renderSpeakers();
+    renderAuthorizedNumbers();
+  }
+
+  function renderRooms() {
+    const container = document.getElementById('bot-rooms-list');
+    if (!container) return;
+    container.innerHTML = '';
+
+    const rooms = state.botConfig?.rooms || [];
+    if (rooms.length === 0) {
+      container.innerHTML = '<div class="empty-state" style="padding: 2rem; text-align: center; color: #64748b; background: #f8fafc; border-radius: 8px;">No rooms configured yet. Click <strong>+ Add Room</strong> above to create your first room.</div>';
+      return;
+    }
+
+    rooms.forEach((room) => {
+      const card = document.createElement('div');
+      card.className = 'room-card';
+
+      const header = document.createElement('div');
+      header.className = 'room-header';
+      header.innerHTML = `
+        <div class="room-title-wrap">
+          <span style="font-size: 1.25rem;">🏠</span>
+          <h4 class="room-name">${escapeHtml(room.name)}</h4>
+          <span class="badge-count">${(room.devices || []).length} devices</span>
+        </div>
+        <div class="room-actions">
+          <button class="btn btn-secondary btn-sm" data-add-dev-room-id="${room.id}" data-room-name="${escapeHtml(room.name)}">
+            + Add Device
+          </button>
+          <button class="btn btn-danger-ghost btn-sm" data-del-room-id="${room.id}" data-room-name="${escapeHtml(room.name)}">
+            Delete Room
+          </button>
+        </div>
+      `;
+      card.appendChild(header);
+
+      const devTableWrap = document.createElement('div');
+      devTableWrap.className = 'table-responsive';
+
+      const devices = room.devices || [];
+      if (devices.length === 0) {
+        devTableWrap.innerHTML = '<div style="padding: 0.75rem; color: #64748b; font-size: 0.85rem;">No devices assigned to this room yet. Click <strong>+ Add Device</strong> above.</div>';
+      } else {
+        const table = document.createElement('table');
+        table.className = 'data-table';
+        table.style.margin = '0';
+        table.innerHTML = `
+          <thead>
+            <tr>
+              <th style="width: 50px;">#</th>
+              <th>Device Name</th>
+              <th>Type</th>
+              <th>Home Assistant Entity</th>
+              <th style="text-align: right; width: 100px;">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${devices.map((d, dIdx) => `
+              <tr>
+                <td>${dIdx + 1}</td>
+                <td><strong>${escapeHtml(d.name)}</strong></td>
+                <td><span class="device-badge ${escapeHtml(d.type || 'switch')}">${escapeHtml(d.type || 'switch')}</span></td>
+                <td><code>${escapeHtml(d.entityId)}</code></td>
+                <td style="text-align: right;">
+                  <button class="btn btn-danger-ghost btn-sm" data-del-dev-room-id="${room.id}" data-del-dev-id="${d.id}" data-del-dev-name="${escapeHtml(d.name)}">
+                    Remove
+                  </button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        `;
+        devTableWrap.appendChild(table);
+      }
+
+      card.appendChild(devTableWrap);
+      container.appendChild(card);
+    });
+  }
+
+  function renderSpeakers() {
+    const tbody = document.getElementById('bot-speakers-tbody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    const speakers = state.botConfig?.speakers || [];
+    if (speakers.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" class="empty-state" style="text-align:center; padding:1.5rem; color:#64748b;">No speakers configured yet. Add a Home Assistant media_player above to enable <code>/cast</code>.</td></tr>';
+      return;
+    }
+
+    speakers.forEach((spk, idx) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${idx + 1}</td>
+        <td><strong>${escapeHtml(spk.name)}</strong></td>
+        <td><code>${escapeHtml(spk.entityId)}</code></td>
+        <td style="text-align: right;">
+          <button class="btn btn-danger-ghost btn-sm" data-del-spk-id="${spk.id}" data-del-spk-name="${escapeHtml(spk.name)}">
+            Remove
+          </button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renderAuthorizedNumbers() {
+    const tbody = document.getElementById('bot-auth-tbody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    const numbers = state.botConfig?.authorizedNumbers || [];
+    if (numbers.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" class="empty-state" style="text-align:center; padding:1.5rem; color:#64748b;">No authorized numbers configured. Add your phone number above so you can control your smart home via WhatsApp.</td></tr>';
+      return;
+    }
+
+    numbers.forEach((item) => {
+      const tr = document.createElement('tr');
+      const dateStr = item.addedAt ? new Date(item.addedAt).toLocaleDateString() : 'N/A';
+      tr.innerHTML = `
+        <td><strong>${escapeHtml(item.name || 'User')}</strong></td>
+        <td><code>+${escapeHtml(item.phone)}</code></td>
+        <td>${dateStr}</td>
+        <td style="text-align: right;">
+          <button class="btn btn-danger-ghost btn-sm" data-del-auth-phone="${escapeHtml(item.phone)}" data-del-auth-name="${escapeHtml(item.name || item.phone)}">
+            Revoke
+          </button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
   }
 
   /* ───────────────────────────────────────────────────────────────────
@@ -601,6 +789,9 @@
       accounts: 'Accounts & QR Pairing',
       messaging: 'Send Messages & Media',
       history: 'Message Audit Log',
+      remote: 'Smart Home Remote Control Builder',
+      speakers: 'Speakers & Audio Broadcasting',
+      authorized: 'Authorized WhatsApp Numbers',
       diagnostics: 'Integration & Setup Credentials',
     };
     const titleEl = document.getElementById('page-title');
@@ -802,6 +993,301 @@
         const key = document.getElementById('diag-api-key')?.value || '';
         const combined = `URL: ${url}\nAPI_KEY: ${key}`;
         copyToClipboard(combined, dashCopyAllBtn);
+      });
+    }
+
+    /* ───────────────────────────────────────────────────────────────────
+       BOT BUILDER, ROOMS, SPEAKERS & AUTHORIZED NUMBER HANDLERS
+       ─────────────────────────────────────────────────────────────────── */
+    // Add Room toggle & submit
+    const addRoomToggleBtn = document.getElementById('add-room-toggle-btn');
+    const addRoomBox = document.getElementById('add-room-box');
+    const saveRoomBtn = document.getElementById('save-room-btn');
+    const cancelRoomBtn = document.getElementById('cancel-room-btn');
+    const roomInput = document.getElementById('new-room-name');
+
+    if (addRoomToggleBtn && addRoomBox) {
+      addRoomToggleBtn.addEventListener('click', () => {
+        addRoomBox.classList.toggle('hidden');
+        if (!addRoomBox.classList.contains('hidden') && roomInput) roomInput.focus();
+      });
+    }
+
+    if (cancelRoomBtn && addRoomBox) {
+      cancelRoomBtn.addEventListener('click', () => {
+        addRoomBox.classList.add('hidden');
+        if (roomInput) roomInput.value = '';
+      });
+    }
+
+    if (saveRoomBtn) {
+      saveRoomBtn.addEventListener('click', async () => {
+        const name = roomInput?.value.trim();
+        if (!name) {
+          showToast('Please enter a room name.', 'error');
+          return;
+        }
+        try {
+          await apiRequest('api/bot/rooms', {
+            method: 'POST',
+            body: JSON.stringify({ name }),
+          });
+          showToast(`Room "${name}" created!`, 'success');
+          if (roomInput) roomInput.value = '';
+          if (addRoomBox) addRoomBox.classList.add('hidden');
+          await loadBotConfig();
+        } catch (err) {
+          showToast(err.message, 'error');
+        }
+      });
+    }
+
+    // Room actions (Delete Room, Open Add Device Modal, Delete Device)
+    const roomsList = document.getElementById('bot-rooms-list');
+    if (roomsList) {
+      roomsList.addEventListener('click', async (e) => {
+        const delRoomBtn = e.target.closest('[data-del-room-id]');
+        if (delRoomBtn) {
+          const roomId = delRoomBtn.getAttribute('data-del-room-id');
+          const roomName = delRoomBtn.getAttribute('data-room-name');
+          if (confirm(`Are you sure you want to delete room "${roomName}" and all its devices?`)) {
+            try {
+              await apiRequest(`api/bot/rooms/${roomId}`, { method: 'DELETE' });
+              showToast(`Room "${roomName}" removed.`, 'info');
+              await loadBotConfig();
+            } catch (err) {
+              showToast(err.message, 'error');
+            }
+          }
+          return;
+        }
+
+        const addDevBtn = e.target.closest('[data-add-dev-room-id]');
+        if (addDevBtn) {
+          const roomId = addDevBtn.getAttribute('data-add-dev-room-id');
+          const roomName = addDevBtn.getAttribute('data-room-name');
+          const modal = document.getElementById('add-device-modal');
+          const title = document.getElementById('modal-room-title');
+          const idInput = document.getElementById('modal-room-id');
+          if (modal && title && idInput) {
+            title.textContent = `Add Device to ${roomName}`;
+            idInput.value = roomId;
+            modal.classList.remove('hidden');
+            document.getElementById('modal-dev-name')?.focus();
+          }
+          return;
+        }
+
+        const delDevBtn = e.target.closest('[data-del-dev-id]');
+        if (delDevBtn) {
+          const roomId = delDevBtn.getAttribute('data-del-dev-room-id');
+          const devId = delDevBtn.getAttribute('data-del-dev-id');
+          const devName = delDevBtn.getAttribute('data-del-dev-name');
+          if (confirm(`Are you sure you want to remove device "${devName}"?`)) {
+            try {
+              await apiRequest(`api/bot/rooms/${roomId}/devices/${devId}`, { method: 'DELETE' });
+              showToast(`Device "${devName}" removed.`, 'info');
+              await loadBotConfig();
+            } catch (err) {
+              showToast(err.message, 'error');
+            }
+          }
+          return;
+        }
+      });
+    }
+
+    // Device Modal controls
+    const devModal = document.getElementById('add-device-modal');
+    const closeDevModalBtn = document.getElementById('close-device-modal-btn');
+    const cancelDevModalBtn = document.getElementById('cancel-device-modal-btn');
+    const saveDevModalBtn = document.getElementById('save-device-modal-btn');
+
+    const hideDevModal = () => {
+      if (devModal) devModal.classList.add('hidden');
+      const nameInput = document.getElementById('modal-dev-name');
+      const entityInput = document.getElementById('modal-dev-entity');
+      if (nameInput) nameInput.value = '';
+      if (entityInput) entityInput.value = '';
+    };
+
+    if (closeDevModalBtn) closeDevModalBtn.addEventListener('click', hideDevModal);
+    if (cancelDevModalBtn) cancelDevModalBtn.addEventListener('click', hideDevModal);
+
+    if (saveDevModalBtn) {
+      saveDevModalBtn.addEventListener('click', async () => {
+        const roomId = document.getElementById('modal-room-id')?.value;
+        const name = document.getElementById('modal-dev-name')?.value.trim();
+        const type = document.getElementById('modal-dev-type')?.value || 'switch';
+        const entityId = document.getElementById('modal-dev-entity')?.value.trim();
+
+        if (!name || !entityId) {
+          showToast('Device name and Home Assistant entity ID are required.', 'error');
+          return;
+        }
+
+        try {
+          await apiRequest(`api/bot/rooms/${roomId}/devices`, {
+            method: 'POST',
+            body: JSON.stringify({ name, type, entityId }),
+          });
+          showToast(`Device "${name}" added!`, 'success');
+          hideDevModal();
+          await loadBotConfig();
+        } catch (err) {
+          showToast(err.message, 'error');
+        }
+      });
+    }
+
+    // Speakers Add & Remove
+    const saveSpkBtn = document.getElementById('save-speaker-btn');
+    if (saveSpkBtn) {
+      saveSpkBtn.addEventListener('click', async () => {
+        const nameInput = document.getElementById('new-speaker-name');
+        const entInput = document.getElementById('new-speaker-entity');
+        const name = nameInput?.value.trim();
+        const entityId = entInput?.value.trim();
+
+        if (!name || !entityId) {
+          showToast('Speaker name and media_player entity ID are required.', 'error');
+          return;
+        }
+
+        try {
+          await apiRequest('api/bot/speakers', {
+            method: 'POST',
+            body: JSON.stringify({ name, entityId }),
+          });
+          showToast(`Speaker "${name}" added!`, 'success');
+          if (nameInput) nameInput.value = '';
+          if (entInput) entInput.value = '';
+          await loadBotConfig();
+        } catch (err) {
+          showToast(err.message, 'error');
+        }
+      });
+    }
+
+    const spkTable = document.getElementById('bot-speakers-tbody');
+    if (spkTable) {
+      spkTable.addEventListener('click', async (e) => {
+        const delBtn = e.target.closest('[data-del-spk-id]');
+        if (delBtn) {
+          const spkId = delBtn.getAttribute('data-del-spk-id');
+          const spkName = delBtn.getAttribute('data-del-spk-name');
+          if (confirm(`Are you sure you want to remove speaker "${spkName}" from the broadcast list?`)) {
+            try {
+              await apiRequest(`api/bot/speakers/${spkId}`, { method: 'DELETE' });
+              showToast(`Speaker "${spkName}" removed.`, 'info');
+              await loadBotConfig();
+            } catch (err) {
+              showToast(err.message, 'error');
+            }
+          }
+        }
+      });
+    }
+
+    // Authorized Numbers Add & Remove
+    const saveAuthBtn = document.getElementById('save-auth-btn');
+    if (saveAuthBtn) {
+      saveAuthBtn.addEventListener('click', async () => {
+        const phoneInput = document.getElementById('new-auth-phone');
+        const nameInput = document.getElementById('new-auth-name');
+        const rawPhone = phoneInput?.value.trim();
+        const name = nameInput?.value.trim();
+
+        const cleanPhone = String(rawPhone || '').replace(/[^0-9]/g, '');
+        if (!cleanPhone || cleanPhone.length < 7 || cleanPhone.length > 15) {
+          showToast('Please enter a valid numeric phone number with country code (10-15 digits).', 'error');
+          return;
+        }
+
+        try {
+          await apiRequest('api/bot/authorized-numbers', {
+            method: 'POST',
+            body: JSON.stringify({ phone: cleanPhone, name }),
+          });
+          showToast(`Number +${cleanPhone} authorized!`, 'success');
+          if (phoneInput) phoneInput.value = '';
+          if (nameInput) nameInput.value = '';
+          await loadBotConfig();
+        } catch (err) {
+          showToast(err.message, 'error');
+        }
+      });
+    }
+
+    const authTable = document.getElementById('bot-auth-tbody');
+    if (authTable) {
+      authTable.addEventListener('click', async (e) => {
+        const delBtn = e.target.closest('[data-del-auth-phone]');
+        if (delBtn) {
+          const phone = delBtn.getAttribute('data-del-auth-phone');
+          const name = delBtn.getAttribute('data-del-auth-name');
+          if (confirm(`Are you sure you want to revoke access for "${name}" (+${phone})? They will no longer be able to control devices.`)) {
+            try {
+              await apiRequest(`api/bot/authorized-numbers/${phone}`, { method: 'DELETE' });
+              showToast(`Access revoked for +${phone}.`, 'info');
+              await loadBotConfig();
+            } catch (err) {
+              showToast(err.message, 'error');
+            }
+          }
+        }
+      });
+    }
+
+    // Export & Import JSON Backup
+    const exportBtn = document.getElementById('export-remote-btn');
+    const importBtn = document.getElementById('import-remote-btn');
+    const fileInput = document.getElementById('bot-file-input');
+
+    if (exportBtn) {
+      exportBtn.addEventListener('click', () => {
+        const jsonStr = JSON.stringify(state.botConfig, null, 2);
+        const blob = new Blob([jsonStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `lumi_whatsapp_config_${Date.now()}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('Configuration exported as JSON.', 'success');
+      });
+    }
+
+    if (importBtn && fileInput) {
+      importBtn.addEventListener('click', () => {
+        fileInput.value = '';
+        fileInput.click();
+      });
+
+      fileInput.addEventListener('change', async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = async () => {
+          try {
+            const parsed = JSON.parse(String(reader.result));
+            const result = await apiRequest('api/bot/import', {
+              method: 'POST',
+              body: JSON.stringify(parsed),
+            });
+            showToast(
+              `Restored! Imported ${result.roomsCount} rooms, ${result.speakersCount} speakers, and ${result.authorizedCount} authorized numbers.`,
+              'success'
+            );
+            await loadBotConfig();
+          } catch (err) {
+            showToast(`Restore failed: ${err.message}`, 'error');
+          }
+        };
+        reader.readAsText(file);
       });
     }
   }

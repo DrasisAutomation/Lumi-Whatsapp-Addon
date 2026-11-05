@@ -17,7 +17,7 @@
         </div>
         <div class="brand-text">
           <h1>LUMI WHATSAPP</h1>
-          <span class="badge-version">v1.0.10</span>
+          <span class="badge-version">v1.1.0</span>
         </div>
       </div>
 
@@ -37,6 +37,18 @@
         <button class="nav-btn" data-tab="history" role="tab">
           <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           <span>Message History</span>
+        </button>
+        <button class="nav-btn" data-tab="remote" role="tab">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+          <span>Remote Builder</span>
+        </button>
+        <button class="nav-btn" data-tab="speakers" role="tab">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+          <span>Speakers &amp; Casting</span>
+        </button>
+        <button class="nav-btn" data-tab="authorized" role="tab">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+          <span>Authorized Numbers</span>
         </button>
         <button class="nav-btn" data-tab="diagnostics" role="tab">
           <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
@@ -444,6 +456,189 @@
           </div>
         </div>
       </section>
+
+      <!-- SECTION F: REMOTE CONTROL BUILDER -->
+      <section id="tab-remote" class="tab-panel">
+        <div class="white-card">
+          <div class="card-header">
+            <div>
+              <h3>Smart Home Remote Control Builder</h3>
+              <p class="card-subtitle">Configure rooms and assign Home Assistant devices for interactive WhatsApp control (<code>/remote</code>).</p>
+            </div>
+            <div class="header-actions">
+              <button id="add-room-toggle-btn" class="btn btn-primary">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                <span>+ Add Room</span>
+              </button>
+              <button id="export-remote-btn" class="btn btn-secondary">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                <span>Export JSON</span>
+              </button>
+              <button id="import-remote-btn" class="btn btn-secondary">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                <span>Import JSON</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- INLINE ADD ROOM FORM -->
+          <div id="add-room-box" class="form-card hidden" style="margin-top: 1rem; margin-bottom: 1.5rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1rem;">
+            <h4 style="margin-top: 0; margin-bottom: 0.5rem;">Add New Room / Area</h4>
+            <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+              <input id="new-room-name" type="text" placeholder="e.g. Living Room, Master Bedroom, Balcony" class="cred-input" style="flex: 1; min-width: 260px;" />
+              <button id="save-room-btn" class="btn btn-primary">Save Room</button>
+              <button id="cancel-room-btn" class="btn btn-ghost">Cancel</button>
+            </div>
+          </div>
+
+          <!-- ROOMS & DEVICES TREE -->
+          <div id="bot-rooms-list" class="rooms-container" style="display: flex; flex-direction: column; gap: 1.25rem; margin-top: 1rem;">
+            <div class="empty-state">Loading rooms and devices...</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION G: SPEAKERS & BROADCASTING -->
+      <section id="tab-speakers" class="tab-panel">
+        <div class="white-card">
+          <div class="card-header">
+            <div>
+              <h3>Speakers &amp; Audio Broadcasting</h3>
+              <p class="card-subtitle">Configure Home Assistant media_player entities to broadcast WhatsApp voice notes and audio clips (<code>/cast</code>).</p>
+            </div>
+          </div>
+
+          <!-- VOLUME NOTICE -->
+          <div class="setup-notice" style="margin-bottom: 1.5rem;">
+            <span class="notice-pill" style="background: #e0f2fe; color: #0284c7;">VOLUME INFO</span>
+            <p><strong>ℹ️ Volume Behavior:</strong> Audio will always play at each speaker's <strong>current / last active volume level</strong> without forcing volume changes.</p>
+          </div>
+
+          <!-- ADD SPEAKER FORM -->
+          <div class="form-card" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.25rem; margin-bottom: 1.5rem;">
+            <h4 style="margin-top: 0; margin-bottom: 0.75rem;">+ Add Speaker</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; align-items: flex-end;">
+              <div>
+                <label style="display: block; font-size: 0.825rem; font-weight: 600; margin-bottom: 0.35rem; color: #475569;">Speaker Display Name*</label>
+                <input id="new-speaker-name" type="text" placeholder="e.g. Living Room Speaker, Bedroom Echo Dot" class="cred-input" style="width: 100%;" />
+              </div>
+              <div>
+                <label style="display: block; font-size: 0.825rem; font-weight: 600; margin-bottom: 0.35rem; color: #475569;">Home Assistant Entity (media_player)*</label>
+                <input id="new-speaker-entity" type="text" list="ha-media-entities-datalist" placeholder="Search or select media_player.*..." class="cred-input" style="width: 100%;" />
+                <datalist id="ha-media-entities-datalist"></datalist>
+              </div>
+              <div>
+                <button id="save-speaker-btn" class="btn btn-primary" style="height: 40px; width: 100%;">+ Add Speaker</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- SPEAKERS TABLE -->
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="width: 60px;">#</th>
+                  <th>Speaker Name</th>
+                  <th>Home Assistant Entity</th>
+                  <th style="text-align: right; width: 100px;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="bot-speakers-tbody">
+                <tr><td colspan="4" class="empty-state">Loading speakers...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION H: AUTHORIZED NUMBERS -->
+      <section id="tab-authorized" class="tab-panel">
+        <div class="white-card">
+          <div class="card-header">
+            <div>
+              <h3>Authorized WhatsApp Numbers</h3>
+              <p class="card-subtitle">Only whitelisted phone numbers can trigger <code>/remote</code> and <code>/cast</code> smart home commands.</p>
+            </div>
+          </div>
+
+          <!-- ADD AUTHORIZED NUMBER FORM -->
+          <div class="form-card" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.25rem; margin-bottom: 1.5rem;">
+            <h4 style="margin-top: 0; margin-bottom: 0.75rem;">+ Add Authorized Phone Number</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; align-items: flex-end;">
+              <div>
+                <label style="display: block; font-size: 0.825rem; font-weight: 600; margin-bottom: 0.35rem; color: #475569;">Phone Number (with Country Code)*</label>
+                <input id="new-auth-phone" type="text" placeholder="e.g. 917904598574" class="cred-input" style="width: 100%;" />
+                <small style="color: #64748b; font-size: 0.75rem; display: block; margin-top: 0.25rem;">Enter international digits only without '+' or spaces (e.g. 91 for India, 1 for US).</small>
+              </div>
+              <div>
+                <label style="display: block; font-size: 0.825rem; font-weight: 600; margin-bottom: 0.35rem; color: #475569;">User Label / Name</label>
+                <input id="new-auth-name" type="text" placeholder="e.g. Mohan (Admin) or Family Member" class="cred-input" style="width: 100%;" />
+              </div>
+              <div>
+                <button id="save-auth-btn" class="btn btn-primary" style="height: 40px; width: 100%;">+ Add Authorized Number</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- AUTHORIZED NUMBERS TABLE -->
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>User / Name</th>
+                  <th>Phone Number</th>
+                  <th>Date Added</th>
+                  <th style="text-align: right; width: 120px;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="bot-auth-tbody">
+                <tr><td colspan="4" class="empty-state">Loading authorized numbers...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- MODAL: ADD DEVICE TO ROOM -->
+      <div id="add-device-modal" class="modal-backdrop hidden">
+        <div class="modal-card" style="max-width: 500px;">
+          <div class="modal-header">
+            <h3 id="modal-room-title">Add Device to Room</h3>
+            <button id="close-device-modal-btn" class="btn-close">&times;</button>
+          </div>
+          <div class="modal-body" style="display: flex; flex-direction: column; gap: 1rem;">
+            <input type="hidden" id="modal-room-id" />
+            <div>
+              <label style="display: block; font-size: 0.825rem; font-weight: 600; margin-bottom: 0.35rem; color: #475569;">Device Display Name*</label>
+              <input id="modal-dev-name" type="text" placeholder="e.g. Ceiling Light, Reading Lamp, Split AC" class="cred-input" style="width: 100%;" />
+            </div>
+            <div>
+              <label style="display: block; font-size: 0.825rem; font-weight: 600; margin-bottom: 0.35rem; color: #475569;">Device Type</label>
+              <select id="modal-dev-type" class="cred-input" style="width: 100%;">
+                <option value="light">Light</option>
+                <option value="switch" selected>Switch</option>
+                <option value="fan">Fan</option>
+                <option value="climate">Climate / AC</option>
+                <option value="cover">Cover / Curtain</option>
+                <option value="other">Other / Relay</option>
+              </select>
+            </div>
+            <div>
+              <label style="display: block; font-size: 0.825rem; font-weight: 600; margin-bottom: 0.35rem; color: #475569;">Home Assistant Entity*</label>
+              <input id="modal-dev-entity" type="text" list="ha-all-entities-datalist" placeholder="Search entity (e.g. light.living_room_light)..." class="cred-input" style="width: 100%;" />
+              <datalist id="ha-all-entities-datalist"></datalist>
+            </div>
+          </div>
+          <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.25rem;">
+            <button id="cancel-device-modal-btn" class="btn btn-ghost">Cancel</button>
+            <button id="save-device-modal-btn" class="btn btn-primary">Save Device</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- HIDDEN RESTORE FILE INPUT -->
+      <input type="file" id="bot-file-input" accept=".json,application/json" style="display: none;" />
     </main>
   </div>
 

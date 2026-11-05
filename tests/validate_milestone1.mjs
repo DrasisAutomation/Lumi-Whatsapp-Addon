@@ -45,6 +45,9 @@ const requiredFiles = [
   'whatsapp_addon/src/services/retry.js',
   'whatsapp_addon/src/services/storage.js',
   'whatsapp_addon/src/diagnostics/health.js',
+  'whatsapp_addon/src/bot/config-manager.js',
+  'whatsapp_addon/src/bot/homeassistant-client.js',
+  'whatsapp_addon/src/bot/interactive-bot.js',
   'whatsapp_addon/src/utils/logger.js',
   'whatsapp_addon/src/utils/validation.js',
   'whatsapp_addon/frontend/index.html',
@@ -52,6 +55,7 @@ const requiredFiles = [
   'whatsapp_addon/frontend/css/styles.css',
   'whatsapp_addon/frontend/js/app.js',
   'whatsapp_addon/tests/addon.test.js',
+  'whatsapp_addon/tests/bot.test.js',
   // HACS integration files
   'custom_components/whatsapp/__init__.py',
   'custom_components/whatsapp/manifest.json',

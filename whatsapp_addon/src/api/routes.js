@@ -1,5 +1,6 @@
 'use strict';
 
+const path = require('node:path');
 const express = require('express');
 const { validateClientId } = require('../utils/validation');
 
@@ -10,6 +11,9 @@ function createApiRouter({
   contactManager,
   diagnostics,
   config,
+  botConfigManager,
+  haClient,
+  interactiveBot,
 }) {
   const router = express.Router();
 
@@ -348,6 +352,159 @@ function createApiRouter({
             },
       });
     })
+  );
+
+  // ==========================================
+  // BOT & REMOTE CONTROL API ROUTES
+  // ==========================================
+
+  // 22. GET /api/bot/config
+  router.get(
+    '/bot/config',
+    asyncHandler(async (req, res) => {
+      const currentConfig = botConfigManager ? botConfigManager.getConfig() : {};
+      res.json({ ok: true, config: currentConfig });
+    })
+  );
+
+  // 23. POST /api/bot/config
+  router.post(
+    '/bot/config',
+    asyncHandler(async (req, res) => {
+      if (!botConfigManager) {
+        return res.status(503).json({ ok: false, error: 'Bot config manager not initialized' });
+      }
+      await botConfigManager.save(req.body);
+      res.json({ ok: true, config: botConfigManager.getConfig() });
+    })
+  );
+
+  // 24. GET /api/bot/export
+  router.get(
+    '/bot/export',
+    asyncHandler(async (req, res) => {
+      if (!botConfigManager) {
+        return res.status(503).json({ ok: false, error: 'Bot config manager not initialized' });
+      }
+      const rawJson = botConfigManager.exportJson();
+      res.setHeader('Content-Disposition', 'attachment; filename="lumi_remote_config.json"');
+      res.setHeader('Content-Type', 'application/json');
+      res.send(rawJson);
+    })
+  );
+
+  // 25. POST /api/bot/import
+  router.post(
+    '/bot/import',
+    asyncHandler(async (req, res) => {
+      if (!botConfigManager) {
+        return res.status(503).json({ ok: false, error: 'Bot config manager not initialized' });
+      }
+      const summary = await botConfigManager.importJson(req.body);
+      res.json({ ok: true, ...summary, config: botConfigManager.getConfig() });
+    })
+  );
+
+  // 26. GET /api/bot/ha-entities
+  router.get(
+    '/bot/ha-entities',
+    asyncHandler(async (req, res) => {
+      if (!haClient) {
+        return res.json({ ok: true, entities: [] });
+      }
+      const requestedDomains = req.query.domains
+        ? req.query.domains.split(',')
+        : ['light', 'switch', 'fan', 'climate', 'cover', 'media_player', 'scene', 'script', 'input_boolean'];
+      const entities = await haClient.getEntities(requestedDomains);
+      res.json({ ok: true, count: entities.length, entities });
+    })
+  );
+
+  // 27. Authorized Numbers CRUD
+  router.post(
+    '/bot/authorized-numbers',
+    asyncHandler(async (req, res) => {
+      const { phone, name } = req.body || {};
+      const entry = await botConfigManager.addAuthorizedNumber(phone, name);
+      res.status(201).json({ ok: true, entry, config: botConfigManager.getConfig() });
+    })
+  );
+
+  router.delete(
+    '/bot/authorized-numbers/:phone',
+    asyncHandler(async (req, res) => {
+      await botConfigManager.removeAuthorizedNumber(req.params.phone);
+      res.json({ ok: true, config: botConfigManager.getConfig() });
+    })
+  );
+
+  // 28. Rooms CRUD
+  router.post(
+    '/bot/rooms',
+    asyncHandler(async (req, res) => {
+      const { name } = req.body || {};
+      const room = await botConfigManager.addRoom(name);
+      res.status(201).json({ ok: true, room, config: botConfigManager.getConfig() });
+    })
+  );
+
+  router.delete(
+    '/bot/rooms/:roomId',
+    asyncHandler(async (req, res) => {
+      await botConfigManager.removeRoom(req.params.roomId);
+      res.json({ ok: true, config: botConfigManager.getConfig() });
+    })
+  );
+
+  router.post(
+    '/bot/rooms/:roomId/devices',
+    asyncHandler(async (req, res) => {
+      const { name, entityId, type } = req.body || {};
+      const device = await botConfigManager.addDevice(req.params.roomId, { name, entityId, type });
+      res.status(201).json({ ok: true, device, config: botConfigManager.getConfig() });
+    })
+  );
+
+  router.delete(
+    '/bot/rooms/:roomId/devices/:deviceId',
+    asyncHandler(async (req, res) => {
+      await botConfigManager.removeDevice(req.params.roomId, req.params.deviceId);
+      res.json({ ok: true, config: botConfigManager.getConfig() });
+    })
+  );
+
+  // 29. Speakers CRUD
+  router.post(
+    '/bot/speakers',
+    asyncHandler(async (req, res) => {
+      const { name, entityId } = req.body || {};
+      const speaker = await botConfigManager.addSpeaker({ name, entityId });
+      res.status(201).json({ ok: true, speaker, config: botConfigManager.getConfig() });
+    })
+  );
+
+  router.delete(
+    '/bot/speakers/:speakerId',
+    asyncHandler(async (req, res) => {
+      await botConfigManager.removeSpeaker(req.params.speakerId);
+      res.json({ ok: true, config: botConfigManager.getConfig() });
+    })
+  );
+
+  // 30. Local cast audio fallback serving
+  router.get(
+    '/bot/casts/:filename',
+    (req, res) => {
+      const filename = path.basename(req.params.filename);
+      const castsDir = interactiveBot?.castsDir;
+      if (!castsDir) return res.status(404).send('Not Found');
+      const targetPath = path.join(castsDir, filename);
+      res.sendFile(targetPath, (err) => {
+        if (err && !res.headersSent) {
+          res.status(404).send('Audio not found');
+        }
+      });
+    }
   );
 
   return router;

@@ -126,6 +126,7 @@ class WhatsAppEventManager extends EventEmitter {
       groupId: isGroup ? remoteJid : null,
       messageType,
       text,
+      rawMessage: msg,
       timestamp: new Date(rawTimestamp).toISOString(),
     };
   }
