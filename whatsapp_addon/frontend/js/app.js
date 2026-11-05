@@ -14,6 +14,13 @@
   };
 
   function getIngressBasePath() {
+    const baseEl = document.querySelector('base');
+    if (baseEl && baseEl.getAttribute('href')) {
+      const h = baseEl.getAttribute('href');
+      if (h && h !== './' && h !== '/') {
+        return h.endsWith('/') ? h : `${h}/`;
+      }
+    }
     let p = window.location.pathname || '/';
     // If pathname ends with a filename (e.g. index.html), strip it to keep the base directory
     if (/\/[^/]+\.[^/]+$/.test(p)) {

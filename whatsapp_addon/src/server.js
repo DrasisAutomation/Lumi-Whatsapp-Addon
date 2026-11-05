@@ -135,12 +135,26 @@ async function createWhatsAppServer({
     config,
   }));
 
-  // Serve Frontend Dashboard assets
+  // Serve Frontend Dashboard assets with dynamic Ingress <base> injection
   const frontendDir = path.resolve(__dirname, '..', 'frontend');
-  app.use('/', express.static(frontendDir));
-  app.get('/', (req, res) => {
-    res.sendFile(path.join(frontendDir, 'index.html'));
-  });
+  const indexHtmlPath = path.join(frontendDir, 'index.html');
+  const rawIndexHtml = require('node:fs').readFileSync(indexHtmlPath, 'utf8');
+
+  function sendIndexHtml(req, res) {
+    const rawIngressPath = req.headers['x-ingress-path'];
+    const baseHref = rawIngressPath
+      ? `${String(rawIngressPath).replace(/\/+$/, '')}/`
+      : './';
+    const htmlWithBase = rawIndexHtml.replace(
+      '<head>',
+      `<head>\n  <base href="${baseHref}">`
+    );
+    res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+    res.send(htmlWithBase);
+  }
+
+  app.get(['/', '/index.html'], sendIndexHtml);
+  app.use('/', express.static(frontendDir, { index: false }));
 
   app.use(errorHandlerMiddleware(logger));
 

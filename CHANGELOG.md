@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.7] - 2026-11-05
+
+### Fixed
+- Injected dynamic `<base href="...">` tag into served `index.html` matching `X-Ingress-Path` to guarantee all relative browser assets (`css/styles.css`, `js/app.js`, `logo.png`, `api/*`) resolve through Home Assistant's Ingress tunnel without 404.
+- Added `{ index: false }` to `express.static` to route root document requests through the dynamic base injector.
+- Verified local live server execution across direct HTTP, Ingress proxy simulation, and Bearer token authentication.
+
 ## [1.0.6] - 2026-11-04
 
 ### Fixed
