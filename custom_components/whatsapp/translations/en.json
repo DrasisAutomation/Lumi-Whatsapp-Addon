@@ -12,7 +12,7 @@
       }
     },
     "error": {
-      "cannot_connect": "Failed to connect to the Lumi Whatsapp Add-on API. Ensure the add-on is running and the URL is reachable.",
+      "cannot_connect": "Failed to connect to the Lumi Whatsapp Add-on API. Please verify the add-on is running in Settings -> Add-ons, and use http://127.0.0.1:8653 or your Home Assistant IP:8653.",
       "invalid_auth": "Invalid API Bearer token. Check the token in the Lumi Whatsapp Add-on Configuration or Diagnostics tab.",
       "unknown": "Unexpected error communicating with the Lumi Whatsapp Add-on."
     },

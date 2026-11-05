@@ -47,9 +47,17 @@ async def validate_addon_connection(
         parsed = urlparse(url)
         port = parsed.port or 8653
         scheme = parsed.scheme or "http"
-        for fb in (f"{scheme}://127.0.0.1:{port}", f"{scheme}://localhost:{port}"):
-            if fb not in candidates:
-                candidates.append(fb)
+        for host in (
+            "127.0.0.1",
+            "localhost",
+            "whatsapp",
+            "172.30.32.1",
+            "host.docker.internal",
+            "local-whatsapp",
+        ):
+            candidate = f"{scheme}://{host}:{port}"
+            if candidate not in candidates:
+                candidates.append(candidate)
     except Exception:
         pass
 

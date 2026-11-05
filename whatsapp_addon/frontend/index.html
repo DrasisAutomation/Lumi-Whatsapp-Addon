@@ -3,28 +3,27 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lumi Whatsapp – Enterprise Management Console</title>
+  <title>Lumi Whatsapp – Home Assistant Management Console</title>
   <link rel="icon" type="image/png" href="logo.png" />
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
   <div class="app-shell">
-    <!-- SIDEBAR: ZOHO CLASSIC NAVY STYLE -->
+    <!-- SIDEBAR: CLEAN WHITE THEME (MATCHING DASMIN REFERENCE) -->
     <aside class="sidebar">
       <div class="brand">
         <div class="brand-logo-wrap">
           <img src="logo.png" alt="Lumi Whatsapp Logo" class="brand-logo" />
         </div>
         <div class="brand-text">
-          <h1>Lumi Whatsapp</h1>
-          <span class="badge-version">v1.0.9</span>
+          <h1>LUMI WHATSAPP</h1>
+          <span class="badge-version">v1.0.10</span>
         </div>
       </div>
 
-      <div class="nav-section-label">MANAGEMENT</div>
       <nav class="nav-tabs" role="tablist">
         <button class="nav-btn active" data-tab="dashboard" role="tab">
-          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect></svg>
           <span>Dashboard</span>
         </button>
         <button class="nav-btn" data-tab="accounts" role="tab">
@@ -36,33 +35,32 @@
           <span>Messaging</span>
         </button>
         <button class="nav-btn" data-tab="history" role="tab">
-          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"></path></svg>
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           <span>Message History</span>
         </button>
         <button class="nav-btn" data-tab="diagnostics" role="tab">
           <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-          <span>HA Integration &amp; Setup</span>
+          <span>Integration &amp; Setup</span>
         </button>
       </nav>
 
       <div class="sidebar-footer">
         <div class="ws-indicator-card">
-          <div class="ws-indicator-header">
-            <span id="ws-dot" class="status-dot disconnected"></span>
-            <span id="ws-label" class="ws-label">Connecting live stream...</span>
+          <span id="ws-dot" class="status-dot disconnected"></span>
+          <div class="ws-info">
+            <span id="ws-label" class="ws-title">Connecting...</span>
+            <span class="ws-sub">WebSocket Live Feed</span>
           </div>
-          <span class="ws-subtext">Real-time WebSocket feed</span>
         </div>
       </div>
     </aside>
 
-    <!-- MAIN WORKSPACE -->
+    <!-- MAIN CANVAS -->
     <main class="main-content">
-      <!-- TOPBAR: ZOHO EXECUTIVE HEADER -->
+      <!-- TOP BAR -->
       <header class="topbar">
         <div class="topbar-left">
-          <span class="topbar-breadcrumb">Home Assistant / Add-ons / Lumi Whatsapp</span>
-          <h2 id="page-title">Executive Dashboard</h2>
+          <h2 id="page-title">Dashboard</h2>
         </div>
         <div class="topbar-actions">
           <button id="refresh-btn" class="btn btn-secondary">
@@ -70,8 +68,8 @@
             <span>Refresh</span>
           </button>
           <button class="btn btn-primary" data-goto-tab="diagnostics">
-            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
-            <span>Integration Credentials</span>
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            <span>Integration Token</span>
           </button>
         </div>
       </header>
@@ -80,104 +78,135 @@
 
       <!-- SECTION A: DASHBOARD -->
       <section id="tab-dashboard" class="tab-panel active">
-        <!-- ZOHO CLASSIC KPI CARDS -->
-        <div class="kpi-grid">
-          <div class="kpi-card kpi-connected">
-            <div class="kpi-top">
-              <span class="kpi-label">CONNECTED ACCOUNTS</span>
-              <span class="kpi-dot dot-success"></span>
+        <!-- TOP SECTION: 3 WHITE STAT CARDS + 1 VIBRANT BLUE GRADIENT SETUP CARD (MATCHING REFERENCE IMAGE) -->
+        <div class="dash-top-grid">
+          <!-- STAT CARD 1: BLUE ICON (CONNECTED) -->
+          <div class="stat-card">
+            <div class="stat-icon-wrap icon-blue">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
             </div>
-            <strong id="kpi-connected" class="kpi-value text-success">0</strong>
-            <span class="kpi-footer">Active WhatsApp Linked Devices</span>
+            <div class="stat-content">
+              <strong id="kpi-connected" class="stat-value">0</strong>
+              <span class="stat-label">Connected Accounts</span>
+            </div>
           </div>
 
-          <div class="kpi-card kpi-disconnected">
-            <div class="kpi-top">
-              <span class="kpi-label">DISCONNECTED</span>
-              <span class="kpi-dot dot-warn"></span>
+          <!-- STAT CARD 2: ORANGE/GOLD ICON (DISCONNECTED) -->
+          <div class="stat-card">
+            <div class="stat-icon-wrap icon-orange">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
             </div>
-            <strong id="kpi-disconnected" class="kpi-value text-warn">0</strong>
-            <span class="kpi-footer">Require QR Pairing / Reconnect</span>
+            <div class="stat-content">
+              <strong id="kpi-disconnected" class="stat-value">0</strong>
+              <span class="stat-label">Disconnected</span>
+            </div>
           </div>
 
-          <div class="kpi-card kpi-sent">
-            <div class="kpi-top">
-              <span class="kpi-label">MESSAGES SENT</span>
-              <span class="kpi-dot dot-primary"></span>
+          <!-- STAT CARD 3: GREEN ICON (SENT) -->
+          <div class="stat-card">
+            <div class="stat-icon-wrap icon-green">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
             </div>
-            <strong id="kpi-sent" class="kpi-value text-primary">0</strong>
-            <span class="kpi-footer">Delivered to WhatsApp Network</span>
+            <div class="stat-content">
+              <strong id="kpi-sent" class="stat-value">0</strong>
+              <span class="stat-label">Messages Sent</span>
+            </div>
           </div>
 
-          <div class="kpi-card kpi-received">
-            <div class="kpi-top">
-              <span class="kpi-label">MESSAGES RECEIVED</span>
-              <span class="kpi-dot dot-info"></span>
+          <!-- STAT CARD 4: PURPLE ICON (RECEIVED) -->
+          <div class="stat-card">
+            <div class="stat-icon-wrap icon-purple">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
             </div>
-            <strong id="kpi-received" class="kpi-value text-info">0</strong>
-            <span class="kpi-footer">Forwarded to HA Event Bus</span>
+            <div class="stat-content">
+              <strong id="kpi-received" class="stat-value">0</strong>
+              <span class="stat-label">Messages Received</span>
+            </div>
           </div>
 
-          <div class="kpi-card kpi-pending">
-            <div class="kpi-top">
-              <span class="kpi-label">PENDING QUEUE</span>
-              <span class="kpi-dot dot-muted"></span>
+          <!-- THE VIBRANT BLUE ACCENT SETUP CARD (MATCHING "BALANCE SUMMERY" IN REFERENCE SCREENSHOT) -->
+          <div class="blue-setup-card">
+            <div class="blue-card-header">
+              <span>HA Integration Setup</span>
+              <button id="dash-copy-all-btn" class="blue-card-btn" title="Copy URL &amp; Token">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              </button>
             </div>
-            <strong id="kpi-pending" class="kpi-value">0</strong>
-            <span class="kpi-footer">In-flight Sequential Queue</span>
-          </div>
 
-          <div class="kpi-card kpi-failed">
-            <div class="kpi-top">
-              <span class="kpi-label">FAILED MESSAGES</span>
-              <span class="kpi-dot dot-danger"></span>
+            <div class="blue-card-badge">
+              <span class="blue-card-sublabel">API URL (Host Loopback)</span>
+              <div class="blue-copy-row">
+                <code id="dash-url-preview">http://127.0.0.1:8653</code>
+                <button id="dash-copy-url-btn" class="mini-copy-btn" title="Copy URL">Copy</button>
+              </div>
             </div>
-            <strong id="kpi-failed" class="kpi-value text-danger">0</strong>
-            <span class="kpi-footer">Retries Exhausted / Invalid JID</span>
-          </div>
 
-          <div class="kpi-card kpi-uptime">
-            <div class="kpi-top">
-              <span class="kpi-label">ADD-ON UPTIME</span>
-              <span class="kpi-dot dot-success"></span>
+            <div class="blue-card-bottom">
+              <div class="blue-stat-group">
+                <span class="blue-mini-label">API Token</span>
+                <span id="dash-token-status" class="blue-token-masked">••••••••••••••••</span>
+              </div>
+              <button id="dash-copy-token-btn" class="blue-pill-btn">Copy Token</button>
             </div>
-            <strong id="kpi-uptime" class="kpi-value text-purple">0s</strong>
-            <span class="kpi-footer">Continuous Engine Runtime</span>
           </div>
         </div>
 
-        <!-- QUICK INTEGRATION STATUS BANNER -->
-        <div class="banner-card banner-integration">
-          <div class="banner-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-          </div>
-          <div class="banner-content">
-            <h4>Connecting to Home Assistant Integration?</h4>
-            <p>If you see <strong>cannot_connect</strong> when configuring Lumi Whatsapp in <em>Settings &rarr; Devices &amp; Services</em>, use <code>http://127.0.0.1:8653</code> (Home Assistant host network) and your API Bearer Token.</p>
-          </div>
-          <button class="btn btn-outline" data-goto-tab="diagnostics">View Credentials</button>
-        </div>
+        <!-- HIDDEN / PERSISTED TELEMETRY PLACEHOLDERS (REQUIRED BY SCRIPT) -->
+        <span id="kpi-pending" class="hidden">0</span>
+        <span id="kpi-failed" class="hidden">0</span>
+        <span id="kpi-uptime" class="hidden">0s</span>
 
-        <!-- ACCOUNTS OVERVIEW -->
-        <div class="panel-card">
-          <div class="panel-header">
-            <div>
-              <h3>Active Accounts Overview</h3>
-              <p class="panel-subtitle">Monitor paired phone numbers, encryption health, and traffic statistics</p>
+        <!-- MAIN LOWER GRID: ACCOUNTS & QUICK SEND (LEFT) + RECENT MESSAGE LOG (RIGHT) -->
+        <div class="dash-main-grid">
+          <!-- LEFT: ACTIVE WHATSAPP ACCOUNTS -->
+          <div class="white-card">
+            <div class="card-header">
+              <div>
+                <h3>WhatsApp Accounts</h3>
+                <p class="card-subtitle">Connected linked devices &amp; pairing status</p>
+              </div>
+              <button class="btn btn-outline btn-sm" data-goto-tab="accounts">+ Add Account</button>
             </div>
-            <button class="btn btn-primary" data-goto-tab="accounts">+ Add Account</button>
+            <div id="dashboard-accounts-list" class="accounts-list"></div>
           </div>
-          <div id="dashboard-accounts-list" class="accounts-grid"></div>
+
+          <!-- RIGHT: RECENT MESSAGE AUDIT LOG (MATCHING "RECENT ORDERS" IN REFERENCE SCREENSHOT) -->
+          <div class="white-card">
+            <div class="card-header">
+              <div>
+                <h3>Recent Message History</h3>
+                <p class="card-subtitle">Latest incoming &amp; outgoing WhatsApp dispatches</p>
+              </div>
+              <button class="btn btn-ghost btn-sm" data-goto-tab="history">View All &rarr;</button>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Timestamp</th>
+                    <th>Account</th>
+                    <th>Recipient</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="dash-history-tbody">
+                  <tr>
+                    <td colspan="4" class="text-center text-muted" style="padding:1.5rem;">No recent messages yet.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </section>
 
-      <!-- SECTION B: ACCOUNTS & QR -->
+      <!-- SECTION B: ACCOUNTS & QR PAIRING -->
       <section id="tab-accounts" class="tab-panel">
-        <div class="panel-card">
-          <div class="panel-header">
+        <div class="white-card">
+          <div class="card-header">
             <div>
-              <h3>Register New WhatsApp Account</h3>
-              <p class="panel-subtitle">Create a client session identifier (e.g. default, office, security) to pair via WhatsApp Linked Devices</p>
+              <h3>Add WhatsApp Account</h3>
+              <p class="card-subtitle">Register a client session identifier (e.g. default, office, alerts)</p>
             </div>
           </div>
           <form id="add-account-form" class="form-inline">
@@ -187,7 +216,7 @@
             </div>
             <div class="form-group">
               <label for="new-account-name">Display Name</label>
-              <input id="new-account-name" type="text" placeholder="e.g. Main Residence WhatsApp" />
+              <input id="new-account-name" type="text" placeholder="e.g. Office WhatsApp" />
             </div>
             <div class="form-group form-actions-inline">
               <button type="submit" class="btn btn-primary">+ Add Account</button>
@@ -196,69 +225,68 @@
         </div>
 
         <!-- QR PAIRING MODAL / CARD -->
-        <div id="qr-pairing-modal" class="panel-card qr-panel hidden">
-          <div class="panel-header">
+        <div id="qr-pairing-modal" class="white-card qr-card hidden">
+          <div class="card-header">
             <div>
               <h3 id="qr-title">Scan QR Code with WhatsApp</h3>
-              <p class="panel-subtitle">Pair your WhatsApp account using end-to-end multi-device linking</p>
+              <p class="card-subtitle">End-to-end encrypted multi-device pairing</p>
             </div>
-            <button id="close-qr-btn" class="btn btn-secondary">Close</button>
+            <button id="close-qr-btn" class="btn btn-secondary btn-sm">Close</button>
           </div>
           <div class="qr-body">
-            <div class="qr-image-box">
-              <img id="qr-image" alt="WhatsApp Pairing QR Code" />
-              <div class="qr-scan-pulse"></div>
+            <div class="qr-box">
+              <img id="qr-image" alt="WhatsApp QR Code" />
             </div>
-            <div class="qr-instructions">
+            <div class="qr-steps">
               <h4>Pairing Instructions:</h4>
               <ol>
-                <li>Open <strong>WhatsApp</strong> on your mobile phone.</li>
-                <li>Tap <strong>Settings</strong> (or <strong>⋮ Menu</strong> on Android) &rarr; <strong>Linked Devices</strong>.</li>
+                <li>Open <strong>WhatsApp</strong> on your phone.</li>
+                <li>Tap <strong>Settings</strong> (or <strong>⋮ Menu</strong>) &rarr; <strong>Linked Devices</strong>.</li>
                 <li>Tap <strong>Link a Device</strong>.</li>
-                <li>Point your camera at this QR code to complete pairing.</li>
+                <li>Point your camera at the QR code on the left.</li>
               </ol>
-              <div class="qr-status-pill">
+              <div class="qr-status-badge">
                 <span class="status-dot connected"></span>
-                <span id="qr-status-text" class="muted">Waiting for phone to scan...</span>
+                <span id="qr-status-text">Waiting for phone to scan...</span>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- ACCOUNTS LIST -->
-        <div class="panel-card">
-          <div class="panel-header">
+        <!-- CONFIGURED ACCOUNTS LIST -->
+        <div class="white-card">
+          <div class="card-header">
             <div>
               <h3>Configured Accounts</h3>
-              <p class="panel-subtitle">Manage session states, QR pairing, and disconnect/delete actions</p>
+              <p class="card-subtitle">Manage sessions, QR regeneration, and disconnect actions</p>
             </div>
           </div>
-          <div id="accounts-container" class="accounts-grid"></div>
+          <div id="accounts-container" class="accounts-list"></div>
         </div>
       </section>
 
-      <!-- SECTION C: MESSAGING -->
+      <!-- SECTION C: MESSAGING COMPOSER -->
       <section id="tab-messaging" class="tab-panel">
-        <div class="panel-card">
-          <div class="panel-header">
+        <div class="white-card">
+          <div class="card-header">
             <div>
               <h3>Send WhatsApp Message or Media</h3>
-              <p class="panel-subtitle">Test messaging, local camera snapshots, videos, and documents directly from the console</p>
+              <p class="card-subtitle">Test notifications, CCTV camera snapshots, and alerts directly</p>
             </div>
           </div>
           <form id="send-message-form" class="form-stack">
             <div class="form-row">
               <div class="form-group">
-                <label for="msg-account">Sending Account (clientId)*</label>
+                <label for="msg-account">Sending Account*</label>
                 <select id="msg-account" required></select>
               </div>
               <div class="form-group">
                 <label for="msg-type">Message Type*</label>
                 <select id="msg-type" required>
-                  <option value="text">💬 Text Message</option>
-                  <option value="image">📷 Image / CCTV Snapshot</option>
-                  <option value="video">🎥 Video (MP4)</option>
-                  <option value="document">📄 Document / PDF</option>
+                  <option value="text">Text Message</option>
+                  <option value="image">Image / CCTV Snapshot</option>
+                  <option value="video">Video (MP4)</option>
+                  <option value="document">Document (PDF)</option>
                 </select>
               </div>
               <div class="form-group">
@@ -269,7 +297,7 @@
             </div>
 
             <div id="msg-text-group" class="form-group">
-              <label for="msg-body">Message Text*</label>
+              <label for="msg-body">Message Body*</label>
               <textarea id="msg-body" rows="4" placeholder="Hello from Home Assistant Lumi Whatsapp!"></textarea>
             </div>
 
@@ -299,21 +327,19 @@
           </form>
 
           <div id="send-result-box" class="result-box hidden">
-            <div class="result-box-header">
-              <h4>Dispatch Output</h4>
-            </div>
+            <h4>Dispatch Result:</h4>
             <pre id="send-result-pre"></pre>
           </div>
         </div>
       </section>
 
-      <!-- SECTION D: MESSAGE HISTORY -->
+      <!-- SECTION D: MESSAGE AUDIT LOG -->
       <section id="tab-history" class="tab-panel">
-        <div class="panel-card">
-          <div class="panel-header">
+        <div class="white-card">
+          <div class="card-header">
             <div>
-              <h3>Message Audit Log &amp; Delivery Receipts</h3>
-              <p class="panel-subtitle">Complete chronological record of all outbound and inbound messages</p>
+              <h3>Message Audit Trail &amp; Receipts</h3>
+              <p class="card-subtitle">Complete chronological record of all outbound &amp; inbound messages</p>
             </div>
             <div class="filter-bar">
               <select id="history-account-filter">
@@ -339,14 +365,13 @@
         </div>
       </section>
 
-      <!-- SECTION E: HA INTEGRATION & SETUP (ZOHO CLASSIC CREDENTIALS CARD) -->
+      <!-- SECTION E: HA INTEGRATION & SETUP CREDENTIALS -->
       <section id="tab-diagnostics" class="tab-panel">
-        <!-- HERO CARD: HOME ASSISTANT INTEGRATION CREDENTIALS -->
-        <div class="panel-card setup-hero-card">
-          <div class="panel-header">
+        <div class="white-card hero-setup-card">
+          <div class="card-header">
             <div>
-              <h3>Home Assistant Integration Setup Credentials</h3>
-              <p class="panel-subtitle">Use these credentials when setting up the <strong>Lumi Whatsapp</strong> integration in <em>Settings &rarr; Devices &amp; Services</em></p>
+              <h3>Home Assistant Integration Setup</h3>
+              <p class="card-subtitle">Copy these exact values into <strong>Settings &rarr; Devices &amp; Services &rarr; Add Integration &rarr; Lumi Whatsapp</strong></p>
             </div>
             <button id="copy-all-btn" class="btn btn-primary btn-copy">
               <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
@@ -354,122 +379,68 @@
             </button>
           </div>
 
-          <!-- SETUP NOTICE CALLOUT -->
-          <div class="setup-callout">
-            <div class="callout-badge">IMPORTANT</div>
-            <div class="callout-text">
-              If you received <strong>cannot_connect</strong> when testing with <code>http://local-whatsapp:8653</code>, use the <strong>Universal Host URL</strong> <code>http://127.0.0.1:8653</code> below. Because the add-on runs on host port 8653, <code>127.0.0.1</code> connects directly without Docker DNS resolution errors!
-            </div>
+          <!-- NOTICE BANNER -->
+          <div class="setup-notice">
+            <span class="notice-pill">IMPORTANT</span>
+            <p>If you see <strong>cannot_connect</strong>, always use <code>http://127.0.0.1:8653</code> below. Because the add-on runs on host port 8653, <code>127.0.0.1</code> connects directly without Docker internal DNS issues!</p>
           </div>
 
-          <div class="credentials-grid">
-            <!-- URL BOX -->
-            <div class="cred-card">
-              <div class="cred-header">
-                <label>Primary Integration URL (Recommended)</label>
-                <span class="tag-pill tag-recommended">Host Network</span>
+          <div class="cred-rows">
+            <!-- URL ROW -->
+            <div class="cred-item">
+              <div class="cred-item-header">
+                <label>Primary Integration API URL (Recommended)</label>
+                <span class="pill-rec">Host Loopback</span>
               </div>
-              <div class="input-with-button">
+              <div class="input-copy-group">
                 <input id="diag-internal-url" type="text" readonly value="http://127.0.0.1:8653" class="cred-input code-font" />
-                <button id="copy-url-btn" class="btn btn-secondary btn-copy" title="Copy URL">
-                  <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                  <span>Copy URL</span>
-                </button>
+                <button id="copy-url-btn" class="btn btn-secondary btn-copy">Copy URL</button>
               </div>
-              <span class="cred-helper">Universal loopback address accessible by Home Assistant Core container.</span>
             </div>
 
-            <!-- API TOKEN BOX -->
-            <div class="cred-card">
-              <div class="cred-header">
+            <!-- API TOKEN ROW -->
+            <div class="cred-item">
+              <div class="cred-item-header">
                 <label>API Bearer Token</label>
-                <span class="tag-pill tag-secret">Secret Key</span>
+                <span class="pill-key">Secret Key</span>
               </div>
-              <div class="input-with-button">
+              <div class="input-copy-group">
                 <input id="diag-api-key" type="password" readonly value="" class="cred-input code-font" />
-                <button id="toggle-token-btn" type="button" class="btn btn-ghost" title="Toggle visibility">
-                  <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                  <span>Show</span>
-                </button>
-                <button id="copy-token-btn" type="button" class="btn btn-primary btn-copy" title="Copy Token">
-                  <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                  <span>Copy Token</span>
-                </button>
+                <button id="toggle-token-btn" type="button" class="btn btn-ghost">Show</button>
+                <button id="copy-token-btn" type="button" class="btn btn-primary btn-copy">Copy Token</button>
               </div>
-              <span class="cred-helper">Paste into the "api_key" field in Home Assistant's configuration prompt.</span>
             </div>
 
-            <!-- FALLBACK URL BOX -->
-            <div class="cred-card">
-              <div class="cred-header">
-                <label>Alternative Fallback URL</label>
-                <span class="tag-pill tag-muted">Alternative</span>
+            <!-- ALTERNATIVE URL ROW -->
+            <div class="cred-item">
+              <div class="cred-item-header">
+                <label>Alternative URL (if running directly on host network)</label>
               </div>
-              <div class="input-with-button">
+              <div class="input-copy-group">
                 <input id="diag-alt-url" type="text" readonly value="http://localhost:8653" class="cred-input code-font" />
-                <button id="copy-alt-url-btn" class="btn btn-secondary btn-copy" title="Copy Alternative URL">
-                  <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                  <span>Copy</span>
-                </button>
-              </div>
-              <span class="cred-helper">If running Home Assistant Core directly on host machine.</span>
-            </div>
-          </div>
-
-          <!-- SETUP STEPS STEPPER -->
-          <div class="setup-stepper">
-            <h4>Quick Integration Steps:</h4>
-            <div class="steps-row">
-              <div class="step-item">
-                <span class="step-num">1</span>
-                <span class="step-txt">Click <strong>Copy URL</strong> (<code>http://127.0.0.1:8653</code>)</span>
-              </div>
-              <div class="step-arrow">&rarr;</div>
-              <div class="step-item">
-                <span class="step-num">2</span>
-                <span class="step-txt">Click <strong>Copy Token</strong></span>
-              </div>
-              <div class="step-arrow">&rarr;</div>
-              <div class="step-item">
-                <span class="step-num">3</span>
-                <span class="step-txt">Open <strong>Settings &rarr; Devices &amp; Services &rarr; Add Integration &rarr; Lumi Whatsapp</strong></span>
-              </div>
-              <div class="step-arrow">&rarr;</div>
-              <div class="step-item">
-                <span class="step-num">4</span>
-                <span class="step-txt">Paste URL &amp; Token, then click <strong>Submit</strong>!</span>
+                <button id="copy-alt-url-btn" class="btn btn-secondary btn-copy">Copy</button>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- DIAGNOSTICS TELEMETRY -->
-        <div class="diagnostics-grid">
-          <div class="panel-card">
-            <div class="diag-header">
-              <h4>Runtime &amp; API Health</h4>
-              <span class="status-dot connected"></span>
-            </div>
-            <pre id="diag-runtime-pre" class="code-block">Loading...</pre>
+        <!-- DIAGNOSTIC TELEMETRY -->
+        <div class="diag-grid">
+          <div class="white-card">
+            <h4>Runtime &amp; API Health</h4>
+            <pre id="diag-runtime-pre" class="code-pre">Loading...</pre>
           </div>
-          <div class="panel-card">
-            <div class="diag-header">
-              <h4>Session Health &amp; Queue Telemetry</h4>
-              <span class="status-dot connected"></span>
-            </div>
-            <pre id="diag-sessions-pre" class="code-block">Loading...</pre>
+          <div class="white-card">
+            <h4>Session Health &amp; Queue</h4>
+            <pre id="diag-sessions-pre" class="code-pre">Loading...</pre>
           </div>
-          <div class="panel-card">
-            <div class="diag-header">
-              <h4>Connection &amp; Auth Diagnostics</h4>
-            </div>
-            <pre id="diag-conn-errors-pre" class="code-block">None</pre>
+          <div class="white-card">
+            <h4>Connection &amp; Auth Diagnostics</h4>
+            <pre id="diag-conn-errors-pre" class="code-pre">None</pre>
           </div>
-          <div class="panel-card">
-            <div class="diag-header">
-              <h4>Media Upload Health &amp; E2EE Retries</h4>
-            </div>
-            <pre id="diag-media-errors-pre" class="code-block">None</pre>
+          <div class="white-card">
+            <h4>Media Health &amp; E2EE Retries</h4>
+            <pre id="diag-media-errors-pre" class="code-pre">None</pre>
           </div>
         </div>
       </section>

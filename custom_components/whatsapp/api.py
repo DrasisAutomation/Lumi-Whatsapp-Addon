@@ -91,7 +91,7 @@ class WhatsAppAddonApiClient:
                 headers=self._headers(),
                 json=payload,
                 params=params,
-                ssl=self._verify_ssl if url.startswith("https:") else False,
+                ssl=self._verify_ssl if url.startswith("https:") else None,
                 timeout=client_timeout,
             ) as response:
                 try:

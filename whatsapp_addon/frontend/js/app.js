@@ -53,7 +53,7 @@
       toast.style.opacity = '0';
       toast.style.transform = 'translateY(8px)';
       setTimeout(() => toast.remove(), 250);
-    }, 4000);
+    }, 3800);
   }
 
   /* ───────────────────────────────────────────────────────────────────
@@ -68,7 +68,7 @@
     }
     let copied = false;
 
-    // 1. Try Modern Clipboard API if available and document is focused in secure context
+    // 1. Try Modern Clipboard API if available in secure context
     if (navigator.clipboard && window.isSecureContext) {
       try {
         await navigator.clipboard.writeText(text);
@@ -113,7 +113,6 @@
       showToast('Copied to clipboard!', 'success');
       return true;
     } else {
-      // 3. Last-resort user prompt
       window.prompt('Copy to clipboard (Ctrl+C / Cmd+C):', text);
       return false;
     }
@@ -138,7 +137,7 @@
     if (!res.ok || data.ok === false) {
       if (res.status === 401 && !window.location.pathname.includes('/ingress/')) {
         const entered = prompt(
-          'Direct access requires an API Bearer token.\nEnter your API Key (from Diagnostics / Setup tab):'
+          'Direct access requires an API Bearer token.\nEnter your API Key (from Integration & Setup tab):'
         );
         if (entered && entered.trim()) {
           state.token = entered.trim();
@@ -149,16 +148,6 @@
       throw new Error(data?.error?.message || `HTTP ${res.status}`);
     }
     return data;
-  }
-
-  function formatDuration(seconds) {
-    const s = Number(seconds) || 0;
-    const h = Math.floor(s / 3600);
-    const m = Math.floor((s % 3600) / 60);
-    const rem = s % 60;
-    if (h > 0) return `${h}h ${m}m`;
-    if (m > 0) return `${m}m ${rem}s`;
-    return `${rem}s`;
   }
 
   function formatTime(iso) {
@@ -201,10 +190,6 @@
     setEl('kpi-pending', pending);
     setEl('kpi-failed', failed);
 
-    if (state.diagnostics?.health?.uptimeSeconds !== undefined) {
-      setEl('kpi-uptime', formatDuration(state.diagnostics.health.uptimeSeconds));
-    }
-
     const dashContainer = document.getElementById('dashboard-accounts-list');
     const accContainer = document.getElementById('accounts-container');
     if (dashContainer) dashContainer.innerHTML = '';
@@ -219,7 +204,7 @@
     if (histFilter) histFilter.innerHTML = '<option value="">All Accounts</option>';
 
     if (accounts.length === 0) {
-      const emptyNote = '<div class="muted" style="padding:1rem;">No accounts configured yet. Click "+ Add Account" to pair your first WhatsApp session.</div>';
+      const emptyNote = '<div class="text-muted" style="padding:1rem;text-align:center;">No accounts registered yet. Click <strong>+ Add Account</strong> to begin pairing.</div>';
       if (dashContainer) dashContainer.innerHTML = emptyNote;
       if (accContainer) accContainer.innerHTML = emptyNote;
       return;
@@ -276,7 +261,7 @@
     meta.className = 'account-meta';
     meta.innerHTML = `
       <div><strong>Phone:</strong> ${acc.phone ? '+' + acc.phone : 'Not linked'}</div>
-      <div><strong>E2EE Health:</strong> ${acc.sessionHealth || 'healthy'}</div>
+      <div><strong>E2EE State:</strong> ${acc.sessionHealth || 'healthy'}</div>
       <div><strong>Sent / Recv:</strong> ${acc.stats?.messagesSent || 0} / ${acc.stats?.messagesReceived || 0}</div>
       <div><strong>Last Active:</strong> ${formatTime(acc.lastActiveAt || acc.lastConnectedAt)}</div>
     `;
@@ -284,47 +269,46 @@
 
     if (acc.lastError?.message) {
       const errP = document.createElement('div');
-      errP.style.color = '#ef4444';
+      errP.style.color = '#dc2626';
       errP.style.fontSize = '0.78rem';
       errP.textContent = `Error: ${acc.lastError.message}`;
       div.appendChild(errP);
     }
 
+    const actions = document.createElement('div');
+    actions.className = 'account-actions';
+
+    const pairBtn = document.createElement('button');
+    pairBtn.className = 'btn btn-primary btn-sm';
+    pairBtn.textContent = acc.status === 'connected' ? 'Reconnect' : 'Connect / Show QR';
+    pairBtn.addEventListener('click', () => handleConnectAccount(acc.clientId, false));
+    actions.appendChild(pairBtn);
+
+    if (acc.status !== 'connected') {
+      const regenBtn = document.createElement('button');
+      regenBtn.className = 'btn btn-secondary btn-sm';
+      regenBtn.textContent = 'Regenerate QR';
+      regenBtn.addEventListener('click', () => handleConnectAccount(acc.clientId, true));
+      actions.appendChild(regenBtn);
+    }
+
+    if (acc.status === 'connected' || acc.status === 'connecting' || acc.status === 'qr_ready') {
+      const discBtn = document.createElement('button');
+      discBtn.className = 'btn btn-secondary btn-sm';
+      discBtn.textContent = 'Disconnect';
+      discBtn.addEventListener('click', () => handleDisconnectAccount(acc.clientId));
+      actions.appendChild(discBtn);
+    }
+
     if (!compact) {
-      const actions = document.createElement('div');
-      actions.className = 'account-actions';
-
-      const pairBtn = document.createElement('button');
-      pairBtn.className = 'btn btn-primary btn-sm';
-      pairBtn.textContent = acc.status === 'connected' ? 'Reconnect' : 'Connect / Show QR';
-      pairBtn.addEventListener('click', () => handleConnectAccount(acc.clientId, false));
-      actions.appendChild(pairBtn);
-
-      if (acc.status !== 'connected') {
-        const regenBtn = document.createElement('button');
-        regenBtn.className = 'btn btn-secondary btn-sm';
-        regenBtn.textContent = 'Regenerate QR';
-        regenBtn.addEventListener('click', () => handleConnectAccount(acc.clientId, true));
-        actions.appendChild(regenBtn);
-      }
-
-      if (acc.status === 'connected' || acc.status === 'connecting' || acc.status === 'qr_ready') {
-        const discBtn = document.createElement('button');
-        discBtn.className = 'btn btn-secondary btn-sm';
-        discBtn.textContent = 'Disconnect';
-        discBtn.addEventListener('click', () => handleDisconnectAccount(acc.clientId));
-        actions.appendChild(discBtn);
-      }
-
       const delBtn = document.createElement('button');
       delBtn.className = 'btn btn-danger btn-sm';
       delBtn.textContent = 'Delete';
       delBtn.addEventListener('click', () => handleDeleteAccount(acc.clientId));
       actions.appendChild(delBtn);
-
-      div.appendChild(actions);
     }
 
+    div.appendChild(actions);
     return div;
   }
 
@@ -364,7 +348,7 @@
     document.getElementById('qr-image').src = qrDataUrl;
     document.getElementById('qr-status-text').textContent = expiresAt
       ? `QR active (refreshes at ${new Date(expiresAt).toLocaleTimeString()})`
-      : 'Waiting for scan...';
+      : 'Waiting for phone scan...';
     modal.classList.remove('hidden');
     switchTab('accounts');
   }
@@ -405,57 +389,62 @@
   }
 
   /* ───────────────────────────────────────────────────────────────────
-     RENDER MESSAGE HISTORY
+     RENDER MESSAGE HISTORY (FULL LOG & DASHBOARD RECENT TABLE)
      ─────────────────────────────────────────────────────────────────── */
   function renderHistoryTable() {
     const filterEl = document.getElementById('history-account-filter');
     const filterClientId = filterEl ? filterEl.value : '';
     const tbody = document.getElementById('history-tbody');
-    if (!tbody) return;
-    tbody.innerHTML = '';
+    const dashTbody = document.getElementById('dash-history-tbody');
 
     const filtered = filterClientId
       ? state.messages.filter((m) => m.clientId === filterClientId)
       : state.messages;
 
-    if (filtered.length === 0) {
-      const tr = document.createElement('tr');
-      tr.innerHTML = '<td colspan="6" class="muted" style="text-align:center;padding:1.5rem;">No messages recorded yet.</td>';
-      tbody.appendChild(tr);
-      return;
+    // 1. Render Full Table
+    if (tbody) {
+      tbody.innerHTML = '';
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted" style="padding:1.5rem;">No messages recorded yet.</td></tr>';
+      } else {
+        for (const msg of filtered) {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${formatTime(msg.updatedAt || msg.createdAt)}</td>
+            <td><strong>${msg.clientId}</strong></td>
+            <td>${msg.to}</td>
+            <td>${msg.messageType}</td>
+            <td class="code-font">${(msg.messageId || '').slice(-12)}</td>
+            <td><span class="badge ${msg.status}">${msg.status}</span></td>
+          `;
+          tbody.appendChild(tr);
+        }
+      }
     }
 
-    for (const msg of filtered) {
-      const tr = document.createElement('tr');
-      const tdTime = document.createElement('td');
-      tdTime.textContent = formatTime(msg.updatedAt || msg.createdAt);
-
-      const tdAcc = document.createElement('td');
-      tdAcc.textContent = msg.clientId;
-
-      const tdTo = document.createElement('td');
-      tdTo.textContent = msg.to;
-
-      const tdType = document.createElement('td');
-      tdType.textContent = msg.messageType;
-
-      const tdId = document.createElement('td');
-      tdId.textContent = (msg.messageId || '').slice(-12);
-      tdId.className = 'code-font';
-
-      const tdStatus = document.createElement('td');
-      const badge = document.createElement('span');
-      badge.className = `badge ${msg.status}`;
-      badge.textContent = msg.status;
-      tdStatus.appendChild(badge);
-
-      tr.append(tdTime, tdAcc, tdTo, tdType, tdId, tdStatus);
-      tbody.appendChild(tr);
+    // 2. Render Dashboard Recent Orders Table (Top 5)
+    if (dashTbody) {
+      dashTbody.innerHTML = '';
+      const recent = state.messages.slice(0, 5);
+      if (recent.length === 0) {
+        dashTbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted" style="padding:1.5rem;">No recent messages yet.</td></tr>';
+      } else {
+        for (const msg of recent) {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${formatTime(msg.updatedAt || msg.createdAt)}</td>
+            <td><strong>${msg.clientId}</strong></td>
+            <td>${msg.to}</td>
+            <td><span class="badge ${msg.status}">${msg.status}</span></td>
+          `;
+          dashTbody.appendChild(tr);
+        }
+      }
     }
   }
 
   /* ───────────────────────────────────────────────────────────────────
-     RENDER DIAGNOSTICS & INTEGRATION SETUP (ZOHO CLASSIC CREDENTIALS)
+     RENDER DIAGNOSTICS & SETUP CREDENTIALS
      ─────────────────────────────────────────────────────────────────── */
   function renderDiagnostics() {
     const d = state.diagnostics;
@@ -464,17 +453,28 @@
     const apiKeyInput = document.getElementById('diag-api-key');
     const internalUrlInput = document.getElementById('diag-internal-url');
     const altUrlInput = document.getElementById('diag-alt-url');
+    const dashUrlPreview = document.getElementById('dash-url-preview');
+    const dashTokenStatus = document.getElementById('dash-token-status');
 
-    if (d.integrationSetup?.apiKey && apiKeyInput) {
-      apiKeyInput.value = d.integrationSetup.apiKey;
+    const apiKey = d.integrationSetup?.apiKey || '';
+    const internalUrl = d.integrationSetup?.internalUrl || 'http://127.0.0.1:8653';
+
+    if (apiKeyInput && apiKey) {
+      apiKeyInput.value = apiKey;
     }
     if (internalUrlInput) {
-      internalUrlInput.value = d.integrationSetup?.internalUrl || 'http://127.0.0.1:8653';
+      internalUrlInput.value = internalUrl;
     }
     if (altUrlInput) {
       altUrlInput.value =
         (d.integrationSetup?.fallbackUrls && d.integrationSetup.fallbackUrls[0]) ||
         'http://localhost:8653';
+    }
+    if (dashUrlPreview) {
+      dashUrlPreview.textContent = internalUrl;
+    }
+    if (dashTokenStatus && apiKey) {
+      dashTokenStatus.textContent = apiKey.slice(0, 6) + '••••••••';
     }
 
     const setPre = (id, obj) => {
@@ -564,7 +564,7 @@
 
     ws.onclose = () => {
       if (dot) dot.className = 'status-dot disconnected';
-      if (label) label.textContent = 'Live stream reconnecting...';
+      if (label) label.textContent = 'Reconnecting...';
       setTimeout(connectWebSocket, 4000);
     };
 
@@ -597,14 +597,14 @@
       p.classList.toggle('active', p.id === `tab-${tabName}`);
     });
     const titles = {
-      dashboard: 'Executive Dashboard',
+      dashboard: 'Dashboard',
       accounts: 'Accounts & QR Pairing',
       messaging: 'Send Messages & Media',
-      history: 'Message Audit Log & Receipts',
-      diagnostics: 'HA Integration Credentials & Diagnostics',
+      history: 'Message Audit Log',
+      diagnostics: 'Integration & Setup Credentials',
     };
     const titleEl = document.getElementById('page-title');
-    if (titleEl) titleEl.textContent = titles[tabName] || 'Lumi Whatsapp';
+    if (titleEl) titleEl.textContent = titles[tabName] || 'Dashboard';
   }
 
   function bindEvents() {
@@ -724,9 +724,9 @@
     }
 
     /* ───────────────────────────────────────────────────────────────────
-       BULLETPROOF CLIPBOARD COPY BUTTON HANDLERS
+       COPY BUTTON HANDLERS (DASHBOARD & DIAGNOSTICS)
        ─────────────────────────────────────────────────────────────────── */
-    // Toggle token show / hide
+    // Diagnostics tab - toggle token show / hide
     const toggleTokenBtn = document.getElementById('toggle-token-btn');
     if (toggleTokenBtn) {
       toggleTokenBtn.addEventListener('click', () => {
@@ -734,11 +734,11 @@
         if (!inp) return;
         const isPassword = inp.type === 'password';
         inp.type = isPassword ? 'text' : 'password';
-        toggleTokenBtn.querySelector('span').textContent = isPassword ? 'Hide' : 'Show';
+        toggleTokenBtn.textContent = isPassword ? 'Hide' : 'Show';
       });
     }
 
-    // Copy API Token Button
+    // Diagnostics tab - Copy Token
     const copyTokenBtn = document.getElementById('copy-token-btn');
     if (copyTokenBtn) {
       copyTokenBtn.addEventListener('click', () => {
@@ -747,7 +747,7 @@
       });
     }
 
-    // Copy Primary URL Button
+    // Diagnostics tab - Copy URL
     const copyUrlBtn = document.getElementById('copy-url-btn');
     if (copyUrlBtn) {
       copyUrlBtn.addEventListener('click', () => {
@@ -756,7 +756,7 @@
       });
     }
 
-    // Copy Alternative URL Button
+    // Diagnostics tab - Copy Alt URL
     const copyAltUrlBtn = document.getElementById('copy-alt-url-btn');
     if (copyAltUrlBtn) {
       copyAltUrlBtn.addEventListener('click', () => {
@@ -765,7 +765,7 @@
       });
     }
 
-    // Copy All Setup Info
+    // Diagnostics tab - Copy All
     const copyAllBtn = document.getElementById('copy-all-btn');
     if (copyAllBtn) {
       copyAllBtn.addEventListener('click', () => {
@@ -773,6 +773,35 @@
         const key = document.getElementById('diag-api-key')?.value || '';
         const combined = `URL: ${url}\nAPI_KEY: ${key}`;
         copyToClipboard(combined, copyAllBtn);
+      });
+    }
+
+    // Dashboard card - Copy URL
+    const dashCopyUrlBtn = document.getElementById('dash-copy-url-btn');
+    if (dashCopyUrlBtn) {
+      dashCopyUrlBtn.addEventListener('click', () => {
+        const val = document.getElementById('diag-internal-url')?.value || 'http://127.0.0.1:8653';
+        copyToClipboard(val, dashCopyUrlBtn);
+      });
+    }
+
+    // Dashboard card - Copy Token
+    const dashCopyTokenBtn = document.getElementById('dash-copy-token-btn');
+    if (dashCopyTokenBtn) {
+      dashCopyTokenBtn.addEventListener('click', () => {
+        const val = document.getElementById('diag-api-key')?.value || '';
+        copyToClipboard(val, dashCopyTokenBtn);
+      });
+    }
+
+    // Dashboard card - Copy All
+    const dashCopyAllBtn = document.getElementById('dash-copy-all-btn');
+    if (dashCopyAllBtn) {
+      dashCopyAllBtn.addEventListener('click', () => {
+        const url = document.getElementById('diag-internal-url')?.value || 'http://127.0.0.1:8653';
+        const key = document.getElementById('diag-api-key')?.value || '';
+        const combined = `URL: ${url}\nAPI_KEY: ${key}`;
+        copyToClipboard(combined, dashCopyAllBtn);
       });
     }
   }

@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.10] - 2026-11-05
+
+### Added
+- **Modern White Theme Redesign**: Crisp, modern light-themed SaaS dashboard matching the user's reference UI: pure white cards (`#ffffff`), soft light gray/blue canvas (`#f4f7fe`), circular colored stat badges (blue, gold, green, purple), clean white sidebar, and zero graph/pie chart clutter.
+- **Vibrant Blue Accent Setup Card**: Featured prominently on the dashboard (matching "Balance Summery" from reference UI) with real-time host loopback URL (`http://127.0.0.1:8653`), masked API token, and 1-click instant copy buttons.
+- **Recent Message Audit Table**: Clean modern table directly on the dashboard (matching "Recent Orders") with soft rounded status pills (`Delivered`, `Sent`, `Pending`, `Failed`).
+- **Comprehensive Candidate URL Auto-Detection**: Config flow automatically probes `127.0.0.1`, `localhost`, `whatsapp`, `172.30.32.1`, `host.docker.internal`, and `local-whatsapp` across port 8653 to guarantee connection regardless of Docker network architecture.
+- **Plain HTTP SSL Parameter Fix**: Updated `api.py` to use `ssl=None` on plain HTTP requests to prevent `ValueError` in aiohttp.
+
 ## [1.0.9] - 2026-11-05
 
 ### Added
