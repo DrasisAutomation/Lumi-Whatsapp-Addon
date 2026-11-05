@@ -400,10 +400,12 @@ class InteractiveBot {
         return this._sendMessage(clientId, phone, audioReqMsg);
       }
 
-      // Download audio buffer from Baileys
+      // Download audio buffer from Baileys or direct buffer
       let buffer = null;
       try {
-        if (msg.rawMessage) {
+        if (msg.mediaBuffer) {
+          buffer = msg.mediaBuffer;
+        } else if (msg.rawMessage) {
           const baileys = await getBaileys();
           const downloadFn = baileys.downloadMediaMessage || baileys.default?.downloadMediaMessage;
           if (typeof downloadFn === 'function') {

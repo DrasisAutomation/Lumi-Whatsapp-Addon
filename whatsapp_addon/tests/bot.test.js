@@ -96,6 +96,16 @@ test('BotConfigManager: Rooms, Devices, Speakers, Authorized Numbers & JSON Back
     assert.equal(freshMgr.getConfig().rooms[0].name, 'Living Room');
     assert.equal(freshMgr.getConfig().rooms[0].devices[0].name, 'Ceiling Light');
 
+    // 7. Load Demo Config & Verify
+    const demoCfg = await freshMgr.loadDemoConfig();
+    assert.equal(demoCfg.rooms.length, 2);
+    assert.equal(demoCfg.speakers.length, 2);
+    assert.equal(demoCfg.authorizedNumbers.length, 1);
+    assert.equal(freshMgr.isAuthorized('919876543210'), true);
+    assert.equal(demoCfg.rooms[0].name, 'Living Room');
+    assert.equal(demoCfg.rooms[0].devices.length, 3);
+    assert.equal(demoCfg.speakers[0].name, 'Living Room Speaker');
+
     await cleanupDir(newTmpDir);
   } finally {
     await cleanupDir(tmpDir);
@@ -538,6 +548,19 @@ test('REST API: Bot Config, Rooms, Speakers, Authorized Numbers & Export/Import 
     const importData = await importRes.json();
     assert.equal(importData.roomsCount, 2);
     assert.equal(importData.config.rooms[1].name, 'Garden');
+
+    // 8. POST /api/bot/demo
+    const demoRes = await fetch(`${baseUrl}/api/bot/demo`, {
+      method: 'POST',
+      headers: authHeaders,
+    });
+    assert.equal(demoRes.status, 200);
+    const demoData = await demoRes.json();
+    assert.equal(demoData.ok, true);
+    assert.equal(demoData.config.rooms.length, 2);
+    assert.equal(demoData.config.speakers.length, 2);
+    assert.equal(demoData.config.authorizedNumbers.length, 1);
+    assert.equal(demoData.config.authorizedNumbers[0].phone, '919876543210');
   } finally {
     await close();
     await cleanupDir(tmpDir);

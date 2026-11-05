@@ -405,6 +405,18 @@ function createApiRouter({
     })
   );
 
+  // 25b. POST /api/bot/demo (Loads sample/demo rooms, devices, speakers, and authorized numbers)
+  router.post(
+    '/bot/demo',
+    asyncHandler(async (req, res) => {
+      if (!botConfigManager) {
+        return res.status(503).json({ ok: false, error: 'Bot config manager not initialized' });
+      }
+      const demoConfig = await botConfigManager.loadDemoConfig();
+      res.json({ ok: true, message: 'Demo configuration loaded successfully', config: demoConfig });
+    })
+  );
+
   // 26. GET /api/bot/ha-entities
   router.get(
     '/bot/ha-entities',

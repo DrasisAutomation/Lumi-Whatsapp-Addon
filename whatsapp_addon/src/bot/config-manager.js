@@ -215,6 +215,58 @@ class BotConfigManager {
       speakersCount: this.config.speakers.length,
     };
   }
+
+  getDemoConfig() {
+    return {
+      version: '1.0',
+      exportedAt: new Date().toISOString(),
+      authorizedNumbers: [
+        {
+          phone: '919876543210',
+          name: 'Home Admin',
+          addedAt: new Date().toISOString(),
+        },
+      ],
+      rooms: [
+        {
+          id: 'room_living_room',
+          name: 'Living Room',
+          devices: [
+            { id: 'dev_lr_light', name: 'Ceiling Light', type: 'light', entityId: 'light.living_room_light' },
+            { id: 'dev_lr_fan', name: 'Ceiling Fan', type: 'fan', entityId: 'fan.living_room_fan' },
+            { id: 'dev_lr_ac', name: 'Air Conditioner', type: 'climate', entityId: 'climate.living_room_ac' },
+          ],
+        },
+        {
+          id: 'room_bedroom',
+          name: 'Master Bedroom',
+          devices: [
+            { id: 'dev_bed_lamp', name: 'Bedside Lamp', type: 'light', entityId: 'light.bedroom_lamp' },
+            { id: 'dev_bed_fan', name: 'Exhaust Fan', type: 'switch', entityId: 'switch.bedroom_fan' },
+          ],
+        },
+      ],
+      speakers: [
+        {
+          id: 'spk_living_speaker',
+          name: 'Living Room Speaker',
+          entityId: 'media_player.living_room_speaker',
+        },
+        {
+          id: 'spk_bedroom_echo',
+          name: 'Bedroom Echo Dot',
+          entityId: 'media_player.bedroom_speaker',
+        },
+      ],
+    };
+  }
+
+  async loadDemoConfig() {
+    const demo = this.getDemoConfig();
+    this.config = demo;
+    await this.save();
+    return this.config;
+  }
 }
 
 module.exports = { BotConfigManager };

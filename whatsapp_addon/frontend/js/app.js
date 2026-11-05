@@ -42,6 +42,20 @@
   }
 
   /* ───────────────────────────────────────────────────────────────────
+     HTML ESCAPING HELPER
+     Prevents XSS and ReferenceErrors across DOM render functions
+     ─────────────────────────────────────────────────────────────────── */
+  function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  /* ───────────────────────────────────────────────────────────────────
      TOAST NOTIFICATIONS
      ─────────────────────────────────────────────────────────────────── */
   function showToast(message, type = 'info') {
@@ -207,7 +221,7 @@
     if (histFilter) histFilter.innerHTML = '<option value="">All Accounts</option>';
 
     if (accounts.length === 0) {
-      const emptyNote = '<div class="text-muted" style="padding:1rem;text-align:center;">No accounts registered yet. Click <strong>+ Add Account</strong> to begin pairing.</div>';
+      const emptyNote = '<div class="text-muted" style="padding:1rem;text-align:center;">No accounts registered yet. Click <strong>Add Account</strong> to begin pairing.</div>';
       if (dashContainer) dashContainer.innerHTML = emptyNote;
       if (accContainer) accContainer.innerHTML = emptyNote;
       return;
@@ -590,7 +604,7 @@
 
     const rooms = state.botConfig?.rooms || [];
     if (rooms.length === 0) {
-      container.innerHTML = '<div class="empty-state" style="padding: 2rem; text-align: center; color: #64748b; background: #f8fafc; border-radius: 8px;">No rooms configured yet. Enter a room name above and click <strong>+ Add Room</strong> to create your first room.</div>';
+      container.innerHTML = '<div class="empty-state" style="padding: 2rem; text-align: center; color: #64748b; background: #f8fafc; border-radius: 8px;">No rooms configured yet. Enter a room name above and click <strong>Add Room</strong> to create your first room.</div>';
       return;
     }
 
@@ -608,7 +622,8 @@
         </div>
         <div class="room-actions">
           <button class="btn btn-secondary btn-sm" data-add-dev-room-id="${room.id}" data-room-name="${escapeHtml(room.name)}">
-            + Add Device
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px; margin-right: 4px; vertical-align: -2px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            <span>Add Device</span>
           </button>
           <button class="btn btn-danger-ghost btn-sm" data-del-room-id="${room.id}" data-room-name="${escapeHtml(room.name)}">
             Delete Room
@@ -622,7 +637,7 @@
 
       const devices = room.devices || [];
       if (devices.length === 0) {
-        devTableWrap.innerHTML = '<div style="padding: 0.75rem; color: #64748b; font-size: 0.85rem;">No devices assigned to this room yet. Click <strong>+ Add Device</strong> above.</div>';
+        devTableWrap.innerHTML = '<div style="padding: 0.75rem; color: #64748b; font-size: 0.85rem;">No devices assigned to this room yet. Click <strong>Add Device</strong> above.</div>';
       } else {
         const table = document.createElement('table');
         table.className = 'data-table';
@@ -754,6 +769,14 @@
     }
     const speakerCount = speakers.length;
     const totalDevices = lights + switches + fans + other + speakerCount;
+    const roomDevicesCount = lights + switches + fans + other;
+    const authCount = state.botConfig?.authorizedNumbers?.length || 0;
+
+    // Update Google Material Automation Hub dynamic indicators
+    setEl('hub-rooms-count', rooms.length);
+    setEl('hub-devices-count', roomDevicesCount);
+    setEl('hub-speakers-count', speakers.length);
+    setEl('hub-auth-count', authCount);
 
     const setLegend = (id, text) => {
       const el = document.getElementById(id);
@@ -1508,6 +1531,32 @@
         handleBackupFile(e.target.files?.[0]);
       });
     }
+
+    // ───────────────────────────────────────────────────────────────────
+    // LOAD SAMPLE / DEMO CONFIGURATION HANDLER
+    // ───────────────────────────────────────────────────────────────────
+    const handleLoadDemo = async () => {
+      if (confirm('Load sample smart home setup? This will populate sample rooms (Living Room, Master Bedroom), devices (Lights, Fans, AC), demo speakers, and an authorized phone number for testing.')) {
+        try {
+          const res = await apiRequest('api/bot/demo', { method: 'POST' });
+          if (res?.config) {
+            state.botConfig = res.config;
+            renderBotConfig();
+            showToast('Demo configuration loaded successfully!', 'success');
+          } else {
+            await loadBotConfig();
+          }
+        } catch (err) {
+          showToast(`Could not load demo setup: ${err.message}`, 'error');
+        }
+      }
+    };
+
+    const loadDemoBtn = document.getElementById('load-demo-btn');
+    if (loadDemoBtn) loadDemoBtn.addEventListener('click', handleLoadDemo);
+
+    const backupLoadDemoBtn = document.getElementById('backup-load-demo-btn');
+    if (backupLoadDemoBtn) backupLoadDemoBtn.addEventListener('click', handleLoadDemo);
   }
 
   document.addEventListener('DOMContentLoaded', () => {

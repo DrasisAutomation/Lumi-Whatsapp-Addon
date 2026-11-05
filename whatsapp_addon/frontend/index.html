@@ -17,7 +17,7 @@
         </div>
         <div class="brand-text">
           <h1>LUMI WHATSAPP</h1>
-          <span class="badge-version">v1.1.2</span>
+          <span class="badge-version">v1.1.3</span>
         </div>
       </div>
 
@@ -180,14 +180,14 @@
         <span id="kpi-failed" class="hidden">0</span>
         <span id="kpi-uptime" class="hidden">0s</span>
 
-        <!-- CENTER HERO ROW (MATCHING DASMIN "SALES" HERO + "RECENT ORDERS" SIDEBAR) -->
+        <!-- CENTER HERO ROW (GOOGLE MATERIAL SMART HOME AUTOMATION HUB + ACCOUNTS) -->
         <div class="dash-hero-grid">
-          <!-- LEFT HERO: SMART HOME BOT CONTROL ENGINE -->
+          <!-- LEFT HERO: GOOGLE MATERIAL SMART HOME AUTOMATION HUB -->
           <div class="white-card hero-engine-card">
             <div class="card-header">
               <div>
-                <h3>Smart Home Remote &amp; Broadcast Engine</h3>
-                <p class="card-subtitle">Live WhatsApp commands for Home Assistant lights, switches, fans, AC, and whole-house audio</p>
+                <h3>Smart Home Automation Hub</h3>
+                <p class="card-subtitle">Live WhatsApp commands for Home Assistant lights, switches, fans, AC, and audio casting</p>
               </div>
               <div class="badge-group">
                 <span class="pill-badge pill-blue">📱 /remote Ready</span>
@@ -196,54 +196,96 @@
               </div>
             </div>
 
-            <!-- SIMULATOR VISUAL PREVIEWS -->
-            <div class="engine-features-row">
-              <div class="feature-box">
-                <div class="feature-icon-title">
-                  <span class="feature-emoji">🛋️</span>
-                  <div>
-                    <h4>Interactive Smart Remote</h4>
-                    <p>Send <code>/remote</code> from authorized WhatsApp &rarr; select room &rarr; toggle devices with <code>on 1</code>, <code>on-1</code>, or <code>on 1,2,3</code>.</p>
+            <!-- GOOGLE MATERIAL 3 HUB TILES -->
+            <div class="hub-features-grid">
+              <!-- TILE 1: INTERACTIVE SMART REMOTE -->
+              <div class="hub-tile">
+                <div class="hub-tile-top">
+                  <div class="hub-tile-icon hub-icon-blue">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                  </div>
+                  <div class="hub-tile-body">
+                    <div class="hub-tile-title-row">
+                      <span class="hub-tile-title">Smart Remote</span>
+                      <span class="hub-command-badge">/remote</span>
+                    </div>
+                    <div class="hub-tile-metric">
+                      <strong id="hub-rooms-count">0</strong> rooms &middot; <strong id="hub-devices-count">0</strong> devices
+                    </div>
+                    <p class="hub-tile-desc">Send <code>/remote</code> from WhatsApp to pick rooms and control switches, fans, and lights.</p>
                   </div>
                 </div>
-                <div class="feature-sample-bubble">
-                  <span class="chat-tag">WhatsApp Preview</span>
-                  <code>🏠 LUMI REMOTE &gt; 1️⃣ Living Room &gt; on 1,2 &rarr; Turned ON ✅</code>
-                </div>
+                <button class="hub-tile-action-btn" data-goto-tab="remote">
+                  Configure Rooms &rarr;
+                </button>
               </div>
 
-              <div class="feature-box">
-                <div class="feature-icon-title">
-                  <span class="feature-emoji">🎙️</span>
-                  <div>
-                    <h4>Voice &amp; Audio Casting</h4>
-                    <p>Send <code>/cast</code> &rarr; record voice note or upload audio file &rarr; pick speaker &rarr; audio broadcasts at speaker's <strong>current volume</strong>.</p>
+              <!-- TILE 2: AUDIO & VOICE CASTING -->
+              <div class="hub-tile">
+                <div class="hub-tile-top">
+                  <div class="hub-tile-icon hub-icon-purple">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+                  </div>
+                  <div class="hub-tile-body">
+                    <div class="hub-tile-title-row">
+                      <span class="hub-tile-title">Speaker Cast</span>
+                      <span class="hub-command-badge">/cast</span>
+                    </div>
+                    <div class="hub-tile-metric">
+                      <strong id="hub-speakers-count">0</strong> speakers ready
+                    </div>
+                    <p class="hub-tile-desc">Send voice notes or audio files. Broadcasts to media players at each speaker's volume.</p>
                   </div>
                 </div>
-                <div class="feature-sample-bubble">
-                  <span class="chat-tag">WhatsApp Preview</span>
-                  <code>📢 Audio Received! Reply "play all" &rarr; Multi-Speaker Broadcast Active 🔊</code>
+                <button class="hub-tile-action-btn" data-goto-tab="speakers">
+                  Configure Speakers &rarr;
+                </button>
+              </div>
+
+              <!-- TILE 3: ACCESS CONTROL -->
+              <div class="hub-tile">
+                <div class="hub-tile-top">
+                  <div class="hub-tile-icon hub-icon-emerald">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                  </div>
+                  <div class="hub-tile-body">
+                    <div class="hub-tile-title-row">
+                      <span class="hub-tile-title">Access Control</span>
+                      <span class="hub-command-badge">Whitelist</span>
+                    </div>
+                    <div class="hub-tile-metric">
+                      <strong id="hub-auth-count">0</strong> authorized numbers
+                    </div>
+                    <p class="hub-tile-desc">Only whitelisted WhatsApp numbers can execute smart home commands or broadcast audio.</p>
+                  </div>
                 </div>
+                <button class="hub-tile-action-btn" data-goto-tab="authorized">
+                  Manage Access &rarr;
+                </button>
               </div>
             </div>
 
-            <!-- QUICK SHORTCUT BUTTONS -->
+            <!-- ACTION SHORTCUTS (CLEAN SINGLE PLUS ICONS) -->
             <div class="engine-actions-bar">
               <button class="btn btn-secondary btn-sm" data-goto-tab="remote">
-                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
-                <span>+ Add Room</span>
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                <span>Add Room</span>
               </button>
               <button class="btn btn-secondary btn-sm" data-goto-tab="speakers">
-                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon></svg>
-                <span>+ Add Speaker</span>
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                <span>Add Speaker</span>
               </button>
               <button class="btn btn-secondary btn-sm" data-goto-tab="authorized">
-                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-                <span>+ Whitelist Phone</span>
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                <span>Add Authorized</span>
               </button>
-              <button class="btn btn-primary btn-sm" data-goto-tab="backup">
+              <button class="btn btn-secondary btn-sm" data-goto-tab="backup">
                 <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                 <span>Backup &amp; Restore</span>
+              </button>
+              <button id="load-demo-btn" class="btn btn-outline btn-sm" title="Load sample rooms, devices, speakers, and authorized numbers for testing">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                <span>Load Demo Setup</span>
               </button>
             </div>
           </div>
@@ -255,7 +297,7 @@
                 <h3>WhatsApp Accounts</h3>
                 <p class="card-subtitle">Active linked device sessions</p>
               </div>
-              <button class="btn btn-outline btn-sm" data-goto-tab="accounts">+ Add</button>
+              <button class="btn btn-outline btn-sm" data-goto-tab="accounts">Add Account</button>
             </div>
             <div id="dashboard-accounts-list" class="accounts-list"></div>
           </div>
@@ -364,7 +406,10 @@
               <input id="new-account-name" type="text" placeholder="e.g. Office WhatsApp" />
             </div>
             <div class="form-group form-actions-inline">
-              <button type="submit" class="btn btn-primary">+ Add Account</button>
+              <button type="submit" class="btn btn-primary">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                <span>Add Account</span>
+              </button>
             </div>
           </form>
         </div>
@@ -609,7 +654,7 @@
               <div class="btn-wrap-responsive">
                 <button type="submit" id="save-room-btn" class="btn btn-primary" style="height: 42px; min-width: 150px;">
                   <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                  <span>+ Add Room</span>
+                  <span>Add Room</span>
                 </button>
               </div>
             </div>
@@ -648,7 +693,7 @@
 
           <!-- ADD SPEAKER FORM -->
           <div class="form-card" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.25rem; margin-bottom: 1.5rem;">
-            <h4 style="margin-top: 0; margin-bottom: 0.75rem;">+ Add Speaker</h4>
+            <h4 style="margin-top: 0; margin-bottom: 0.75rem;">Add Speaker</h4>
             <form id="add-speaker-form">
               <div class="form-row-responsive">
                 <div style="flex: 1; min-width: 240px;">
@@ -663,7 +708,7 @@
                 <div class="btn-wrap-responsive">
                   <button type="submit" id="save-speaker-btn" class="btn btn-primary" style="height: 42px; min-width: 150px;">
                     <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                    <span>+ Add Speaker</span>
+                    <span>Add Speaker</span>
                   </button>
                 </div>
               </div>
@@ -701,7 +746,7 @@
 
           <!-- ADD AUTHORIZED NUMBER FORM -->
           <div class="form-card" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.25rem; margin-bottom: 1.5rem;">
-            <h4 style="margin-top: 0; margin-bottom: 0.75rem;">+ Add Authorized Phone Number</h4>
+            <h4 style="margin-top: 0; margin-bottom: 0.75rem;">Add Authorized Phone Number</h4>
             <form id="add-auth-form">
               <div class="form-row-responsive">
                 <div style="flex: 1; min-width: 240px;">
@@ -716,7 +761,7 @@
                 <div class="btn-wrap-responsive">
                   <button type="submit" id="save-auth-btn" class="btn btn-primary" style="height: 42px; min-width: 180px;">
                     <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                    <span>+ Add Authorized</span>
+                    <span>Add Authorized</span>
                   </button>
                 </div>
               </div>
@@ -803,6 +848,26 @@
               <button id="import-trigger-btn" class="btn btn-secondary btn-lg" style="width: 100%;">
                 <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
                 <span>Choose File &amp; Restore</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- DEMO / SEED CARD -->
+          <div class="white-card backup-card" style="grid-column: 1 / -1;">
+            <div class="card-header">
+              <div>
+                <h3>Sample Demo Configuration</h3>
+                <p class="card-subtitle">Instantly test the WhatsApp bot with pre-built smart rooms, devices, speakers, and whitelisted number</p>
+              </div>
+              <span class="pill-badge pill-purple">Instant Test</span>
+            </div>
+            <p class="backup-desc">
+              Populates realistic sample rooms (Living Room, Master Bedroom), smart devices (Lights, Fans, AC), demo speakers, and a test phone number (<code>+919876543210</code>). You can customize or delete them anytime.
+            </p>
+            <div class="backup-actions">
+              <button id="backup-load-demo-btn" class="btn btn-outline btn-lg" style="width: auto; min-width: 240px;">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                <span>Load Sample Setup Now</span>
               </button>
             </div>
           </div>
