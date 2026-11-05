@@ -3,7 +3,7 @@
 const fs = require('node:fs');
 const fsp = require('node:fs/promises');
 const path = require('node:path');
-const { downloadMediaMessage } = require('@whiskeysockets/baileys');
+const { getBaileys } = require('../whatsapp/baileys');
 
 const SESSION_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes inactivity timeout
 const NUM_EMOJIS = ['0️⃣', '1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
@@ -404,7 +404,13 @@ class InteractiveBot {
       let buffer = null;
       try {
         if (msg.rawMessage) {
-          buffer = await downloadMediaMessage(msg.rawMessage, 'buffer', {}, { logger: this.logger });
+          const baileys = await getBaileys();
+          const downloadFn = baileys.downloadMediaMessage || baileys.default?.downloadMediaMessage;
+          if (typeof downloadFn === 'function') {
+            buffer = await downloadFn(msg.rawMessage, 'buffer', {}, { logger: this.logger });
+          } else {
+            this.logger?.error('downloadMediaMessage is not available on Baileys export');
+          }
         }
       } catch (err) {
         this.logger?.error({ err: err.message }, 'Failed to download WhatsApp audio message');
