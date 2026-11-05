@@ -502,23 +502,24 @@
      ─────────────────────────────────────────────────────────────────── */
   async function loadAllData() {
     try {
-      const [accRes, msgRes, diagRes] = await Promise.all([
+      const [accRes, msgRes, diagRes] = await Promise.allSettled([
         apiRequest('api/accounts'),
         apiRequest('api/messages?limit=150'),
         apiRequest('api/diagnostics'),
       ]);
-      state.accounts = accRes.accounts || [];
-      state.messages = msgRes.messages || [];
-      state.diagnostics = diagRes;
+      if (accRes.status === 'fulfilled') state.accounts = accRes.value?.accounts || [];
+      if (msgRes.status === 'fulfilled') state.messages = msgRes.value?.messages || [];
+      if (diagRes.status === 'fulfilled') state.diagnostics = diagRes.value;
 
       renderDashboardAndAccounts();
       renderHistoryTable();
       renderDiagnostics();
-
-      await Promise.all([loadBotConfig(), loadHaEntities()]);
     } catch (err) {
-      showToast(`Failed to load data: ${err.message}`, 'error');
+      console.warn('Dashboard load error:', err);
     }
+
+    // Always fetch bot config and entities independently
+    await Promise.allSettled([loadBotConfig(), loadHaEntities()]);
   }
 
   /* ───────────────────────────────────────────────────────────────────
@@ -571,6 +572,15 @@
     renderSpeakers();
     renderAuthorizedNumbers();
     updateDashboardMetrics();
+
+    // Update Backup & Restore live stats
+    const setEl = (id, val) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = String(val);
+    };
+    setEl('backup-rooms-count', state.botConfig?.rooms?.length || 0);
+    setEl('backup-speakers-count', state.botConfig?.speakers?.length || 0);
+    setEl('backup-auth-count', state.botConfig?.authorizedNumbers?.length || 0);
   }
 
   function renderRooms() {
@@ -580,7 +590,7 @@
 
     const rooms = state.botConfig?.rooms || [];
     if (rooms.length === 0) {
-      container.innerHTML = '<div class="empty-state" style="padding: 2rem; text-align: center; color: #64748b; background: #f8fafc; border-radius: 8px;">No rooms configured yet. Click <strong>+ Add Room</strong> above to create your first room.</div>';
+      container.innerHTML = '<div class="empty-state" style="padding: 2rem; text-align: center; color: #64748b; background: #f8fafc; border-radius: 8px;">No rooms configured yet. Enter a room name above and click <strong>+ Add Room</strong> to create your first room.</div>';
       return;
     }
 
@@ -949,6 +959,7 @@
       remote: 'Smart Home Remote Control Builder',
       speakers: 'Speakers & Audio Broadcasting',
       authorized: 'Authorized WhatsApp Numbers',
+      backup: 'Backup & Restore Configuration',
       diagnostics: 'Integration & Setup Credentials',
     };
     const titleEl = document.getElementById('page-title');
@@ -1156,43 +1167,31 @@
     /* ───────────────────────────────────────────────────────────────────
        BOT BUILDER, ROOMS, SPEAKERS & AUTHORIZED NUMBER HANDLERS
        ─────────────────────────────────────────────────────────────────── */
-    // Add Room toggle & submit
-    const addRoomToggleBtn = document.getElementById('add-room-toggle-btn');
-    const addRoomBox = document.getElementById('add-room-box');
-    const saveRoomBtn = document.getElementById('save-room-btn');
-    const cancelRoomBtn = document.getElementById('cancel-room-btn');
-    const roomInput = document.getElementById('new-room-name');
-
-    if (addRoomToggleBtn && addRoomBox) {
-      addRoomToggleBtn.addEventListener('click', () => {
-        addRoomBox.classList.toggle('hidden');
-        if (!addRoomBox.classList.contains('hidden') && roomInput) roomInput.focus();
-      });
-    }
-
-    if (cancelRoomBtn && addRoomBox) {
-      cancelRoomBtn.addEventListener('click', () => {
-        addRoomBox.classList.add('hidden');
-        if (roomInput) roomInput.value = '';
-      });
-    }
-
-    if (saveRoomBtn) {
-      saveRoomBtn.addEventListener('click', async () => {
+    // Add Room form submission
+    const addRoomForm = document.getElementById('add-room-form');
+    if (addRoomForm) {
+      addRoomForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const roomInput = document.getElementById('new-room-name');
         const name = roomInput?.value.trim();
         if (!name) {
           showToast('Please enter a room name.', 'error');
+          roomInput?.focus();
           return;
         }
         try {
-          await apiRequest('api/bot/rooms', {
+          const res = await apiRequest('api/bot/rooms', {
             method: 'POST',
             body: JSON.stringify({ name }),
           });
           showToast(`Room "${name}" created!`, 'success');
           if (roomInput) roomInput.value = '';
-          if (addRoomBox) addRoomBox.classList.add('hidden');
-          await loadBotConfig();
+          if (res?.config) {
+            state.botConfig = res.config;
+            renderBotConfig();
+          } else {
+            await loadBotConfig();
+          }
         } catch (err) {
           showToast(err.message, 'error');
         }
@@ -1297,10 +1296,11 @@
       });
     }
 
-    // Speakers Add & Remove
-    const saveSpkBtn = document.getElementById('save-speaker-btn');
-    if (saveSpkBtn) {
-      saveSpkBtn.addEventListener('click', async () => {
+    // Speakers Add form
+    const addSpkForm = document.getElementById('add-speaker-form');
+    if (addSpkForm) {
+      addSpkForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
         const nameInput = document.getElementById('new-speaker-name');
         const entInput = document.getElementById('new-speaker-entity');
         const name = nameInput?.value.trim();
@@ -1312,14 +1312,19 @@
         }
 
         try {
-          await apiRequest('api/bot/speakers', {
+          const res = await apiRequest('api/bot/speakers', {
             method: 'POST',
             body: JSON.stringify({ name, entityId }),
           });
           showToast(`Speaker "${name}" added!`, 'success');
           if (nameInput) nameInput.value = '';
           if (entInput) entInput.value = '';
-          await loadBotConfig();
+          if (res?.config) {
+            state.botConfig = res.config;
+            renderBotConfig();
+          } else {
+            await loadBotConfig();
+          }
         } catch (err) {
           showToast(err.message, 'error');
         }
@@ -1346,30 +1351,37 @@
       });
     }
 
-    // Authorized Numbers Add & Remove
-    const saveAuthBtn = document.getElementById('save-auth-btn');
-    if (saveAuthBtn) {
-      saveAuthBtn.addEventListener('click', async () => {
+    // Authorized Numbers Add form
+    const addAuthForm = document.getElementById('add-auth-form');
+    if (addAuthForm) {
+      addAuthForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
         const phoneInput = document.getElementById('new-auth-phone');
         const nameInput = document.getElementById('new-auth-name');
         const rawPhone = phoneInput?.value.trim();
-        const name = nameInput?.value.trim();
+        const name = nameInput?.value.trim() || 'Family Member';
 
         const cleanPhone = String(rawPhone || '').replace(/[^0-9]/g, '');
         if (!cleanPhone || cleanPhone.length < 7 || cleanPhone.length > 15) {
           showToast('Please enter a valid numeric phone number with country code (10-15 digits).', 'error');
+          phoneInput?.focus();
           return;
         }
 
         try {
-          await apiRequest('api/bot/authorized-numbers', {
+          const res = await apiRequest('api/bot/authorized-numbers', {
             method: 'POST',
             body: JSON.stringify({ phone: cleanPhone, name }),
           });
           showToast(`Number +${cleanPhone} authorized!`, 'success');
           if (phoneInput) phoneInput.value = '';
           if (nameInput) nameInput.value = '';
-          await loadBotConfig();
+          if (res?.config) {
+            state.botConfig = res.config;
+            renderBotConfig();
+          } else {
+            await loadBotConfig();
+          }
         } catch (err) {
           showToast(err.message, 'error');
         }
@@ -1396,45 +1408,7 @@
       });
     }
 
-    // Global Search Input with Cmd+K / Ctrl+K shortcut
-    const searchInput = document.getElementById('global-search-input');
-    if (searchInput) {
-      window.addEventListener('keydown', (e) => {
-        if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
-          e.preventDefault();
-          searchInput.focus();
-          searchInput.select();
-        }
-      });
-
-      searchInput.addEventListener('input', (e) => {
-        filterDashboardAndRooms(e.target.value);
-      });
-
-      searchInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-          searchInput.value = '';
-          filterDashboardAndRooms('');
-          searchInput.blur();
-        }
-      });
-    }
-
-    // Topbar notification & websocket status click handlers
-    const notifBtn = document.getElementById('notif-btn');
-    if (notifBtn) {
-      notifBtn.addEventListener('click', () => {
-        const connectedCount = state.accounts.filter((a) => a.status === 'connected').length;
-        const totalRooms = state.botConfig?.rooms?.length || 0;
-        const totalSpeakers = state.botConfig?.speakers?.length || 0;
-        const totalAuth = state.botConfig?.authorizedNumbers?.length || 0;
-        showToast(
-          `System Status: ${connectedCount} Account(s) Online | ${totalRooms} Rooms | ${totalSpeakers} Speakers | ${totalAuth} Whitelisted Phone(s)`,
-          'info'
-        );
-      });
-    }
-
+    // WebSocket indicator button click
     const wsPillBtn = document.getElementById('ws-indicator-pill');
     if (wsPillBtn) {
       wsPillBtn.addEventListener('click', () => {
@@ -1448,57 +1422,90 @@
       });
     }
 
-    // Export & Import JSON Backup
+    // ───────────────────────────────────────────────────────────────────
+    // DEDICATED BACKUP & RESTORE HANDLERS
+    // ───────────────────────────────────────────────────────────────────
     function triggerConfigExport() {
-      const jsonStr = JSON.stringify(state.botConfig, null, 2);
+      const fullConfig = {
+        version: '1.0',
+        exportedAt: new Date().toISOString(),
+        authorizedNumbers: state.botConfig?.authorizedNumbers || [],
+        rooms: state.botConfig?.rooms || [],
+        speakers: state.botConfig?.speakers || [],
+      };
+      const jsonStr = JSON.stringify(fullConfig, null, 2);
       const blob = new Blob([jsonStr], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `lumi_whatsapp_config_${Date.now()}.json`;
+      a.download = `lumi_whatsapp_full_backup_${Date.now()}.json`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      showToast('Configuration exported as JSON.', 'success');
+      showToast('Full configuration exported as JSON.', 'success');
     }
 
-    const exportBtn = document.getElementById('export-remote-btn');
-    const heroExportBtn = document.getElementById('hero-export-btn');
-    if (exportBtn) exportBtn.addEventListener('click', triggerConfigExport);
-    if (heroExportBtn) heroExportBtn.addEventListener('click', triggerConfigExport);
-
-    const importBtn = document.getElementById('import-remote-btn');
-    const fileInput = document.getElementById('bot-file-input');
-
-    if (importBtn && fileInput) {
-      importBtn.addEventListener('click', () => {
-        fileInput.value = '';
-        fileInput.click();
-      });
-
-      fileInput.addEventListener('change', async (e) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = async () => {
-          try {
-            const parsed = JSON.parse(String(reader.result));
-            const result = await apiRequest('api/bot/import', {
-              method: 'POST',
-              body: JSON.stringify(parsed),
-            });
-            showToast(
-              `Restored! Imported ${result.roomsCount} rooms, ${result.speakersCount} speakers, and ${result.authorizedCount} authorized numbers.`,
-              'success'
-            );
+    const handleBackupFile = (file) => {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = async () => {
+        try {
+          const parsed = JSON.parse(String(reader.result));
+          const result = await apiRequest('api/bot/import', {
+            method: 'POST',
+            body: JSON.stringify(parsed),
+          });
+          showToast(
+            `Restored! Imported ${result.roomsCount || 0} rooms, ${result.speakersCount || 0} speakers, and ${result.authorizedCount || 0} authorized numbers.`,
+            'success'
+          );
+          if (result.config) {
+            state.botConfig = result.config;
+            renderBotConfig();
+          } else {
             await loadBotConfig();
-          } catch (err) {
-            showToast(`Restore failed: ${err.message}`, 'error');
           }
-        };
-        reader.readAsText(file);
+        } catch (err) {
+          showToast(`Restore failed: ${err.message}`, 'error');
+        }
+      };
+      reader.readAsText(file);
+    };
+
+    const exportFullBtn = document.getElementById('export-full-btn');
+    if (exportFullBtn) exportFullBtn.addEventListener('click', triggerConfigExport);
+
+    const importTriggerBtn = document.getElementById('import-trigger-btn');
+    const backupDropZone = document.getElementById('backup-drop-zone');
+    const backupFileInput = document.getElementById('backup-file-input');
+    const botFileInput = document.getElementById('bot-file-input');
+
+    if (importTriggerBtn && backupFileInput) {
+      importTriggerBtn.addEventListener('click', () => {
+        backupFileInput.value = '';
+        backupFileInput.click();
+      });
+    }
+
+    if (backupDropZone && backupFileInput) {
+      backupDropZone.addEventListener('click', (e) => {
+        if (e.target !== backupFileInput) {
+          backupFileInput.value = '';
+          backupFileInput.click();
+        }
+      });
+    }
+
+    if (backupFileInput) {
+      backupFileInput.addEventListener('change', (e) => {
+        handleBackupFile(e.target.files?.[0]);
+      });
+    }
+
+    if (botFileInput) {
+      botFileInput.addEventListener('change', (e) => {
+        handleBackupFile(e.target.files?.[0]);
       });
     }
   }

@@ -17,7 +17,7 @@
         </div>
         <div class="brand-text">
           <h1>LUMI WHATSAPP</h1>
-          <span class="badge-version">v1.1.0</span>
+          <span class="badge-version">v1.1.2</span>
         </div>
       </div>
 
@@ -50,6 +50,10 @@
           <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
           <span>Authorized Numbers</span>
         </button>
+        <button class="nav-btn" data-tab="backup" role="tab">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          <span>Backup &amp; Restore</span>
+        </button>
         <button class="nav-btn" data-tab="diagnostics" role="tab">
           <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
           <span>Integration &amp; Setup</span>
@@ -69,55 +73,27 @@
 
     <!-- MAIN CANVAS -->
     <main class="main-content">
-      <!-- TOP BAR (MATCHING DASMIN SAAS EXECUTIVE DESIGN) -->
+      <!-- TOP BAR: CLEAN, SPACIOUS, PROPERLY ALIGNED -->
       <header class="topbar">
         <div class="topbar-left">
-          <div class="title-with-pill">
-            <h2 id="page-title">Dashboard</h2>
-            <span class="live-status-pill">
-              <span class="pulse-dot"></span>
-              <span>Live Core</span>
-            </span>
-          </div>
+          <h2 id="page-title" class="page-title">Dashboard</h2>
         </div>
 
-        <!-- SEARCH BAR MATCHING DASMIN REFERENCE -->
-        <div class="topbar-search-wrap">
-          <svg class="search-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-          <input id="global-search-input" type="text" placeholder="Search devices, rooms, accounts, entities..." autocomplete="off" />
-          <kbd class="search-kbd">⌘K</kbd>
-        </div>
-
-        <!-- RIGHT ACTIONS & USER PROFILE MATCHING DASMIN -->
         <div class="topbar-right">
-          <button id="ws-indicator-pill" class="ws-pill-btn" title="Live WebSocket Streaming Feed">
+          <div id="ws-indicator-pill" class="ws-pill-btn" title="Live WebSocket Streaming Feed">
             <span id="ws-pill-dot" class="status-dot disconnected"></span>
             <span id="ws-pill-label">Live Stream</span>
-          </button>
-          
-          <button class="icon-round-btn" id="notif-btn" title="System Notifications">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-            <span class="icon-badge-dot"></span>
-          </button>
-
-          <div class="user-profile-badge">
-            <div class="user-avatar-circle">M</div>
-            <div class="user-meta">
-              <span class="user-display-name">Mohan (Admin)</span>
-              <span class="user-subtitle">Home Assistant</span>
-            </div>
           </div>
 
-          <div class="topbar-btn-group">
-            <button id="refresh-btn" class="btn btn-secondary">
-              <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
-              <span>Refresh</span>
-            </button>
-            <button class="btn btn-primary" data-goto-tab="diagnostics">
-              <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-              <span>Integration Token</span>
-            </button>
-          </div>
+          <button id="refresh-btn" class="btn btn-secondary btn-sm" title="Refresh Live Data">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+            <span>Refresh</span>
+          </button>
+
+          <button class="btn btn-primary btn-sm" data-goto-tab="diagnostics" title="Home Assistant Integration Setup &amp; Token">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            <span>Setup &amp; Token</span>
+          </button>
         </div>
       </header>
 
@@ -265,9 +241,9 @@
                 <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
                 <span>+ Whitelist Phone</span>
               </button>
-              <button id="hero-export-btn" class="btn btn-primary btn-sm">
+              <button class="btn btn-primary btn-sm" data-goto-tab="backup">
                 <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                <span>Backup Config (.json)</span>
+                <span>Backup &amp; Restore</span>
               </button>
             </div>
           </div>
@@ -616,40 +592,39 @@
 
       <!-- SECTION F: REMOTE CONTROL BUILDER -->
       <section id="tab-remote" class="tab-panel">
+        <!-- ADD ROOM CARD -->
+        <div class="white-card" style="margin-bottom: 1.5rem;">
+          <div class="card-header">
+            <div>
+              <h3>Add Smart Room / Area</h3>
+              <p class="card-subtitle">Create a room to organize Home Assistant lights, switches, and fans for WhatsApp <code>/remote</code>.</p>
+            </div>
+          </div>
+          <form id="add-room-form">
+            <div class="form-row-responsive">
+              <div style="flex: 1; min-width: 260px;">
+                <label for="new-room-name" class="form-label">Room Name*</label>
+                <input id="new-room-name" type="text" placeholder="e.g. Living Room, Master Bedroom, Kitchen, Balcony" class="cred-input" style="width: 100%;" required />
+              </div>
+              <div class="btn-wrap-responsive">
+                <button type="submit" id="save-room-btn" class="btn btn-primary" style="height: 42px; min-width: 150px;">
+                  <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                  <span>+ Add Room</span>
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- CONFIGURED ROOMS & DEVICES LIST -->
         <div class="white-card">
           <div class="card-header">
             <div>
-              <h3>Smart Home Remote Control Builder</h3>
-              <p class="card-subtitle">Configure rooms and assign Home Assistant devices for interactive WhatsApp control (<code>/remote</code>).</p>
-            </div>
-            <div class="header-actions">
-              <button id="add-room-toggle-btn" class="btn btn-primary">
-                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                <span>+ Add Room</span>
-              </button>
-              <button id="export-remote-btn" class="btn btn-secondary">
-                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                <span>Export JSON</span>
-              </button>
-              <button id="import-remote-btn" class="btn btn-secondary">
-                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-                <span>Import JSON</span>
-              </button>
+              <h3>Configured Rooms &amp; Devices</h3>
+              <p class="card-subtitle">Manage rooms and add individual Home Assistant entities to each room.</p>
             </div>
           </div>
-
-          <!-- INLINE ADD ROOM FORM -->
-          <div id="add-room-box" class="form-card hidden" style="margin-top: 1rem; margin-bottom: 1.5rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1rem;">
-            <h4 style="margin-top: 0; margin-bottom: 0.5rem;">Add New Room / Area</h4>
-            <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
-              <input id="new-room-name" type="text" placeholder="e.g. Living Room, Master Bedroom, Balcony" class="cred-input" style="flex: 1; min-width: 260px;" />
-              <button id="save-room-btn" class="btn btn-primary">Save Room</button>
-              <button id="cancel-room-btn" class="btn btn-ghost">Cancel</button>
-            </div>
-          </div>
-
-          <!-- ROOMS & DEVICES TREE -->
-          <div id="bot-rooms-list" class="rooms-container" style="display: flex; flex-direction: column; gap: 1.25rem; margin-top: 1rem;">
+          <div id="bot-rooms-list" class="rooms-container">
             <div class="empty-state">Loading rooms and devices...</div>
           </div>
         </div>
@@ -674,20 +649,25 @@
           <!-- ADD SPEAKER FORM -->
           <div class="form-card" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.25rem; margin-bottom: 1.5rem;">
             <h4 style="margin-top: 0; margin-bottom: 0.75rem;">+ Add Speaker</h4>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; align-items: flex-end;">
-              <div>
-                <label style="display: block; font-size: 0.825rem; font-weight: 600; margin-bottom: 0.35rem; color: #475569;">Speaker Display Name*</label>
-                <input id="new-speaker-name" type="text" placeholder="e.g. Living Room Speaker, Bedroom Echo Dot" class="cred-input" style="width: 100%;" />
+            <form id="add-speaker-form">
+              <div class="form-row-responsive">
+                <div style="flex: 1; min-width: 240px;">
+                  <label for="new-speaker-name" class="form-label">Speaker Display Name*</label>
+                  <input id="new-speaker-name" type="text" placeholder="e.g. Living Room Speaker, Bedroom Echo Dot" class="cred-input" style="width: 100%;" required />
+                </div>
+                <div style="flex: 1; min-width: 240px;">
+                  <label for="new-speaker-entity" class="form-label">Home Assistant Entity (media_player)*</label>
+                  <input id="new-speaker-entity" type="text" list="ha-media-entities-datalist" placeholder="Search or select media_player.*..." class="cred-input" style="width: 100%;" required />
+                  <datalist id="ha-media-entities-datalist"></datalist>
+                </div>
+                <div class="btn-wrap-responsive">
+                  <button type="submit" id="save-speaker-btn" class="btn btn-primary" style="height: 42px; min-width: 150px;">
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    <span>+ Add Speaker</span>
+                  </button>
+                </div>
               </div>
-              <div>
-                <label style="display: block; font-size: 0.825rem; font-weight: 600; margin-bottom: 0.35rem; color: #475569;">Home Assistant Entity (media_player)*</label>
-                <input id="new-speaker-entity" type="text" list="ha-media-entities-datalist" placeholder="Search or select media_player.*..." class="cred-input" style="width: 100%;" />
-                <datalist id="ha-media-entities-datalist"></datalist>
-              </div>
-              <div>
-                <button id="save-speaker-btn" class="btn btn-primary" style="height: 40px; width: 100%;">+ Add Speaker</button>
-              </div>
-            </div>
+            </form>
           </div>
 
           <!-- SPEAKERS TABLE -->
@@ -722,20 +702,25 @@
           <!-- ADD AUTHORIZED NUMBER FORM -->
           <div class="form-card" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.25rem; margin-bottom: 1.5rem;">
             <h4 style="margin-top: 0; margin-bottom: 0.75rem;">+ Add Authorized Phone Number</h4>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; align-items: flex-end;">
-              <div>
-                <label style="display: block; font-size: 0.825rem; font-weight: 600; margin-bottom: 0.35rem; color: #475569;">Phone Number (with Country Code)*</label>
-                <input id="new-auth-phone" type="text" placeholder="e.g. 917904598574" class="cred-input" style="width: 100%;" />
-                <small style="color: #64748b; font-size: 0.75rem; display: block; margin-top: 0.25rem;">Enter international digits only without '+' or spaces (e.g. 91 for India, 1 for US).</small>
+            <form id="add-auth-form">
+              <div class="form-row-responsive">
+                <div style="flex: 1; min-width: 240px;">
+                  <label for="new-auth-phone" class="form-label">Phone Number (with Country Code)*</label>
+                  <input id="new-auth-phone" type="text" placeholder="e.g. 917904598574" class="cred-input" style="width: 100%;" required />
+                  <span class="field-hint">Enter international digits only without '+' or spaces (e.g. 91 for India, 1 for US).</span>
+                </div>
+                <div style="flex: 1; min-width: 240px;">
+                  <label for="new-auth-name" class="form-label">User Label / Name</label>
+                  <input id="new-auth-name" type="text" placeholder="e.g. Family Member or Home Admin" class="cred-input" style="width: 100%;" />
+                </div>
+                <div class="btn-wrap-responsive">
+                  <button type="submit" id="save-auth-btn" class="btn btn-primary" style="height: 42px; min-width: 180px;">
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    <span>+ Add Authorized</span>
+                  </button>
+                </div>
               </div>
-              <div>
-                <label style="display: block; font-size: 0.825rem; font-weight: 600; margin-bottom: 0.35rem; color: #475569;">User Label / Name</label>
-                <input id="new-auth-name" type="text" placeholder="e.g. Mohan (Admin) or Family Member" class="cred-input" style="width: 100%;" />
-              </div>
-              <div>
-                <button id="save-auth-btn" class="btn btn-primary" style="height: 40px; width: 100%;">+ Add Authorized Number</button>
-              </div>
-            </div>
+            </form>
           </div>
 
           <!-- AUTHORIZED NUMBERS TABLE -->
@@ -753,6 +738,73 @@
                 <tr><td colspan="4" class="empty-state">Loading authorized numbers...</td></tr>
               </tbody>
             </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION I: BACKUP & RESTORE -->
+      <section id="tab-backup" class="tab-panel">
+        <div class="backup-grid">
+          <!-- EXPORT CARD -->
+          <div class="white-card backup-card">
+            <div class="card-header">
+              <div>
+                <h3>Export Full Configuration</h3>
+                <p class="card-subtitle">Download all data as a portable JSON file</p>
+              </div>
+              <span class="pill-badge pill-blue">JSON Backup</span>
+            </div>
+            <p class="backup-desc">
+              Exports all your <strong>Smart Rooms</strong>, <strong>Assigned Devices</strong>, <strong>Broadcast Speakers</strong>, and <strong>Authorized WhatsApp Numbers</strong> in one complete configuration file.
+            </p>
+            <div class="backup-stats-box">
+              <div class="backup-stat-item">
+                <span class="stat-count" id="backup-rooms-count">0</span>
+                <span class="stat-lbl">Rooms</span>
+              </div>
+              <div class="backup-stat-item">
+                <span class="stat-count" id="backup-speakers-count">0</span>
+                <span class="stat-lbl">Speakers</span>
+              </div>
+              <div class="backup-stat-item">
+                <span class="stat-count" id="backup-auth-count">0</span>
+                <span class="stat-lbl">Authorized Phones</span>
+              </div>
+            </div>
+            <div class="backup-actions">
+              <button id="export-full-btn" class="btn btn-primary btn-lg" style="width: 100%;">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                <span>Download Full Backup (.json)</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- IMPORT CARD -->
+          <div class="white-card backup-card">
+            <div class="card-header">
+              <div>
+                <h3>Restore Configuration</h3>
+                <p class="card-subtitle">Restore from a previously saved JSON backup file</p>
+              </div>
+              <span class="pill-badge pill-green">Restore</span>
+            </div>
+            <p class="backup-desc">
+              Reinstalling or migrating the add-on? Select your saved backup JSON to instantly restore all your configured smart rooms, devices, speakers, and whitelisted phone numbers.
+            </p>
+            <div class="backup-drop-zone" id="backup-drop-zone">
+              <svg class="drop-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+              <div class="drop-text">
+                <strong>Click to select JSON file</strong>
+                <span>Supports full configuration backups</span>
+              </div>
+              <input type="file" id="backup-file-input" accept=".json,application/json" class="hidden" />
+            </div>
+            <div class="backup-actions">
+              <button id="import-trigger-btn" class="btn btn-secondary btn-lg" style="width: 100%;">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                <span>Choose File &amp; Restore</span>
+              </button>
+            </div>
           </div>
         </div>
       </section>
