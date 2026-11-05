@@ -20,6 +20,8 @@ dist/
 build/
 
 # CRITICAL SECURITY: Never commit WhatsApp sessions, credentials, QR codes, or tokens
+data/
+**/data/
 **/sessions/
 **/auth_info*/
 **/baileys_auth*/
