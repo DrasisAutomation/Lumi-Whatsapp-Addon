@@ -35,6 +35,7 @@ const requiredFiles = [
   'whatsapp_addon/src/whatsapp/session-manager.js',
   'whatsapp_addon/src/whatsapp/message-manager.js',
   'whatsapp_addon/src/whatsapp/media-manager.js',
+  'whatsapp_addon/src/whatsapp/message-store.js',
   'whatsapp_addon/src/whatsapp/contact-manager.js',
   'whatsapp_addon/src/whatsapp/event-manager.js',
   'whatsapp_addon/src/api/routes.js',

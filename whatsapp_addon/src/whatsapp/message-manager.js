@@ -160,6 +160,9 @@ class MessageManager {
       throw err;
     }
 
+    // Save message to connection messageStore so Baileys getMessage callback can handle decryption retries
+    conn.saveMessage(response);
+
     return {
       whatsappMessageId: response.key.id,
       timestamp: new Date().toISOString(),

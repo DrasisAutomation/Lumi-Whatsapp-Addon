@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.8] - 2026-11-05
+
+### Fixed
+- Fixed WhatsApp "Waiting for this message. This may take a while." placeholder error by implementing `MessageStore` and Baileys `getMessage` decryption retry callback.
+- Added `msgRetryCounterCache` and `patchMessageBeforeSending` to ensure reliable multi-device E2EE decryption for media messages.
+- Enhanced `MediaManager.waitForFileReady` with JPEG SOI/EOI (`0xFFD8`/`0xFFD9`) and PNG `IEND` chunk verification to guarantee camera snapshot completeness before upload.
+
 ## [1.0.7] - 2026-11-05
 
 ### Fixed

@@ -82,7 +82,50 @@ class MediaManager {
           if (stat.size === lastSize) {
             stableCount += 1;
             if (stableCount >= 1) {
-              return stat;
+              // Inspect file trailing bytes to ensure camera/writer process has finished flushing
+              const ext = path.extname(canonicalOrCandidatePath).toLowerCase();
+              if (ext === '.jpg' || ext === '.jpeg') {
+                if (stat.size >= 4) {
+                  let fd;
+                  try {
+                    fd = await fsp.open(canonicalOrCandidatePath, 'r');
+                    const headerBuf = Buffer.alloc(2);
+                    const footerBuf = Buffer.alloc(2);
+                    await fd.read(headerBuf, 0, 2, 0);
+                    await fd.read(footerBuf, 0, 2, stat.size - 2);
+                    const isComplete =
+                      headerBuf[0] === 0xff &&
+                      headerBuf[1] === 0xd8 &&
+                      footerBuf[0] === 0xff &&
+                      footerBuf[1] === 0xd9;
+                    if (isComplete) {
+                      return stat;
+                    }
+                  } catch {
+                    // File may be temporarily locked by camera write, continue polling
+                  } finally {
+                    if (fd) await fd.close().catch(() => {});
+                  }
+                }
+              } else if (ext === '.png') {
+                if (stat.size >= 12) {
+                  let fd;
+                  try {
+                    fd = await fsp.open(canonicalOrCandidatePath, 'r');
+                    const footerBuf = Buffer.alloc(12);
+                    await fd.read(footerBuf, 0, 12, Math.max(0, stat.size - 12));
+                    if (footerBuf.includes('IEND')) {
+                      return stat;
+                    }
+                  } catch {
+                    // Continue polling
+                  } finally {
+                    if (fd) await fd.close().catch(() => {});
+                  }
+                }
+              } else {
+                return stat;
+              }
             }
           } else {
             lastSize = stat.size;

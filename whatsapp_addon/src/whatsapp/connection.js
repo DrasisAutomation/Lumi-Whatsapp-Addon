@@ -3,7 +3,9 @@
 const EventEmitter = require('node:events');
 const QRCode = require('qrcode');
 const pino = require('pino');
+const NodeCache = require('@cacheable/node-cache');
 const { getBaileys, DisconnectReason } = require('./baileys');
+const { MessageStore } = require('./message-store');
 const { useAtomicMultiFileAuthState } = require('../services/storage');
 const { calculateBackoffDelayMs } = require('../services/retry');
 const { BAILEYS_STATUS_MAP } = require('./event-manager');
@@ -46,6 +48,17 @@ class WhatsAppAccountConnection extends EventEmitter {
     this.reconnectAttempts = 0;
     this.reconnectTimer = null;
     this.manualDisconnect = false;
+
+    this.messageStore = new MessageStore({
+      clientId: this.clientId,
+      sessionDir: this.sessionDir,
+      logger: this.logger,
+    });
+    const CacheClass = NodeCache.default || NodeCache;
+    this.msgRetryCounterCache = new CacheClass({
+      stdTTL: 3600,
+      useClones: false,
+    });
 
     this.stats = {
       messagesSent: 0,
@@ -113,6 +126,35 @@ class WhatsAppAccountConnection extends EventEmitter {
         markOnlineOnConnect: false,
         generateHighQualityLinkPreview: false,
         syncFullHistory: false,
+        msgRetryCounterCache: this.msgRetryCounterCache,
+        getMessage: async (key) => {
+          try {
+            return this.messageStore.getMessage(key);
+          } catch {
+            return undefined;
+          }
+        },
+        patchMessageBeforeSending: (message) => {
+          const requiresPatch = Boolean(
+            message.buttonsMessage ||
+            message.templateMessage ||
+            message.listMessage
+          );
+          if (requiresPatch) {
+            message = {
+              viewOnceMessage: {
+                message: {
+                  messageContextInfo: {
+                    deviceListMetadataVersion: 2,
+                    deviceListMetadata: {},
+                  },
+                  ...message,
+                },
+              },
+            };
+          }
+          return message;
+        },
       });
 
       this.sock = sock;
@@ -279,12 +321,19 @@ class WhatsAppAccountConnection extends EventEmitter {
     }
   }
 
+  saveMessage(webMessage) {
+    this.messageStore?.saveMessage(webMessage);
+  }
+
   async _handleMessagesUpsert(upsert) {
     if (!upsert || (upsert.type !== 'notify' && upsert.type !== 'append')) return;
     if (upsert.type !== 'notify') return;
 
     const messages = Array.isArray(upsert.messages) ? upsert.messages : [];
     for (const msg of messages) {
+      if (msg && msg.key && msg.key.id && msg.message) {
+        this.messageStore?.saveMessage(msg);
+      }
       const parsed = this.eventManager?.parseIncomingBaileysMessage(this.clientId, msg);
       if (parsed) {
         this.stats.messagesReceived += 1;
