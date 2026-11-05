@@ -69,20 +69,55 @@
 
     <!-- MAIN CANVAS -->
     <main class="main-content">
-      <!-- TOP BAR -->
+      <!-- TOP BAR (MATCHING DASMIN SAAS EXECUTIVE DESIGN) -->
       <header class="topbar">
         <div class="topbar-left">
-          <h2 id="page-title">Dashboard</h2>
+          <div class="title-with-pill">
+            <h2 id="page-title">Dashboard</h2>
+            <span class="live-status-pill">
+              <span class="pulse-dot"></span>
+              <span>Live Core</span>
+            </span>
+          </div>
         </div>
-        <div class="topbar-actions">
-          <button id="refresh-btn" class="btn btn-secondary">
-            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
-            <span>Refresh</span>
+
+        <!-- SEARCH BAR MATCHING DASMIN REFERENCE -->
+        <div class="topbar-search-wrap">
+          <svg class="search-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input id="global-search-input" type="text" placeholder="Search devices, rooms, accounts, entities..." autocomplete="off" />
+          <kbd class="search-kbd">⌘K</kbd>
+        </div>
+
+        <!-- RIGHT ACTIONS & USER PROFILE MATCHING DASMIN -->
+        <div class="topbar-right">
+          <button id="ws-indicator-pill" class="ws-pill-btn" title="Live WebSocket Streaming Feed">
+            <span id="ws-pill-dot" class="status-dot disconnected"></span>
+            <span id="ws-pill-label">Live Stream</span>
           </button>
-          <button class="btn btn-primary" data-goto-tab="diagnostics">
-            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-            <span>Integration Token</span>
+          
+          <button class="icon-round-btn" id="notif-btn" title="System Notifications">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            <span class="icon-badge-dot"></span>
           </button>
+
+          <div class="user-profile-badge">
+            <div class="user-avatar-circle">M</div>
+            <div class="user-meta">
+              <span class="user-display-name">Mohan (Admin)</span>
+              <span class="user-subtitle">Home Assistant</span>
+            </div>
+          </div>
+
+          <div class="topbar-btn-group">
+            <button id="refresh-btn" class="btn btn-secondary">
+              <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+              <span>Refresh</span>
+            </button>
+            <button class="btn btn-primary" data-goto-tab="diagnostics">
+              <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              <span>Integration Token</span>
+            </button>
+          </div>
         </div>
       </header>
 
@@ -92,61 +127,59 @@
       <section id="tab-dashboard" class="tab-panel active">
         <!-- TOP SECTION: 3 WHITE STAT CARDS + 1 VIBRANT BLUE GRADIENT SETUP CARD (MATCHING REFERENCE IMAGE) -->
         <div class="dash-top-grid">
-          <!-- STAT CARD 1: BLUE ICON (CONNECTED) -->
+          <!-- STAT CARD 1: BLUE ICON (CONNECTED ACCOUNTS) -->
           <div class="stat-card">
             <div class="stat-icon-wrap icon-blue">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
             </div>
             <div class="stat-content">
-              <strong id="kpi-connected" class="stat-value">0</strong>
+              <div class="stat-value-row">
+                <strong id="kpi-connected" class="stat-value">0</strong>
+                <span class="stat-pill-trend trend-green">● Active</span>
+              </div>
               <span class="stat-label">Connected Accounts</span>
             </div>
           </div>
 
-          <!-- STAT CARD 2: ORANGE/GOLD ICON (DISCONNECTED) -->
+          <!-- STAT CARD 2: AMBER/GOLD ICON (CONFIGURED ROOMS) -->
           <div class="stat-card">
             <div class="stat-icon-wrap icon-orange">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
             </div>
             <div class="stat-content">
-              <strong id="kpi-disconnected" class="stat-value">0</strong>
-              <span class="stat-label">Disconnected</span>
+              <div class="stat-value-row">
+                <strong id="kpi-rooms" class="stat-value">0</strong>
+                <span class="stat-pill-trend trend-amber">/remote Ready</span>
+              </div>
+              <span class="stat-label">Configured Smart Rooms</span>
             </div>
           </div>
 
-          <!-- STAT CARD 3: GREEN ICON (SENT) -->
+          <!-- STAT CARD 3: GREEN ICON (SPEAKERS & CAST) -->
           <div class="stat-card">
             <div class="stat-icon-wrap icon-green">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
             </div>
             <div class="stat-content">
-              <strong id="kpi-sent" class="stat-value">0</strong>
-              <span class="stat-label">Messages Sent</span>
-            </div>
-          </div>
-
-          <!-- STAT CARD 4: PURPLE ICON (RECEIVED) -->
-          <div class="stat-card">
-            <div class="stat-icon-wrap icon-purple">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-            </div>
-            <div class="stat-content">
-              <strong id="kpi-received" class="stat-value">0</strong>
-              <span class="stat-label">Messages Received</span>
+              <div class="stat-value-row">
+                <strong id="kpi-speakers" class="stat-value">0</strong>
+                <span class="stat-pill-trend trend-green">Vol Preserved</span>
+              </div>
+              <span class="stat-label">Broadcast Speakers</span>
             </div>
           </div>
 
           <!-- THE VIBRANT BLUE ACCENT SETUP CARD (MATCHING "BALANCE SUMMERY" IN REFERENCE SCREENSHOT) -->
           <div class="blue-setup-card">
             <div class="blue-card-header">
-              <span>HA Integration Setup</span>
+              <span>HA Integration Gateway</span>
               <button id="dash-copy-all-btn" class="blue-card-btn" title="Copy URL &amp; Token">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
               </button>
             </div>
 
             <div class="blue-card-badge">
-              <span class="blue-card-sublabel">API URL (Host Loopback)</span>
+              <span class="blue-card-sublabel">Primary Host Loopback URL</span>
               <div class="blue-copy-row">
                 <code id="dash-url-preview">http://127.0.0.1:8653</code>
                 <button id="dash-copy-url-btn" class="mini-copy-btn" title="Copy URL">Copy</button>
@@ -155,7 +188,7 @@
 
             <div class="blue-card-bottom">
               <div class="blue-stat-group">
-                <span class="blue-mini-label">API Token</span>
+                <span class="blue-mini-label">API Bearer Token</span>
                 <span id="dash-token-status" class="blue-token-masked">••••••••••••••••</span>
               </div>
               <button id="dash-copy-token-btn" class="blue-pill-btn">Copy Token</button>
@@ -164,25 +197,97 @@
         </div>
 
         <!-- HIDDEN / PERSISTED TELEMETRY PLACEHOLDERS (REQUIRED BY SCRIPT) -->
+        <span id="kpi-disconnected" class="hidden">0</span>
+        <span id="kpi-sent" class="hidden">0</span>
+        <span id="kpi-received" class="hidden">0</span>
         <span id="kpi-pending" class="hidden">0</span>
         <span id="kpi-failed" class="hidden">0</span>
         <span id="kpi-uptime" class="hidden">0s</span>
 
-        <!-- MAIN LOWER GRID: ACCOUNTS & QUICK SEND (LEFT) + RECENT MESSAGE LOG (RIGHT) -->
-        <div class="dash-main-grid">
-          <!-- LEFT: ACTIVE WHATSAPP ACCOUNTS -->
-          <div class="white-card">
+        <!-- CENTER HERO ROW (MATCHING DASMIN "SALES" HERO + "RECENT ORDERS" SIDEBAR) -->
+        <div class="dash-hero-grid">
+          <!-- LEFT HERO: SMART HOME BOT CONTROL ENGINE -->
+          <div class="white-card hero-engine-card">
+            <div class="card-header">
+              <div>
+                <h3>Smart Home Remote &amp; Broadcast Engine</h3>
+                <p class="card-subtitle">Live WhatsApp commands for Home Assistant lights, switches, fans, AC, and whole-house audio</p>
+              </div>
+              <div class="badge-group">
+                <span class="pill-badge pill-blue">📱 /remote Ready</span>
+                <span class="pill-badge pill-purple">📢 /cast Ready</span>
+                <span class="pill-badge pill-green">🛡️ Whitelist Active</span>
+              </div>
+            </div>
+
+            <!-- SIMULATOR VISUAL PREVIEWS -->
+            <div class="engine-features-row">
+              <div class="feature-box">
+                <div class="feature-icon-title">
+                  <span class="feature-emoji">🛋️</span>
+                  <div>
+                    <h4>Interactive Smart Remote</h4>
+                    <p>Send <code>/remote</code> from authorized WhatsApp &rarr; select room &rarr; toggle devices with <code>on 1</code>, <code>on-1</code>, or <code>on 1,2,3</code>.</p>
+                  </div>
+                </div>
+                <div class="feature-sample-bubble">
+                  <span class="chat-tag">WhatsApp Preview</span>
+                  <code>🏠 LUMI REMOTE &gt; 1️⃣ Living Room &gt; on 1,2 &rarr; Turned ON ✅</code>
+                </div>
+              </div>
+
+              <div class="feature-box">
+                <div class="feature-icon-title">
+                  <span class="feature-emoji">🎙️</span>
+                  <div>
+                    <h4>Voice &amp; Audio Casting</h4>
+                    <p>Send <code>/cast</code> &rarr; record voice note or upload audio file &rarr; pick speaker &rarr; audio broadcasts at speaker's <strong>current volume</strong>.</p>
+                  </div>
+                </div>
+                <div class="feature-sample-bubble">
+                  <span class="chat-tag">WhatsApp Preview</span>
+                  <code>📢 Audio Received! Reply "play all" &rarr; Multi-Speaker Broadcast Active 🔊</code>
+                </div>
+              </div>
+            </div>
+
+            <!-- QUICK SHORTCUT BUTTONS -->
+            <div class="engine-actions-bar">
+              <button class="btn btn-secondary btn-sm" data-goto-tab="remote">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+                <span>+ Add Room</span>
+              </button>
+              <button class="btn btn-secondary btn-sm" data-goto-tab="speakers">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon></svg>
+                <span>+ Add Speaker</span>
+              </button>
+              <button class="btn btn-secondary btn-sm" data-goto-tab="authorized">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                <span>+ Whitelist Phone</span>
+              </button>
+              <button id="hero-export-btn" class="btn btn-primary btn-sm">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                <span>Backup Config (.json)</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- RIGHT SIDE: ACTIVE WHATSAPP ACCOUNTS (MATCHING DASMIN SIDEBAR) -->
+          <div class="white-card side-accounts-card">
             <div class="card-header">
               <div>
                 <h3>WhatsApp Accounts</h3>
-                <p class="card-subtitle">Connected linked devices &amp; pairing status</p>
+                <p class="card-subtitle">Active linked device sessions</p>
               </div>
-              <button class="btn btn-outline btn-sm" data-goto-tab="accounts">+ Add Account</button>
+              <button class="btn btn-outline btn-sm" data-goto-tab="accounts">+ Add</button>
             </div>
             <div id="dashboard-accounts-list" class="accounts-list"></div>
           </div>
+        </div>
 
-          <!-- RIGHT: RECENT MESSAGE AUDIT LOG (MATCHING "RECENT ORDERS" IN REFERENCE SCREENSHOT) -->
+        <!-- MAIN LOWER GRID: RECENT MESSAGE AUDIT (LEFT) + DEVICE BREAKDOWN DONUT (RIGHT) -->
+        <div class="dash-bottom-grid">
+          <!-- LEFT: RECENT MESSAGE AUDIT LOG (MATCHING DASMIN "RECENT ORDERS" TABLE) -->
           <div class="white-card">
             <div class="card-header">
               <div>
@@ -207,6 +312,58 @@
                   </tr>
                 </tbody>
               </table>
+            </div>
+          </div>
+
+          <!-- RIGHT: ORDER BY DEVICE / SMART HOME DISTRIBUTION DONUT CHART (MATCHING DASMIN REFERENCE) -->
+          <div class="white-card donut-card">
+            <div class="card-header">
+              <div>
+                <h3>Order By Device</h3>
+                <p class="card-subtitle">Home Assistant entity categories</p>
+              </div>
+            </div>
+            
+            <div class="donut-chart-wrap">
+              <svg class="donut-svg" viewBox="0 0 120 120">
+                <circle class="donut-ring-bg" cx="60" cy="60" r="45" fill="none" stroke="#f1f5f9" stroke-width="16" />
+                <!-- SEGMENT 1: LIGHTS (BLUE) -->
+                <circle id="donut-seg-lights" class="donut-segment seg-blue" cx="60" cy="60" r="45" fill="none" stroke="#0066ff" stroke-width="16" stroke-dasharray="113 170" stroke-dashoffset="0" />
+                <!-- SEGMENT 2: SWITCHES (AMBER) -->
+                <circle id="donut-seg-switches" class="donut-segment seg-amber" cx="60" cy="60" r="45" fill="none" stroke="#f59e0b" stroke-width="16" stroke-dasharray="85 198" stroke-dashoffset="-113" />
+                <!-- SEGMENT 3: FANS/AC (MINT) -->
+                <circle id="donut-seg-fans" class="donut-segment seg-green" cx="60" cy="60" r="45" fill="none" stroke="#10b981" stroke-width="16" stroke-dasharray="57 226" stroke-dashoffset="-198" />
+                <!-- SEGMENT 4: SPEAKERS (PURPLE) -->
+                <circle id="donut-seg-speakers" class="donut-segment seg-purple" cx="60" cy="60" r="45" fill="none" stroke="#8b5cf6" stroke-width="16" stroke-dasharray="28 255" stroke-dashoffset="-255" />
+              </svg>
+              <div class="donut-center-info">
+                <span id="donut-total-count" class="donut-total">100%</span>
+                <span class="donut-total-label">Distribution</span>
+              </div>
+            </div>
+
+            <!-- DONUT LEGEND (MATCHING DASMIN) -->
+            <div class="donut-legend">
+              <div class="legend-item">
+                <span class="legend-dot dot-blue"></span>
+                <span class="legend-text">Lights</span>
+                <strong id="legend-count-lights" class="legend-val">40%</strong>
+              </div>
+              <div class="legend-item">
+                <span class="legend-dot dot-amber"></span>
+                <span class="legend-text">Switches</span>
+                <strong id="legend-count-switches" class="legend-val">30%</strong>
+              </div>
+              <div class="legend-item">
+                <span class="legend-dot dot-green"></span>
+                <span class="legend-text">Fans &amp; AC</span>
+                <strong id="legend-count-fans" class="legend-val">20%</strong>
+              </div>
+              <div class="legend-item">
+                <span class="legend-dot dot-purple"></span>
+                <span class="legend-text">Speakers</span>
+                <strong id="legend-count-speakers" class="legend-val">10%</strong>
+              </div>
             </div>
           </div>
         </div>

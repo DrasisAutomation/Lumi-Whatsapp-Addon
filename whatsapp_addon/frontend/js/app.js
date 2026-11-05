@@ -191,6 +191,7 @@
     setEl('kpi-received', received);
     setEl('kpi-pending', pending);
     setEl('kpi-failed', failed);
+    updateDashboardMetrics();
 
     const dashContainer = document.getElementById('dashboard-accounts-list');
     const accContainer = document.getElementById('accounts-container');
@@ -569,6 +570,7 @@
     renderRooms();
     renderSpeakers();
     renderAuthorizedNumbers();
+    updateDashboardMetrics();
   }
 
   function renderRooms() {
@@ -705,6 +707,153 @@
   }
 
   /* ───────────────────────────────────────────────────────────────────
+     DASHBOARD METRICS & DONUT DISTRIBUTION
+     ─────────────────────────────────────────────────────────────────── */
+  function updateDashboardMetrics() {
+    const rooms = state.botConfig?.rooms || [];
+    const speakers = state.botConfig?.speakers || [];
+
+    const setEl = (id, val) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = String(val);
+    };
+
+    setEl('kpi-rooms', rooms.length);
+    setEl('kpi-speakers', speakers.length);
+
+    // Count device types across all rooms
+    let lights = 0;
+    let switches = 0;
+    let fans = 0;
+    let other = 0;
+
+    for (const r of rooms) {
+      for (const d of (r.devices || [])) {
+        const type = (d.type || '').toLowerCase();
+        const ent = (d.entityId || '').toLowerCase();
+        if (type === 'light' || ent.startsWith('light.')) {
+          lights++;
+        } else if (type === 'switch' || ent.startsWith('switch.')) {
+          switches++;
+        } else if (type === 'fan' || type === 'climate' || ent.startsWith('fan.') || ent.startsWith('climate.')) {
+          fans++;
+        } else {
+          other++;
+        }
+      }
+    }
+    const speakerCount = speakers.length;
+    const totalDevices = lights + switches + fans + other + speakerCount;
+
+    const setLegend = (id, text) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = text;
+    };
+
+    if (totalDevices === 0) {
+      setEl('donut-total-count', '0');
+      const label = document.querySelector('.donut-total-label');
+      if (label) label.textContent = 'Devices';
+      setLegend('legend-count-lights', '0% (0)');
+      setLegend('legend-count-switches', '0% (0)');
+      setLegend('legend-count-fans', '0% (0)');
+      setLegend('legend-count-speakers', '0% (0)');
+      return;
+    }
+
+    setEl('donut-total-count', String(totalDevices));
+    const label = document.querySelector('.donut-total-label');
+    if (label) label.textContent = totalDevices === 1 ? 'Device' : 'Devices';
+
+    const pctLights = Math.round((lights / totalDevices) * 100);
+    const pctSwitches = Math.round((switches / totalDevices) * 100);
+    const pctFans = Math.round((fans / totalDevices) * 100);
+    const pctSpeakers = Math.max(0, 100 - pctLights - pctSwitches - pctFans);
+
+    setLegend('legend-count-lights', `${pctLights}% (${lights})`);
+    setLegend('legend-count-switches', `${pctSwitches}% (${switches})`);
+    setLegend('legend-count-fans', `${pctFans}% (${fans})`);
+    setLegend('legend-count-speakers', `${pctSpeakers}% (${speakerCount})`);
+
+    // SVG Circumference C = 2 * PI * 45 = 282.743
+    const C = 282.74;
+    const arcLights = (pctLights / 100) * C;
+    const arcSwitches = (pctSwitches / 100) * C;
+    const arcFans = (pctFans / 100) * C;
+    const arcSpeakers = (pctSpeakers / 100) * C;
+
+    const segL = document.getElementById('donut-seg-lights');
+    const segS = document.getElementById('donut-seg-switches');
+    const segF = document.getElementById('donut-seg-fans');
+    const segSpk = document.getElementById('donut-seg-speakers');
+
+    if (segL) {
+      segL.setAttribute('stroke-dasharray', `${arcLights.toFixed(1)} ${(C - arcLights).toFixed(1)}`);
+      segL.setAttribute('stroke-dashoffset', '0');
+    }
+    if (segS) {
+      segS.setAttribute('stroke-dasharray', `${arcSwitches.toFixed(1)} ${(C - arcSwitches).toFixed(1)}`);
+      segS.setAttribute('stroke-dashoffset', `-${arcLights.toFixed(1)}`);
+    }
+    if (segF) {
+      segF.setAttribute('stroke-dasharray', `${arcFans.toFixed(1)} ${(C - arcFans).toFixed(1)}`);
+      segF.setAttribute('stroke-dashoffset', `-${(arcLights + arcSwitches).toFixed(1)}`);
+    }
+    if (segSpk) {
+      segSpk.setAttribute('stroke-dasharray', `${arcSpeakers.toFixed(1)} ${(C - arcSpeakers).toFixed(1)}`);
+      segSpk.setAttribute('stroke-dashoffset', `-${(arcLights + arcSwitches + arcFans).toFixed(1)}`);
+    }
+  }
+
+  function filterDashboardAndRooms(query) {
+    const q = (query || '').toLowerCase().trim();
+
+    // 1. Filter room cards
+    const roomCards = document.querySelectorAll('#bot-rooms-list .room-card');
+    roomCards.forEach((card) => {
+      if (!q) {
+        card.style.display = '';
+      } else {
+        const text = (card.textContent || '').toLowerCase();
+        card.style.display = text.includes(q) ? '' : 'none';
+      }
+    });
+
+    // 2. Filter accounts in dashboard and accounts tab
+    const accCards = document.querySelectorAll('.account-card');
+    accCards.forEach((card) => {
+      if (!q) {
+        card.style.display = '';
+      } else {
+        const text = (card.textContent || '').toLowerCase();
+        card.style.display = text.includes(q) ? '' : 'none';
+      }
+    });
+
+    // 3. Filter speakers rows
+    const speakerRows = document.querySelectorAll('#bot-speakers-tbody tr');
+    speakerRows.forEach((row) => {
+      if (!q) {
+        row.style.display = '';
+      } else {
+        const text = (row.textContent || '').toLowerCase();
+        row.style.display = text.includes(q) ? '' : 'none';
+      }
+    });
+
+    // 4. Filter authorized numbers rows
+    const authRows = document.querySelectorAll('#bot-auth-tbody tr');
+    authRows.forEach((row) => {
+      if (!q) {
+        row.style.display = '';
+      } else {
+        const text = (row.textContent || '').toLowerCase();
+        row.style.display = text.includes(q) ? '' : 'none';
+      }
+    });
+  }
+
+  /* ───────────────────────────────────────────────────────────────────
      LIVE WEBSOCKET STREAM
      ─────────────────────────────────────────────────────────────────── */
   function connectWebSocket() {
@@ -718,10 +867,19 @@
 
     const dot = document.getElementById('ws-dot');
     const label = document.getElementById('ws-label');
+    const pillDot = document.getElementById('ws-pill-dot');
+    const pillLabel = document.getElementById('ws-pill-label');
+
+    const updateWsUi = (connected, mainText, pillText) => {
+      const cls = connected ? 'status-dot connected' : 'status-dot disconnected';
+      if (dot) dot.className = cls;
+      if (pillDot) pillDot.className = cls;
+      if (label) label.textContent = mainText;
+      if (pillLabel) pillLabel.textContent = pillText;
+    };
 
     ws.onopen = () => {
-      if (dot) dot.className = 'status-dot connected';
-      if (label) label.textContent = 'Live stream active';
+      updateWsUi(true, 'Live stream active', 'Live Stream');
     };
 
     ws.onmessage = (event) => {
@@ -751,8 +909,7 @@
     };
 
     ws.onclose = () => {
-      if (dot) dot.className = 'status-dot disconnected';
-      if (label) label.textContent = 'Reconnecting...';
+      updateWsUi(false, 'Reconnecting...', 'Reconnecting');
       setTimeout(connectWebSocket, 4000);
     };
 
@@ -1239,26 +1396,80 @@
       });
     }
 
-    // Export & Import JSON Backup
-    const exportBtn = document.getElementById('export-remote-btn');
-    const importBtn = document.getElementById('import-remote-btn');
-    const fileInput = document.getElementById('bot-file-input');
+    // Global Search Input with Cmd+K / Ctrl+K shortcut
+    const searchInput = document.getElementById('global-search-input');
+    if (searchInput) {
+      window.addEventListener('keydown', (e) => {
+        if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+          e.preventDefault();
+          searchInput.focus();
+          searchInput.select();
+        }
+      });
 
-    if (exportBtn) {
-      exportBtn.addEventListener('click', () => {
-        const jsonStr = JSON.stringify(state.botConfig, null, 2);
-        const blob = new Blob([jsonStr], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `lumi_whatsapp_config_${Date.now()}.json`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        showToast('Configuration exported as JSON.', 'success');
+      searchInput.addEventListener('input', (e) => {
+        filterDashboardAndRooms(e.target.value);
+      });
+
+      searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          searchInput.value = '';
+          filterDashboardAndRooms('');
+          searchInput.blur();
+        }
       });
     }
+
+    // Topbar notification & websocket status click handlers
+    const notifBtn = document.getElementById('notif-btn');
+    if (notifBtn) {
+      notifBtn.addEventListener('click', () => {
+        const connectedCount = state.accounts.filter((a) => a.status === 'connected').length;
+        const totalRooms = state.botConfig?.rooms?.length || 0;
+        const totalSpeakers = state.botConfig?.speakers?.length || 0;
+        const totalAuth = state.botConfig?.authorizedNumbers?.length || 0;
+        showToast(
+          `System Status: ${connectedCount} Account(s) Online | ${totalRooms} Rooms | ${totalSpeakers} Speakers | ${totalAuth} Whitelisted Phone(s)`,
+          'info'
+        );
+      });
+    }
+
+    const wsPillBtn = document.getElementById('ws-indicator-pill');
+    if (wsPillBtn) {
+      wsPillBtn.addEventListener('click', () => {
+        const isConnected = state.ws && state.ws.readyState === WebSocket.OPEN;
+        if (isConnected) {
+          showToast('WebSocket Live Stream is connected and healthy.', 'success');
+        } else {
+          showToast('WebSocket reconnecting to Home Assistant Ingress...', 'info');
+          connectWebSocket();
+        }
+      });
+    }
+
+    // Export & Import JSON Backup
+    function triggerConfigExport() {
+      const jsonStr = JSON.stringify(state.botConfig, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `lumi_whatsapp_config_${Date.now()}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('Configuration exported as JSON.', 'success');
+    }
+
+    const exportBtn = document.getElementById('export-remote-btn');
+    const heroExportBtn = document.getElementById('hero-export-btn');
+    if (exportBtn) exportBtn.addEventListener('click', triggerConfigExport);
+    if (heroExportBtn) heroExportBtn.addEventListener('click', triggerConfigExport);
+
+    const importBtn = document.getElementById('import-remote-btn');
+    const fileInput = document.getElementById('bot-file-input');
 
     if (importBtn && fileInput) {
       importBtn.addEventListener('click', () => {
