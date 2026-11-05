@@ -1,6 +1,6 @@
 {
   "name": "lumi-whatsapp-addon",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Lumi Whatsapp – Home Assistant Add-on powered by Baileys with multi-account management, persistent queue, media upload, and Ingress Web UI",
   "main": "src/index.js",
   "type": "commonjs",

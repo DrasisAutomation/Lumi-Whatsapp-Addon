@@ -3,42 +3,76 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lumi Whatsapp</title>
+  <title>Lumi Whatsapp – Enterprise Management Console</title>
   <link rel="icon" type="image/png" href="logo.png" />
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
   <div class="app-shell">
+    <!-- SIDEBAR: ZOHO CLASSIC NAVY STYLE -->
     <aside class="sidebar">
       <div class="brand">
-        <img src="logo.png" alt="Lumi Whatsapp Logo" class="brand-logo" />
-        <div>
+        <div class="brand-logo-wrap">
+          <img src="logo.png" alt="Lumi Whatsapp Logo" class="brand-logo" />
+        </div>
+        <div class="brand-text">
           <h1>Lumi Whatsapp</h1>
-          <span class="subtitle">Home Assistant Add-on</span>
+          <span class="badge-version">v1.0.9</span>
         </div>
       </div>
 
+      <div class="nav-section-label">MANAGEMENT</div>
       <nav class="nav-tabs" role="tablist">
-        <button class="nav-btn active" data-tab="dashboard" role="tab">Dashboard</button>
-        <button class="nav-btn" data-tab="accounts" role="tab">Accounts &amp; QR</button>
-        <button class="nav-btn" data-tab="messaging" role="tab">Messaging</button>
-        <button class="nav-btn" data-tab="history" role="tab">Message History</button>
-        <button class="nav-btn" data-tab="diagnostics" role="tab">Diagnostics</button>
+        <button class="nav-btn active" data-tab="dashboard" role="tab">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+          <span>Dashboard</span>
+        </button>
+        <button class="nav-btn" data-tab="accounts" role="tab">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          <span>Accounts &amp; QR</span>
+        </button>
+        <button class="nav-btn" data-tab="messaging" role="tab">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+          <span>Messaging</span>
+        </button>
+        <button class="nav-btn" data-tab="history" role="tab">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"></path></svg>
+          <span>Message History</span>
+        </button>
+        <button class="nav-btn" data-tab="diagnostics" role="tab">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          <span>HA Integration &amp; Setup</span>
+        </button>
       </nav>
 
       <div class="sidebar-footer">
-        <div class="ws-indicator">
-          <span id="ws-dot" class="status-dot disconnected"></span>
-          <span id="ws-label">Connecting live stream...</span>
+        <div class="ws-indicator-card">
+          <div class="ws-indicator-header">
+            <span id="ws-dot" class="status-dot disconnected"></span>
+            <span id="ws-label" class="ws-label">Connecting live stream...</span>
+          </div>
+          <span class="ws-subtext">Real-time WebSocket feed</span>
         </div>
       </div>
     </aside>
 
+    <!-- MAIN WORKSPACE -->
     <main class="main-content">
+      <!-- TOPBAR: ZOHO EXECUTIVE HEADER -->
       <header class="topbar">
-        <h2 id="page-title">Lumi Whatsapp – Dashboard</h2>
+        <div class="topbar-left">
+          <span class="topbar-breadcrumb">Home Assistant / Add-ons / Lumi Whatsapp</span>
+          <h2 id="page-title">Executive Dashboard</h2>
+        </div>
         <div class="topbar-actions">
-          <button id="refresh-btn" class="btn btn-secondary">Refresh</button>
+          <button id="refresh-btn" class="btn btn-secondary">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+            <span>Refresh</span>
+          </button>
+          <button class="btn btn-primary" data-goto-tab="diagnostics">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+            <span>Integration Credentials</span>
+          </button>
         </div>
       </header>
 
@@ -46,91 +80,158 @@
 
       <!-- SECTION A: DASHBOARD -->
       <section id="tab-dashboard" class="tab-panel active">
+        <!-- ZOHO CLASSIC KPI CARDS -->
         <div class="kpi-grid">
-          <div class="kpi-card">
-            <span class="kpi-label">Connected Accounts</span>
-            <strong id="kpi-connected" class="kpi-value success">0</strong>
+          <div class="kpi-card kpi-connected">
+            <div class="kpi-top">
+              <span class="kpi-label">CONNECTED ACCOUNTS</span>
+              <span class="kpi-dot dot-success"></span>
+            </div>
+            <strong id="kpi-connected" class="kpi-value text-success">0</strong>
+            <span class="kpi-footer">Active WhatsApp Linked Devices</span>
           </div>
-          <div class="kpi-card">
-            <span class="kpi-label">Disconnected Accounts</span>
-            <strong id="kpi-disconnected" class="kpi-value warn">0</strong>
+
+          <div class="kpi-card kpi-disconnected">
+            <div class="kpi-top">
+              <span class="kpi-label">DISCONNECTED</span>
+              <span class="kpi-dot dot-warn"></span>
+            </div>
+            <strong id="kpi-disconnected" class="kpi-value text-warn">0</strong>
+            <span class="kpi-footer">Require QR Pairing / Reconnect</span>
           </div>
-          <div class="kpi-card">
-            <span class="kpi-label">Messages Sent</span>
-            <strong id="kpi-sent" class="kpi-value">0</strong>
+
+          <div class="kpi-card kpi-sent">
+            <div class="kpi-top">
+              <span class="kpi-label">MESSAGES SENT</span>
+              <span class="kpi-dot dot-primary"></span>
+            </div>
+            <strong id="kpi-sent" class="kpi-value text-primary">0</strong>
+            <span class="kpi-footer">Delivered to WhatsApp Network</span>
           </div>
-          <div class="kpi-card">
-            <span class="kpi-label">Messages Received</span>
-            <strong id="kpi-received" class="kpi-value">0</strong>
+
+          <div class="kpi-card kpi-received">
+            <div class="kpi-top">
+              <span class="kpi-label">MESSAGES RECEIVED</span>
+              <span class="kpi-dot dot-info"></span>
+            </div>
+            <strong id="kpi-received" class="kpi-value text-info">0</strong>
+            <span class="kpi-footer">Forwarded to HA Event Bus</span>
           </div>
-          <div class="kpi-card">
-            <span class="kpi-label">Pending in Queue</span>
+
+          <div class="kpi-card kpi-pending">
+            <div class="kpi-top">
+              <span class="kpi-label">PENDING QUEUE</span>
+              <span class="kpi-dot dot-muted"></span>
+            </div>
             <strong id="kpi-pending" class="kpi-value">0</strong>
+            <span class="kpi-footer">In-flight Sequential Queue</span>
           </div>
-          <div class="kpi-card">
-            <span class="kpi-label">Failed Messages</span>
-            <strong id="kpi-failed" class="kpi-value danger">0</strong>
+
+          <div class="kpi-card kpi-failed">
+            <div class="kpi-top">
+              <span class="kpi-label">FAILED MESSAGES</span>
+              <span class="kpi-dot dot-danger"></span>
+            </div>
+            <strong id="kpi-failed" class="kpi-value text-danger">0</strong>
+            <span class="kpi-footer">Retries Exhausted / Invalid JID</span>
           </div>
-          <div class="kpi-card">
-            <span class="kpi-label">Add-on Uptime</span>
-            <strong id="kpi-uptime" class="kpi-value">0s</strong>
+
+          <div class="kpi-card kpi-uptime">
+            <div class="kpi-top">
+              <span class="kpi-label">ADD-ON UPTIME</span>
+              <span class="kpi-dot dot-success"></span>
+            </div>
+            <strong id="kpi-uptime" class="kpi-value text-purple">0s</strong>
+            <span class="kpi-footer">Continuous Engine Runtime</span>
           </div>
         </div>
 
+        <!-- QUICK INTEGRATION STATUS BANNER -->
+        <div class="banner-card banner-integration">
+          <div class="banner-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+          </div>
+          <div class="banner-content">
+            <h4>Connecting to Home Assistant Integration?</h4>
+            <p>If you see <strong>cannot_connect</strong> when configuring Lumi Whatsapp in <em>Settings &rarr; Devices &amp; Services</em>, use <code>http://127.0.0.1:8653</code> (Home Assistant host network) and your API Bearer Token.</p>
+          </div>
+          <button class="btn btn-outline" data-goto-tab="diagnostics">View Credentials</button>
+        </div>
+
+        <!-- ACCOUNTS OVERVIEW -->
         <div class="panel-card">
           <div class="panel-header">
-            <h3>Active Lumi Whatsapp Accounts Overview</h3>
-            <button class="btn btn-primary" data-goto-tab="accounts">Manage Accounts</button>
+            <div>
+              <h3>Active Accounts Overview</h3>
+              <p class="panel-subtitle">Monitor paired phone numbers, encryption health, and traffic statistics</p>
+            </div>
+            <button class="btn btn-primary" data-goto-tab="accounts">+ Add Account</button>
           </div>
           <div id="dashboard-accounts-list" class="accounts-grid"></div>
         </div>
       </section>
 
-      <!-- SECTION B: ACCOUNTS -->
+      <!-- SECTION B: ACCOUNTS & QR -->
       <section id="tab-accounts" class="tab-panel">
         <div class="panel-card">
           <div class="panel-header">
-            <h3>Add Lumi Whatsapp Account</h3>
+            <div>
+              <h3>Register New WhatsApp Account</h3>
+              <p class="panel-subtitle">Create a client session identifier (e.g. default, office, security) to pair via WhatsApp Linked Devices</p>
+            </div>
           </div>
           <form id="add-account-form" class="form-inline">
             <div class="form-group">
-              <label for="new-client-id">Account ID (clientId)</label>
-              <input id="new-client-id" type="text" placeholder="e.g. default, office, personal, security" required pattern="[a-zA-Z0-9_-]{1,32}" />
+              <label for="new-client-id">Account ID (clientId)*</label>
+              <input id="new-client-id" type="text" placeholder="e.g. default, office, alerts" required pattern="[a-zA-Z0-9_-]{1,32}" />
             </div>
             <div class="form-group">
               <label for="new-account-name">Display Name</label>
-              <input id="new-account-name" type="text" placeholder="e.g. Office WhatsApp" />
+              <input id="new-account-name" type="text" placeholder="e.g. Main Residence WhatsApp" />
             </div>
             <div class="form-group form-actions-inline">
-              <button type="submit" class="btn btn-primary">Add WhatsApp Account</button>
+              <button type="submit" class="btn btn-primary">+ Add Account</button>
             </div>
           </form>
         </div>
 
+        <!-- QR PAIRING MODAL / CARD -->
         <div id="qr-pairing-modal" class="panel-card qr-panel hidden">
           <div class="panel-header">
-            <h3 id="qr-title">Scan QR Code with WhatsApp</h3>
+            <div>
+              <h3 id="qr-title">Scan QR Code with WhatsApp</h3>
+              <p class="panel-subtitle">Pair your WhatsApp account using end-to-end multi-device linking</p>
+            </div>
             <button id="close-qr-btn" class="btn btn-secondary">Close</button>
           </div>
           <div class="qr-body">
             <div class="qr-image-box">
               <img id="qr-image" alt="WhatsApp Pairing QR Code" />
+              <div class="qr-scan-pulse"></div>
             </div>
             <div class="qr-instructions">
+              <h4>Pairing Instructions:</h4>
               <ol>
-                <li>Open <strong>WhatsApp</strong> on your phone.</li>
-                <li>Tap <strong>Menu</strong> or <strong>Settings</strong> and select <strong>Linked Devices</strong>.</li>
+                <li>Open <strong>WhatsApp</strong> on your mobile phone.</li>
+                <li>Tap <strong>Settings</strong> (or <strong>⋮ Menu</strong> on Android) &rarr; <strong>Linked Devices</strong>.</li>
                 <li>Tap <strong>Link a Device</strong>.</li>
-                <li>Point your phone at this screen to capture the QR code.</li>
+                <li>Point your camera at this QR code to complete pairing.</li>
               </ol>
-              <p id="qr-status-text" class="muted"></p>
+              <div class="qr-status-pill">
+                <span class="status-dot connected"></span>
+                <span id="qr-status-text" class="muted">Waiting for phone to scan...</span>
+              </div>
             </div>
           </div>
         </div>
 
+        <!-- ACCOUNTS LIST -->
         <div class="panel-card">
           <div class="panel-header">
-            <h3>Configured Accounts</h3>
+            <div>
+              <h3>Configured Accounts</h3>
+              <p class="panel-subtitle">Manage session states, QR pairing, and disconnect/delete actions</p>
+            </div>
           </div>
           <div id="accounts-container" class="accounts-grid"></div>
         </div>
@@ -140,39 +241,43 @@
       <section id="tab-messaging" class="tab-panel">
         <div class="panel-card">
           <div class="panel-header">
-            <h3>Send WhatsApp Message or Media</h3>
+            <div>
+              <h3>Send WhatsApp Message or Media</h3>
+              <p class="panel-subtitle">Test messaging, local camera snapshots, videos, and documents directly from the console</p>
+            </div>
           </div>
           <form id="send-message-form" class="form-stack">
             <div class="form-row">
               <div class="form-group">
-                <label for="msg-account">Sending Account (clientId)</label>
+                <label for="msg-account">Sending Account (clientId)*</label>
                 <select id="msg-account" required></select>
               </div>
               <div class="form-group">
-                <label for="msg-type">Message Type</label>
+                <label for="msg-type">Message Type*</label>
                 <select id="msg-type" required>
-                  <option value="text">Text Message</option>
-                  <option value="image">Image (Snapshot / Local Path / URL / Upload)</option>
-                  <option value="video">Video (MP4 Local Path / URL / Upload)</option>
-                  <option value="document">Document (PDF / File Local Path / URL / Upload)</option>
+                  <option value="text">💬 Text Message</option>
+                  <option value="image">📷 Image / CCTV Snapshot</option>
+                  <option value="video">🎥 Video (MP4)</option>
+                  <option value="document">📄 Document / PDF</option>
                 </select>
               </div>
               <div class="form-group">
-                <label for="msg-recipient">Recipient (Phone Number or Group JID)</label>
-                <input id="msg-recipient" type="text" placeholder="e.g. 919876543210 or 1203630...@g.us" required />
+                <label for="msg-recipient">Recipient Phone Number / Group JID*</label>
+                <input id="msg-recipient" type="text" placeholder="e.g. 917904598574 or 1203630...@g.us" required />
+                <span class="field-hint">Country code + number (no spaces or '+')</span>
               </div>
             </div>
 
             <div id="msg-text-group" class="form-group">
-              <label for="msg-body">Message Text</label>
-              <textarea id="msg-body" rows="4" placeholder="Hello from Home Assistant!"></textarea>
+              <label for="msg-body">Message Text*</label>
+              <textarea id="msg-body" rows="4" placeholder="Hello from Home Assistant Lumi Whatsapp!"></textarea>
             </div>
 
             <div id="msg-media-group" class="form-stack hidden">
               <div class="form-row">
                 <div class="form-group">
                   <label for="msg-media-source">Local Path (/config/www, /media, /share) or HTTPS URL</label>
-                  <input id="msg-media-source" type="text" placeholder="/config/www/snapshots/cctv.jpg" />
+                  <input id="msg-media-source" type="text" placeholder="/config/www/snapshots/entrance.jpg" />
                 </div>
                 <div class="form-group">
                   <label for="msg-media-file">Or Upload File Directly</label>
@@ -186,12 +291,17 @@
             </div>
 
             <div class="form-actions">
-              <button type="submit" class="btn btn-primary">Send Message</button>
+              <button type="submit" class="btn btn-primary">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                <span>Send WhatsApp Message</span>
+              </button>
             </div>
           </form>
 
           <div id="send-result-box" class="result-box hidden">
-            <h4>Last Send Result</h4>
+            <div class="result-box-header">
+              <h4>Dispatch Output</h4>
+            </div>
             <pre id="send-result-pre"></pre>
           </div>
         </div>
@@ -201,7 +311,10 @@
       <section id="tab-history" class="tab-panel">
         <div class="panel-card">
           <div class="panel-header">
-            <h3>Message History &amp; Delivery Receipts</h3>
+            <div>
+              <h3>Message Audit Log &amp; Delivery Receipts</h3>
+              <p class="panel-subtitle">Complete chronological record of all outbound and inbound messages</p>
+            </div>
             <div class="filter-bar">
               <select id="history-account-filter">
                 <option value="">All Accounts</option>
@@ -214,7 +327,7 @@
                 <tr>
                   <th>Timestamp</th>
                   <th>Account</th>
-                  <th>Recipient</th>
+                  <th>Recipient / Sender</th>
                   <th>Type</th>
                   <th>Message ID</th>
                   <th>Status</th>
@@ -226,44 +339,136 @@
         </div>
       </section>
 
-      <!-- SECTION E: DIAGNOSTICS -->
+      <!-- SECTION E: HA INTEGRATION & SETUP (ZOHO CLASSIC CREDENTIALS CARD) -->
       <section id="tab-diagnostics" class="tab-panel">
-        <div class="panel-card">
+        <!-- HERO CARD: HOME ASSISTANT INTEGRATION CREDENTIALS -->
+        <div class="panel-card setup-hero-card">
           <div class="panel-header">
-            <h3>Lumi Whatsapp HACS Integration Connection Details</h3>
+            <div>
+              <h3>Home Assistant Integration Setup Credentials</h3>
+              <p class="panel-subtitle">Use these credentials when setting up the <strong>Lumi Whatsapp</strong> integration in <em>Settings &rarr; Devices &amp; Services</em></p>
+            </div>
+            <button id="copy-all-btn" class="btn btn-primary btn-copy">
+              <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              <span>Copy All Setup Info</span>
+            </button>
           </div>
-          <p class="muted">Use these credentials when configuring the <strong>Lumi Whatsapp</strong> integration in Home Assistant (Settings &rarr; Devices &amp; services &rarr; Add Integration &rarr; Lumi Whatsapp):</p>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Internal Add-on API URL</label>
-              <input id="diag-internal-url" type="text" readonly value="http://local-whatsapp:8653" />
+
+          <!-- SETUP NOTICE CALLOUT -->
+          <div class="setup-callout">
+            <div class="callout-badge">IMPORTANT</div>
+            <div class="callout-text">
+              If you received <strong>cannot_connect</strong> when testing with <code>http://local-whatsapp:8653</code>, use the <strong>Universal Host URL</strong> <code>http://127.0.0.1:8653</code> below. Because the add-on runs on host port 8653, <code>127.0.0.1</code> connects directly without Docker DNS resolution errors!
             </div>
-            <div class="form-group">
-              <label>API Bearer Token</label>
-              <input id="diag-api-key" type="password" readonly value="" />
+          </div>
+
+          <div class="credentials-grid">
+            <!-- URL BOX -->
+            <div class="cred-card">
+              <div class="cred-header">
+                <label>Primary Integration URL (Recommended)</label>
+                <span class="tag-pill tag-recommended">Host Network</span>
+              </div>
+              <div class="input-with-button">
+                <input id="diag-internal-url" type="text" readonly value="http://127.0.0.1:8653" class="cred-input code-font" />
+                <button id="copy-url-btn" class="btn btn-secondary btn-copy" title="Copy URL">
+                  <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                  <span>Copy URL</span>
+                </button>
+              </div>
+              <span class="cred-helper">Universal loopback address accessible by Home Assistant Core container.</span>
             </div>
-            <div class="form-group form-actions-inline">
-              <button id="toggle-token-btn" type="button" class="btn btn-secondary">Show / Hide</button>
-              <button id="copy-token-btn" type="button" class="btn btn-primary">Copy Token</button>
+
+            <!-- API TOKEN BOX -->
+            <div class="cred-card">
+              <div class="cred-header">
+                <label>API Bearer Token</label>
+                <span class="tag-pill tag-secret">Secret Key</span>
+              </div>
+              <div class="input-with-button">
+                <input id="diag-api-key" type="password" readonly value="" class="cred-input code-font" />
+                <button id="toggle-token-btn" type="button" class="btn btn-ghost" title="Toggle visibility">
+                  <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                  <span>Show</span>
+                </button>
+                <button id="copy-token-btn" type="button" class="btn btn-primary btn-copy" title="Copy Token">
+                  <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                  <span>Copy Token</span>
+                </button>
+              </div>
+              <span class="cred-helper">Paste into the "api_key" field in Home Assistant's configuration prompt.</span>
+            </div>
+
+            <!-- FALLBACK URL BOX -->
+            <div class="cred-card">
+              <div class="cred-header">
+                <label>Alternative Fallback URL</label>
+                <span class="tag-pill tag-muted">Alternative</span>
+              </div>
+              <div class="input-with-button">
+                <input id="diag-alt-url" type="text" readonly value="http://localhost:8653" class="cred-input code-font" />
+                <button id="copy-alt-url-btn" class="btn btn-secondary btn-copy" title="Copy Alternative URL">
+                  <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                  <span>Copy</span>
+                </button>
+              </div>
+              <span class="cred-helper">If running Home Assistant Core directly on host machine.</span>
+            </div>
+          </div>
+
+          <!-- SETUP STEPS STEPPER -->
+          <div class="setup-stepper">
+            <h4>Quick Integration Steps:</h4>
+            <div class="steps-row">
+              <div class="step-item">
+                <span class="step-num">1</span>
+                <span class="step-txt">Click <strong>Copy URL</strong> (<code>http://127.0.0.1:8653</code>)</span>
+              </div>
+              <div class="step-arrow">&rarr;</div>
+              <div class="step-item">
+                <span class="step-num">2</span>
+                <span class="step-txt">Click <strong>Copy Token</strong></span>
+              </div>
+              <div class="step-arrow">&rarr;</div>
+              <div class="step-item">
+                <span class="step-num">3</span>
+                <span class="step-txt">Open <strong>Settings &rarr; Devices &amp; Services &rarr; Add Integration &rarr; Lumi Whatsapp</strong></span>
+              </div>
+              <div class="step-arrow">&rarr;</div>
+              <div class="step-item">
+                <span class="step-num">4</span>
+                <span class="step-txt">Paste URL &amp; Token, then click <strong>Submit</strong>!</span>
+              </div>
             </div>
           </div>
         </div>
 
+        <!-- DIAGNOSTICS TELEMETRY -->
         <div class="diagnostics-grid">
           <div class="panel-card">
-            <h3>Runtime &amp; API Health</h3>
+            <div class="diag-header">
+              <h4>Runtime &amp; API Health</h4>
+              <span class="status-dot connected"></span>
+            </div>
             <pre id="diag-runtime-pre" class="code-block">Loading...</pre>
           </div>
           <div class="panel-card">
-            <h3>Session Health &amp; Queue Telemetry</h3>
+            <div class="diag-header">
+              <h4>Session Health &amp; Queue Telemetry</h4>
+              <span class="status-dot connected"></span>
+            </div>
             <pre id="diag-sessions-pre" class="code-block">Loading...</pre>
           </div>
           <div class="panel-card">
-            <h3>Connection &amp; Authentication Errors</h3>
+            <div class="diag-header">
+              <h4>Connection &amp; Auth Diagnostics</h4>
+            </div>
             <pre id="diag-conn-errors-pre" class="code-block">None</pre>
           </div>
           <div class="panel-card">
-            <h3>Media Upload Failures &amp; Retry Attempts</h3>
+            <div class="diag-header">
+              <h4>Media Upload Health &amp; E2EE Retries</h4>
+            </div>
             <pre id="diag-media-errors-pre" class="code-block">None</pre>
           </div>
         </div>

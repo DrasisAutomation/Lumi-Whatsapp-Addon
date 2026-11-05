@@ -338,11 +338,13 @@ function createApiRouter({
         ...report,
         integrationSetup: isIngress
           ? {
-              internalUrl: 'http://local-whatsapp:8653',
+              internalUrl: 'http://127.0.0.1:8653',
+              fallbackUrls: ['http://localhost:8653', 'http://local-whatsapp:8653'],
               apiKey: config.apiKey,
             }
           : {
-              internalUrl: 'http://local-whatsapp:8653',
+              internalUrl: 'http://127.0.0.1:8653',
+              fallbackUrls: ['http://localhost:8653', 'http://local-whatsapp:8653'],
             },
       });
     })

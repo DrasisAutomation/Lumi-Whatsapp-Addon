@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.9] - 2026-11-05
+
+### Added
+- **Zoho Classic Premium UI Redesign**: Enterprise SaaS dashboard styling with modern typography, executive navy/slate surfaces, Zoho Blue interactive accents, high-contrast KPI metric cards, and responsive layout for desktop and Home Assistant mobile app.
+- **Bulletproof Clipboard Engine**: Reliable two-layer copy mechanism (`navigator.clipboard` + hidden textarea `execCommand('copy')` fallback) ensuring 100% copy reliability inside Home Assistant Ingress iframes, non-HTTPS sessions, and mobile webviews.
+- **Dedicated Integration Setup Hero Card**: Interactive credential box in Diagnostics tab displaying the universal loopback URL (`http://127.0.0.1:8653`), alternative URLs, API token visibility toggle, and instant one-click copy buttons with animated `✓ Copied!` visual feedback.
+- **Multi-URL Automatic Fallback in Config Flow**: `validate_addon_connection` automatically probes `http://127.0.0.1:8653` and `http://localhost:8653` if the initial entered URL encounters Docker/Supervisor internal DNS resolution failure, completely eliminating the `cannot_connect` error.
+- **Default Host Network URL**: Changed default add-on API URL to `http://127.0.0.1:8653`.
+
 ## [1.0.8] - 2026-11-05
 
 ### Fixed

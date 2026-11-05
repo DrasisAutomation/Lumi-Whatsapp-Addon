@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import logging
 from typing import Any
+from urllib.parse import urlparse
 import voluptuous as vol
 
 from homeassistant import config_entries
@@ -24,6 +26,8 @@ from .const import (
     DOMAIN,
 )
 
+_LOGGER = logging.getLogger(__name__)
+
 
 async def validate_addon_connection(
     hass: Any,
@@ -31,21 +35,57 @@ async def validate_addon_connection(
     api_key: str,
     verify_ssl: bool = True,
 ) -> dict[str, Any]:
-    """Validate that the add-on is reachable and the Bearer token is accepted."""
+    """Validate that the add-on is reachable and the Bearer token is accepted.
+
+    If the specified URL fails with a connection error, attempt common host network
+    fallbacks (127.0.0.1, localhost) to resolve Docker/Supervisor internal DNS mismatches.
+    """
     session = async_get_clientsession(hass, verify_ssl=verify_ssl)
-    client = WhatsAppAddonApiClient(
-        base_url=url,
-        api_key=api_key,
-        session=session,
-        verify_ssl=verify_ssl,
-    )
-    health = await client.get_health()
-    accounts = await client.get_accounts()
-    return {
-        "title": "Lumi Whatsapp",
-        "version": health.get("version", "1.0.0"),
-        "accounts_count": len(accounts),
-    }
+
+    candidates: list[str] = [url]
+    try:
+        parsed = urlparse(url)
+        port = parsed.port or 8653
+        scheme = parsed.scheme or "http"
+        for fb in (f"{scheme}://127.0.0.1:{port}", f"{scheme}://localhost:{port}"):
+            if fb not in candidates:
+                candidates.append(fb)
+    except Exception:
+        pass
+
+    last_error: Exception | None = None
+    for candidate in candidates:
+        client = WhatsAppAddonApiClient(
+            base_url=candidate,
+            api_key=api_key,
+            session=session,
+            verify_ssl=verify_ssl,
+            timeout=5,
+        )
+        try:
+            health = await client.get_health()
+            accounts = await client.get_accounts()
+            _LOGGER.info("Lumi Whatsapp Add-on successfully validated at %s", candidate)
+            return {
+                "title": "Lumi Whatsapp",
+                "version": health.get("version", "1.0.8"),
+                "accounts_count": len(accounts),
+                "working_url": candidate,
+            }
+        except WhatsAppAuthError:
+            # Reached the add-on, but token was rejected — do not try other URLs
+            raise
+        except (WhatsAppConnectionError, WhatsAppApiError) as err:
+            last_error = err
+            _LOGGER.debug("Failed connecting to candidate %s: %s", candidate, err)
+            continue
+        except Exception as err:
+            last_error = err
+            continue
+
+    if last_error:
+        raise last_error
+    raise WhatsAppConnectionError(f"Could not connect to WhatsApp Add-on at {url}")
 
 
 class WhatsAppConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -72,7 +112,9 @@ class WhatsAppConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 errors["base"] = "invalid_auth"
             else:
                 try:
-                    info = await validate_addon_connection(self.hass, url, api_key, verify_ssl)
+                    info = await validate_addon_connection(
+                        self.hass, url, api_key, verify_ssl
+                    )
                 except WhatsAppAuthError:
                     errors["base"] = "invalid_auth"
                 except (WhatsAppConnectionError, WhatsAppApiError):
@@ -80,12 +122,13 @@ class WhatsAppConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 except Exception:
                     errors["base"] = "unknown"
                 else:
-                    await self.async_set_unique_id(f"{DOMAIN}_{url}")
+                    working_url = info.get("working_url", url)
+                    await self.async_set_unique_id(f"{DOMAIN}_{working_url}")
                     self._abort_if_unique_id_configured()
                     return self.async_create_entry(
-                        title=info["title"],
+                        title=info.get("title", "Lumi Whatsapp"),
                         data={
-                            CONF_URL: url,
+                            CONF_URL: working_url,
                             CONF_API_KEY: api_key,
                             CONF_VERIFY_SSL: verify_ssl,
                         },
@@ -151,7 +194,9 @@ class WhatsAppOptionsFlowHandler(config_entries.OptionsFlow):
             verify_ssl = bool(user_input.get(CONF_VERIFY_SSL, True))
 
             try:
-                await validate_addon_connection(self.hass, url, api_key, verify_ssl)
+                info = await validate_addon_connection(
+                    self.hass, url, api_key, verify_ssl
+                )
             except WhatsAppAuthError:
                 errors["base"] = "invalid_auth"
             except (WhatsAppConnectionError, WhatsAppApiError):
@@ -159,10 +204,11 @@ class WhatsAppOptionsFlowHandler(config_entries.OptionsFlow):
             except Exception:
                 errors["base"] = "unknown"
             else:
+                working_url = info.get("working_url", url)
                 self.hass.config_entries.async_update_entry(
                     self._config_entry,
                     data={
-                        CONF_URL: url,
+                        CONF_URL: working_url,
                         CONF_API_KEY: api_key,
                         CONF_VERIFY_SSL: verify_ssl,
                     },

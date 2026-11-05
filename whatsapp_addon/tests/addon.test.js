@@ -129,7 +129,7 @@ test('Media Security: path traversal prevention and SSRF protection', async () =
   });
   assert.equal(trusted.hostname, '192.168.1.50');
 
-  await fsp.rm(tmpRoot, { recursive: true, force: true });
+  await fsp.rm(tmpRoot, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 // ---------------------------------------------------------------------------
@@ -179,7 +179,7 @@ test('MediaManager: waitForFileReady waits for delayed CCTV snapshot creation & 
   const pdfBytes = Buffer.from('%PDF-1.7 sample pdf content');
   assert.equal(detectMimeAndValidateMagicBytes(pdfBytes, 'invoice.pdf', 'document'), 'application/pdf');
 
-  await fsp.rm(tmpRoot, { recursive: true, force: true });
+  await fsp.rm(tmpRoot, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 // ---------------------------------------------------------------------------
@@ -243,7 +243,7 @@ test('Atomic Auth State & Persistent Queue: crash recovery, retries, and idempot
   assert.equal(attempts, 2);
 
   qm.stop();
-  await fsp.rm(tmpDir, { recursive: true, force: true });
+  await fsp.rm(tmpDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 // ---------------------------------------------------------------------------
@@ -451,5 +451,5 @@ test('Full Server E2E: Auth, Multi-Account, QR, Text/Image/Group Send, Receipts,
 
   ws.close();
   await instance.close();
-  await fsp.rm(tmpDataDir, { recursive: true, force: true });
+  await fsp.rm(tmpDataDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
