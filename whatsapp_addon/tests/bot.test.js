@@ -423,6 +423,36 @@ test('InteractiveBot: Full /remote and /cast conversational state machine', asyn
     assert.match(sentReplies[sentReplies.length - 1].text, /Broadcast Active/i);
     assert.match(sentReplies[sentReplies.length - 1].text, /Living Room Speaker/);
     assert.match(sentReplies[sentReplies.length - 1].text, /Master Bedroom Echo Dot/);
+
+    // Step F: Test hyphenated & case-insensitive commands (play-1, PLAY 1, Play 1,2, play-1,2)
+    const testCases = [
+      { cmd: 'play-1', expectedCount: 1, expectedName: 'Living Room Speaker' },
+      { cmd: 'PLAY 1', expectedCount: 1, expectedName: 'Living Room Speaker' },
+      { cmd: 'Play 1,2', expectedCount: 2, expectedName: 'Master Bedroom Echo Dot' },
+      { cmd: 'play-1,2', expectedCount: 2, expectedName: 'Master Bedroom Echo Dot' },
+      { cmd: 'PLAY-ALL', expectedCount: 2, expectedName: 'Living Room Speaker' },
+    ];
+
+    for (const tc of testCases) {
+      bot._setSession('917904598574', {
+        type: 'cast',
+        state: 'SPEAKER_SELECT',
+        clientId: 'c1',
+        phone: '917904598574',
+        replyTarget: '917904598574@s.whatsapp.net',
+        savedAudio: { filePath: dummyAudioPath, publicUrl: '/api/bot/casts/test_audio.ogg' },
+      });
+      mockHaClient.serviceCalls.length = 0;
+      await bot.handleIncomingMessage({
+        clientId: 'c1',
+        sender: '917904598574',
+        text: tc.cmd,
+        messageType: 'text',
+      });
+      assert.match(sentReplies[sentReplies.length - 1].text, /Broadcast Active/i);
+      assert.match(sentReplies[sentReplies.length - 1].text, new RegExp(tc.expectedName));
+      assert.equal(mockHaClient.serviceCalls.length, tc.expectedCount);
+    }
   } finally {
     bot.close();
     await cleanupDir(tmpDir);

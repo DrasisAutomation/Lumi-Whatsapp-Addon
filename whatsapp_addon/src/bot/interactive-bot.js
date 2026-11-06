@@ -18,7 +18,7 @@ const DEFAULT_TEMPLATES = {
   deviceMenu: "{{roomName}} Devices\nUser: {{userName}}\n─────────────────────\n{{deviceList}}\n\n─────────────────────\nHow to Control:\n• Single device: on 1 | off 1 | ON-1 | off-1\n• Multiple devices: on 1,2,3 | off 1,2\n• Navigation: '{{primaryBackTrigger}}' (Rooms) | '{{primaryEndTrigger}}' (Exit)",
   actionResult: "{{roomName}}\nUpdated by {{userName}}:\n─────────────────────\n{{results}}\n\n─────────────────────\nControl more devices, '{{primaryBackTrigger}}' for rooms, or '{{primaryEndTrigger}}' to exit.",
   castGreeting: "LUMI SPEAKER BROADCAST\nHello {{userName}}.\nPlease record a Voice Note or send an Audio File (.mp3, .ogg, .m4a) to play on your smart home speakers.\n─────────────────────\nType '{{primaryEndTrigger}}' to exit.",
-  castSelectSpeaker: "Audio Received! Select Speaker:\nUser: {{userName}}\n─────────────────────\n{{speakerList}}\n\n─────────────────────\nHow to Play:\n• Single: 1 (or play 1)\n• Multiple: 1,2 (or play 1,2)\n• All speakers: play all\n• Audio plays at speaker's current volume.\n• Type '{{primaryEndTrigger}}' to exit.",
+  castSelectSpeaker: "Audio Received! Select Speaker:\nUser: {{userName}}\n─────────────────────\n{{speakerList}}\n\n─────────────────────\nHow to Play:\n• Single: 1 (or play 1, play-1)\n• Multiple: 1,2 (or play 1,2, play-1,2,4)\n• All speakers: play all (or all)\n• Audio plays at speaker's current volume.\n• Type '{{primaryEndTrigger}}' to exit.",
   castSuccess: "Broadcast Active:\nTarget: {{speakerName}}\nRequested by: {{userName}}\nVolume: Current Speaker Volume\nStatus: Playing Now",
   accessDenied: "Access Denied:\nWhatsApp ID / Phone (+{{userPhone}}) is not authorized.\n\nTo authorize:\n1. Open Lumi Whatsapp Web UI > Authorized Numbers\n2. Add {{userPhone}}",
   sessionEnded: "Session Ended.\nThank you {{userName}}! Send '{{primaryRemoteTrigger}}' anytime to control devices.",
@@ -664,6 +664,29 @@ class InteractiveBot {
         publicUrl = `/api/bot/casts/${fileName}`;
       }
 
+      // Check if user already provided speaker selection in audio caption / text
+      // e.g. "play 1", "play-1", "Play 1", "PLAY 1", "Play 1,2,4", "play-1,2,4", "play all"
+      const captionText = String(msg.caption || msg.text || '').trim();
+      const directSpeakers = this._parseSpeakerSelection(captionText, speakers);
+
+      if (directSpeakers.length > 0) {
+        const audioUrl = publicUrl;
+        for (const spk of directSpeakers) {
+          try {
+            await this.haClient.playMedia(spk.entityId, audioUrl, 'music');
+          } catch (err) {
+            this.logger?.warn({ err: err.message, speaker: spk }, 'Failed to trigger speaker playback from caption');
+          }
+        }
+        const targetNames = directSpeakers.map((s) => s.name).join(', ');
+        const confirmMsg = this._render('castSuccess', {
+          userName,
+          speakerName: targetNames,
+        });
+        this._destroySession(phone);
+        return this._sendMessage(clientId, target, confirmMsg);
+      }
+
       // Prepare speaker list menu
       const speakerLines = speakers.map((spk, idx) => `${this._formatNum(idx + 1, settings.enableEmojis)} ${spk.name}`);
       const allSpeakersNum = speakers.length + 1;
@@ -689,26 +712,10 @@ class InteractiveBot {
     }
 
     // State 2: Speaker Selection & Broadcast Trigger
+    // Supports: "play 1", "play-1", "Play 1", "PLAY 1", "Play 1,2,4", "play-1,2,4", "1", "1,2", "all", "play all", etc.
     if (session.state === 'SPEAKER_SELECT') {
       const rawText = String(msg.text || '').trim();
-      const allSpeakersNum = speakers.length + 1;
-
-      let selectedSpeakers = [];
-      const cleanLower = rawText.toLowerCase().replace(/^play\s*/, '').trim();
-
-      if (cleanLower === 'all' || cleanLower === String(allSpeakersNum)) {
-        selectedSpeakers = [...speakers];
-      } else {
-        const parts = cleanLower.split(',').map((s) => parseInt(s.trim(), 10)).filter((n) => !isNaN(n));
-        for (const p of parts) {
-          if (p === allSpeakersNum) {
-            selectedSpeakers = [...speakers];
-            break;
-          } else if (p >= 1 && p <= speakers.length) {
-            selectedSpeakers.push(speakers[p - 1]);
-          }
-        }
-      }
+      const selectedSpeakers = this._parseSpeakerSelection(rawText, speakers);
 
       if (selectedSpeakers.length === 0) {
         const invalidChoiceMsg = this._render('invalidChoice', { userName });
@@ -736,6 +743,45 @@ class InteractiveBot {
       this._destroySession(phone);
       return this._sendMessage(clientId, target, confirmMsg);
     }
+  }
+
+  _parseSpeakerSelection(rawText, speakers = []) {
+    if (!rawText || typeof rawText !== 'string') return [];
+    const allSpeakersNum = speakers.length + 1;
+    // Strips "play", "play-", "cast", "cast-", "speak", "speak-" with optional spaces or hyphens
+    const clean = rawText
+      .trim()
+      .toLowerCase()
+      .replace(/^(play|cast|speak)[\s-]*/i, '')
+      .trim();
+
+    if (!clean) return [];
+
+    if (clean === 'all' || clean === String(allSpeakersNum) || clean === '-all' || clean.endsWith('all')) {
+      return [...speakers];
+    }
+
+    // Split by commas, slashes, plus signs, or whitespace: e.g. "1,2,4", "1-2-4", "1 2 4", "1/2/4"
+    const tokens = clean
+      .replace(/^[-\s]+/, '')
+      .split(/[/,+\s]+/)
+      .map((s) => s.replace(/^-/, '').trim())
+      .filter(Boolean);
+
+    const selected = [];
+    for (const t of tokens) {
+      if (t === 'all' || t === String(allSpeakersNum)) {
+        return [...speakers];
+      }
+      const num = parseInt(t, 10);
+      if (!isNaN(num) && num >= 1 && num <= speakers.length) {
+        const spk = speakers[num - 1];
+        if (!selected.includes(spk)) {
+          selected.push(spk);
+        }
+      }
+    }
+    return selected;
   }
 }
 
