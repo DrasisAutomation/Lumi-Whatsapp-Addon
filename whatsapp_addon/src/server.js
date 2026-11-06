@@ -166,13 +166,13 @@ async function createWhatsAppServer({
   // Serve Frontend Dashboard assets with dynamic Ingress <base> injection
   const frontendDir = path.resolve(__dirname, '..', 'frontend');
   const indexHtmlPath = path.join(frontendDir, 'index.html');
-  const rawIndexHtml = require('node:fs').readFileSync(indexHtmlPath, 'utf8');
 
   function sendIndexHtml(req, res) {
     const rawIngressPath = req.headers['x-ingress-path'];
     const baseHref = rawIngressPath
       ? `${String(rawIngressPath).replace(/\/+$/, '')}/`
       : './';
+    const rawIndexHtml = require('node:fs').readFileSync(indexHtmlPath, 'utf8');
     const htmlWithBase = rawIndexHtml.replace(
       '<head>',
       `<head>\n  <base href="${baseHref}">`

@@ -9,8 +9,11 @@
 </head>
 <body>
   <div class="app-shell">
-    <!-- SIDEBAR: CLEAN WHITE THEME (MATCHING DASMIN REFERENCE) -->
-    <aside class="sidebar">
+    <!-- MOBILE SIDEBAR BACKDROP OVERLAY -->
+    <div id="sidebar-backdrop" class="sidebar-backdrop" aria-hidden="true"></div>
+
+    <!-- SIDEBAR: CLEAN WHITE THEME (COLLAPSIBLE DRAWER ON MOBILE) -->
+    <aside id="app-sidebar" class="sidebar">
       <div class="brand">
         <div class="brand-logo-wrap">
           <img src="logo.png" alt="Lumi Whatsapp Logo" class="brand-logo" />
@@ -19,6 +22,9 @@
           <h1>LUMI WHATSAPP</h1>
           <span class="badge-version">v1.2.0</span>
         </div>
+        <button id="mobile-sidebar-close" class="mobile-sidebar-close-btn" title="Close Menu" aria-label="Close Navigation Menu">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
       </div>
 
       <nav class="nav-tabs" role="tablist">
@@ -80,6 +86,9 @@
       <!-- TOP BAR: CLEAN, SPACIOUS, PROPERLY ALIGNED -->
       <header class="topbar">
         <div class="topbar-left">
+          <button id="mobile-menu-btn" class="mobile-menu-btn" title="Open Navigation Menu" aria-label="Open Navigation Menu">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+          </button>
           <h2 id="page-title" class="page-title">Dashboard</h2>
         </div>
 
@@ -188,16 +197,15 @@
         <div class="dash-hero-grid">
           <!-- LEFT HERO: GOOGLE MATERIAL SMART HOME AUTOMATION HUB -->
           <div class="white-card hero-engine-card">
-            <div class="card-header">
+            <div class="card-header flex-between">
               <div>
                 <h3>Smart Home Automation Hub</h3>
                 <p class="card-subtitle">Live WhatsApp commands for Home Assistant lights, switches, fans, AC, and audio casting</p>
               </div>
-              <div class="badge-group">
-                <span class="pill-badge pill-blue">📱 /remote Ready</span>
-                <span class="pill-badge pill-purple">📢 /cast Ready</span>
-                <span class="pill-badge pill-green">🛡️ Whitelist Active</span>
-              </div>
+              <button id="load-demo-btn" class="btn btn-outline btn-sm" title="Load sample rooms, devices, speakers, and authorized numbers for testing">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                <span>Load Demo Setup</span>
+              </button>
             </div>
 
             <!-- GOOGLE MATERIAL 3 HUB TILES -->
@@ -269,31 +277,28 @@
               </div>
             </div>
 
-            <!-- ACTION SHORTCUTS (CLEAN SINGLE PLUS ICONS) -->
-            <div class="engine-actions-bar">
-              <button class="btn btn-secondary btn-sm" data-goto-tab="remote">
+            <!-- QUICK NAVIGATION SHORTCUTS -->
+            <div class="hub-quick-bar">
+              <span class="hub-quick-title">Quick Actions:</span>
+              <button class="hub-quick-btn" data-goto-tab="remote">
                 <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                 <span>Add Room</span>
               </button>
-              <button class="btn btn-secondary btn-sm" data-goto-tab="speakers">
+              <button class="hub-quick-btn" data-goto-tab="speakers">
                 <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                 <span>Add Speaker</span>
               </button>
-              <button class="btn btn-secondary btn-sm" data-goto-tab="authorized">
+              <button class="hub-quick-btn" data-goto-tab="authorized">
                 <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                <span>Add Authorized</span>
+                <span>Add Number</span>
               </button>
-              <button class="btn btn-secondary btn-sm" data-goto-tab="customizer">
+              <button class="hub-quick-btn" data-goto-tab="customizer">
                 <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line></svg>
                 <span>Customize Bot</span>
               </button>
-              <button class="btn btn-secondary btn-sm" data-goto-tab="backup">
+              <button class="hub-quick-btn" data-goto-tab="backup">
                 <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                <span>Backup &amp; Restore</span>
-              </button>
-              <button id="load-demo-btn" class="btn btn-outline btn-sm" title="Load sample rooms, devices, speakers, and authorized numbers for testing">
-                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                <span>Load Demo Setup</span>
+                <span>Backup JSON</span>
               </button>
             </div>
           </div>
@@ -700,21 +705,23 @@
           </div>
 
           <!-- ADD SPEAKER FORM -->
-          <div class="form-card" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: var(--radius-sm); padding: 1.25rem; margin-bottom: 1.5rem;">
-            <h4 style="margin-top: 0; margin-bottom: 0.75rem;">Add Speaker</h4>
+          <div class="form-card clean-form-box">
+            <h4 class="form-card-title">Add Speaker</h4>
             <form id="add-speaker-form">
-              <div class="form-row-responsive">
-                <div style="flex: 1; min-width: 240px;">
+              <div class="form-grid-clean">
+                <div class="form-field-wrap">
                   <label for="new-speaker-name" class="form-label">Speaker Display Name*</label>
-                  <input id="new-speaker-name" type="text" placeholder="e.g. Living Room Speaker, Bedroom Echo Dot" class="cred-input" style="width: 100%;" required />
+                  <input id="new-speaker-name" type="text" placeholder="e.g. Living Room Speaker, Bedroom Echo Dot" class="cred-input" required />
+                  <span class="field-hint">Friendly name shown in WhatsApp broadcast menu.</span>
                 </div>
-                <div style="flex: 1; min-width: 240px;">
+                <div class="form-field-wrap">
                   <label for="new-speaker-entity" class="form-label">Home Assistant Entity (media_player)*</label>
-                  <input id="new-speaker-entity" type="text" list="ha-media-entities-datalist" placeholder="Search or select media_player.*..." class="cred-input" style="width: 100%;" required />
+                  <input id="new-speaker-entity" type="text" list="ha-media-entities-datalist" placeholder="Search or select media_player.*..." class="cred-input" required />
                   <datalist id="ha-media-entities-datalist"></datalist>
+                  <span class="field-hint">Target media_player entity in Home Assistant.</span>
                 </div>
-                <div class="btn-wrap-responsive">
-                  <button type="submit" id="save-speaker-btn" class="btn btn-primary" style="height: 42px; min-width: 150px;">
+                <div class="form-btn-wrap">
+                  <button type="submit" id="save-speaker-btn" class="btn btn-primary form-action-btn">
                     <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                     <span>Add Speaker</span>
                   </button>
@@ -756,21 +763,22 @@
           <div id="recent-denied-container"></div>
 
           <!-- ADD AUTHORIZED NUMBER FORM -->
-          <div class="form-card" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: var(--radius-sm); padding: 1.25rem; margin-bottom: 1.5rem;">
-            <h4 style="margin-top: 0; margin-bottom: 0.75rem;">Add Authorized WhatsApp Phone or ID</h4>
+          <div class="form-card clean-form-box">
+            <h4 class="form-card-title">Add Authorized WhatsApp Phone or ID</h4>
             <form id="add-auth-form">
-              <div class="form-row-responsive">
-                <div style="flex: 1; min-width: 240px;">
+              <div class="form-grid-clean">
+                <div class="form-field-wrap">
                   <label for="new-auth-phone" class="form-label">Phone Number or WhatsApp ID (LID)*</label>
-                  <input id="new-auth-phone" type="text" placeholder="e.g. 919876543210 or 189322762391632" class="cred-input" style="width: 100%;" required />
-                  <span class="field-hint">Enter international digits (e.g. 919876543210) OR WhatsApp ID (e.g. 189322762391632).</span>
+                  <input id="new-auth-phone" type="text" placeholder="e.g. 919876543210 or 189322762391632" class="cred-input" required />
+                  <span class="field-hint">International digits (e.g. 919876543210) OR WhatsApp ID.</span>
                 </div>
-                <div style="flex: 1; min-width: 240px;">
+                <div class="form-field-wrap">
                   <label for="new-auth-name" class="form-label">User Label / Name</label>
-                  <input id="new-auth-name" type="text" placeholder="e.g. Family Member or Home Admin" class="cred-input" style="width: 100%;" />
+                  <input id="new-auth-name" type="text" placeholder="e.g. Family Member or Home Admin" class="cred-input" />
+                  <span class="field-hint">Reference name used for dynamic greetings.</span>
                 </div>
-                <div class="btn-wrap-responsive">
-                  <button type="submit" id="save-auth-btn" class="btn btn-primary" style="height: 42px; min-width: 180px;">
+                <div class="form-btn-wrap">
+                  <button type="submit" id="save-auth-btn" class="btn btn-primary form-action-btn">
                     <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                     <span>Add Authorized</span>
                   </button>

@@ -1150,7 +1150,39 @@
     if (titleEl) titleEl.textContent = titles[tabName] || 'Dashboard';
   }
 
+  let openSidebar = () => {};
+  let closeSidebar = () => {};
+
   function bindEvents() {
+    // Mobile Sidebar Drawer Controls
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const sidebar = document.getElementById('app-sidebar');
+    const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+    const mobileSidebarClose = document.getElementById('mobile-sidebar-close');
+
+    openSidebar = function() {
+      if (sidebar) sidebar.classList.add('open');
+      if (sidebarBackdrop) sidebarBackdrop.classList.add('active');
+    };
+
+    closeSidebar = function() {
+      if (sidebar) sidebar.classList.remove('open');
+      if (sidebarBackdrop) sidebarBackdrop.classList.remove('active');
+    };
+
+    if (mobileMenuBtn) mobileMenuBtn.addEventListener('click', openSidebar);
+    if (mobileSidebarClose) mobileSidebarClose.addEventListener('click', closeSidebar);
+    if (sidebarBackdrop) sidebarBackdrop.addEventListener('click', closeSidebar);
+
+    // Auto-close drawer on navigation in mobile view
+    document.querySelectorAll('.nav-btn, [data-goto-tab]').forEach((el) => {
+      el.addEventListener('click', () => {
+        if (window.innerWidth < 992) {
+          closeSidebar();
+        }
+      });
+    });
+
     // Navigation tabs
     document.querySelectorAll('.nav-btn').forEach((btn) => {
       btn.addEventListener('click', () => switchTab(btn.dataset.tab));
@@ -1833,6 +1865,9 @@
     const initialTab = urlParams.get('tab') || window.location.hash.replace(/^#/, '');
     if (initialTab) {
       switchTab(initialTab);
+    }
+    if (urlParams.get('drawer') === '1') {
+      openSidebar();
     }
     loadAllData();
     connectWebSocket();
