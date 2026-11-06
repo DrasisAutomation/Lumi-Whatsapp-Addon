@@ -17,7 +17,7 @@
         </div>
         <div class="brand-text">
           <h1>LUMI WHATSAPP</h1>
-          <span class="badge-version">v1.1.6</span>
+          <span class="badge-version">v1.2.0</span>
         </div>
       </div>
 
@@ -49,6 +49,10 @@
         <button class="nav-btn" data-tab="authorized" role="tab">
           <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
           <span>Authorized Numbers</span>
+        </button>
+        <button class="nav-btn" data-tab="customizer" role="tab">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
+          <span>Bot Customizer</span>
         </button>
         <button class="nav-btn" data-tab="backup" role="tab">
           <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
@@ -278,6 +282,10 @@
               <button class="btn btn-secondary btn-sm" data-goto-tab="authorized">
                 <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                 <span>Add Authorized</span>
+              </button>
+              <button class="btn btn-secondary btn-sm" data-goto-tab="customizer">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line></svg>
+                <span>Customize Bot</span>
               </button>
               <button class="btn btn-secondary btn-sm" data-goto-tab="backup">
                 <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
@@ -688,11 +696,11 @@
           <!-- VOLUME NOTICE -->
           <div class="setup-notice" style="margin-bottom: 1.5rem;">
             <span class="notice-pill" style="background: #e0f2fe; color: #0284c7;">VOLUME INFO</span>
-            <p><strong>ℹ️ Volume Behavior:</strong> Audio will always play at each speaker's <strong>current / last active volume level</strong> without forcing volume changes.</p>
+            <p><strong>Volume Behavior:</strong> Audio will always play at each speaker's <strong>current / last active volume level</strong> without forcing volume changes.</p>
           </div>
 
           <!-- ADD SPEAKER FORM -->
-          <div class="form-card" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.25rem; margin-bottom: 1.5rem;">
+          <div class="form-card" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: var(--radius-sm); padding: 1.25rem; margin-bottom: 1.5rem;">
             <h4 style="margin-top: 0; margin-bottom: 0.75rem;">Add Speaker</h4>
             <form id="add-speaker-form">
               <div class="form-row-responsive">
@@ -748,7 +756,7 @@
           <div id="recent-denied-container"></div>
 
           <!-- ADD AUTHORIZED NUMBER FORM -->
-          <div class="form-card" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.25rem; margin-bottom: 1.5rem;">
+          <div class="form-card" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: var(--radius-sm); padding: 1.25rem; margin-bottom: 1.5rem;">
             <h4 style="margin-top: 0; margin-bottom: 0.75rem;">Add Authorized WhatsApp Phone or ID</h4>
             <form id="add-auth-form">
               <div class="form-row-responsive">
@@ -786,6 +794,236 @@
                 <tr><td colspan="4" class="empty-state">Loading authorized numbers...</td></tr>
               </tbody>
             </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION: BOT CUSTOMIZER & RESPONSE TEMPLATES -->
+      <section id="tab-customizer" class="tab-panel">
+        <div class="customizer-layout">
+          <!-- LEFT: SETTINGS & TEMPLATES -->
+          <div class="customizer-left-col">
+            <!-- TOP CARD: ACTIONS & COMMAND TRIGGERS -->
+            <div class="custom-card">
+              <div class="custom-card-header">
+                <div>
+                  <h3>Command Triggers</h3>
+                  <p>Customize trigger keywords. Commands work with or without a slash (e.g. <code>remote</code>, <code>lumi</code>, <code>control</code>, or <code>/remote</code>).</p>
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                  <button id="reset-customizer-btn" class="btn btn-secondary btn-sm" title="Reset all triggers and templates to clean minimal defaults">
+                    <span>Reset Defaults</span>
+                  </button>
+                  <button id="save-customizer-btn" class="btn btn-primary btn-sm">
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                    <span>Save Customization</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="customizer-form-group">
+                <label for="cfg-remote-triggers" class="customizer-label">Remote Builder Triggers (Comma separated)</label>
+                <input id="cfg-remote-triggers" type="text" class="customizer-input" placeholder="remote, lumi, control, /remote" />
+                <span class="field-hint">Triggers that start the interactive smart home remote menu.</span>
+              </div>
+
+              <div class="customizer-form-group">
+                <label for="cfg-cast-triggers" class="customizer-label">Speaker Cast Triggers (Comma separated)</label>
+                <input id="cfg-cast-triggers" type="text" class="customizer-input" placeholder="cast, broadcast, speak, /cast" />
+                <span class="field-hint">Triggers that start the voice note and audio broadcast flow.</span>
+              </div>
+
+              <div class="customizer-form-group">
+                <label for="cfg-end-triggers" class="customizer-label">Exit / End Triggers (Comma separated)</label>
+                <input id="cfg-end-triggers" type="text" class="customizer-input" placeholder="end, exit, /end, stop, quit, close" />
+                <span class="field-hint">Keywords to close the active session.</span>
+              </div>
+
+              <div class="customizer-form-group">
+                <label for="cfg-back-triggers" class="customizer-label">Back / Navigation Triggers (Comma separated)</label>
+                <input id="cfg-back-triggers" type="text" class="customizer-input" placeholder="back, /back, rooms, menu" />
+                <span class="field-hint">Keywords to return to room selection from device menu.</span>
+              </div>
+
+              <div class="customizer-form-group">
+                <label for="cfg-help-triggers" class="customizer-label">Help Triggers (Comma separated)</label>
+                <input id="cfg-help-triggers" type="text" class="customizer-input" placeholder="help, /help, info, commands" />
+                <span class="field-hint">Keywords to display usage instructions.</span>
+              </div>
+            </div>
+
+            <!-- CARD 2: FORMATTING & IDENTITY CONTROLS -->
+            <div class="custom-card">
+              <div class="custom-card-header">
+                <div>
+                  <h3>Formatting &amp; User Reference Name</h3>
+                  <p>Fine-tune typography and dynamic name resolution.</p>
+                </div>
+              </div>
+
+              <!-- TOGGLE: EMOJIS (DEFAULT DISABLED) -->
+              <div class="toggle-switch-card">
+                <div class="toggle-info">
+                  <span class="toggle-title">Enable Emojis in WhatsApp Messages</span>
+                  <span class="toggle-desc">When disabled (recommended), all responses use clean, professional plain text with zero emojis.</span>
+                </div>
+                <input type="checkbox" id="cfg-enable-emojis" class="toggle-checkbox" />
+              </div>
+
+              <!-- TOGGLE: INCLUDE USER NAME (DEFAULT ENABLED) -->
+              <div class="toggle-switch-card">
+                <div class="toggle-info">
+                  <span class="toggle-title">Include Authorized User Reference Name</span>
+                  <span class="toggle-desc">Dynamically greets each user using the label assigned to their phone number in Authorized Numbers (e.g. Mohan, Dad, Admin).</span>
+                </div>
+                <input type="checkbox" id="cfg-include-user-name" class="toggle-checkbox" checked />
+              </div>
+            </div>
+
+            <!-- CARD 3: RESPONSE TEMPLATES -->
+            <div class="custom-card">
+              <div class="custom-card-header">
+                <div>
+                  <h3>WhatsApp Response Templates</h3>
+                  <p>Customize every message sent to WhatsApp. Click any variable pill below a template to insert it.</p>
+                </div>
+              </div>
+
+              <!-- TEMPLATE 1: REMOTE GREETING -->
+              <div class="customizer-form-group">
+                <label for="tpl-remote-greeting" class="customizer-label">1. Remote Greeting &amp; Room List</label>
+                <textarea id="tpl-remote-greeting" class="customizer-textarea" rows="4"></textarea>
+                <div class="variable-pill-bar" data-target="tpl-remote-greeting">
+                  <span class="variable-tag" data-var="{{userName}}">{{userName}}</span>
+                  <span class="variable-tag" data-var="{{roomList}}">{{roomList}}</span>
+                  <span class="variable-tag" data-var="{{primaryEndTrigger}}">{{primaryEndTrigger}}</span>
+                </div>
+              </div>
+
+              <!-- TEMPLATE 2: DEVICE MENU -->
+              <div class="customizer-form-group">
+                <label for="tpl-device-menu" class="customizer-label">2. Room Device Control Menu</label>
+                <textarea id="tpl-device-menu" class="customizer-textarea" rows="5"></textarea>
+                <div class="variable-pill-bar" data-target="tpl-device-menu">
+                  <span class="variable-tag" data-var="{{userName}}">{{userName}}</span>
+                  <span class="variable-tag" data-var="{{roomName}}">{{roomName}}</span>
+                  <span class="variable-tag" data-var="{{deviceList}}">{{deviceList}}</span>
+                  <span class="variable-tag" data-var="{{primaryBackTrigger}}">{{primaryBackTrigger}}</span>
+                  <span class="variable-tag" data-var="{{primaryEndTrigger}}">{{primaryEndTrigger}}</span>
+                </div>
+              </div>
+
+              <!-- TEMPLATE 3: ACTION RESULT -->
+              <div class="customizer-form-group">
+                <label for="tpl-action-result" class="customizer-label">3. Device Action Execution Confirmation</label>
+                <textarea id="tpl-action-result" class="customizer-textarea" rows="4"></textarea>
+                <div class="variable-pill-bar" data-target="tpl-action-result">
+                  <span class="variable-tag" data-var="{{userName}}">{{userName}}</span>
+                  <span class="variable-tag" data-var="{{roomName}}">{{roomName}}</span>
+                  <span class="variable-tag" data-var="{{results}}">{{results}}</span>
+                  <span class="variable-tag" data-var="{{primaryBackTrigger}}">{{primaryBackTrigger}}</span>
+                  <span class="variable-tag" data-var="{{primaryEndTrigger}}">{{primaryEndTrigger}}</span>
+                </div>
+              </div>
+
+              <!-- TEMPLATE 4: CAST GREETING -->
+              <div class="customizer-form-group">
+                <label for="tpl-cast-greeting" class="customizer-label">4. Voice / Audio Cast Prompt</label>
+                <textarea id="tpl-cast-greeting" class="customizer-textarea" rows="4"></textarea>
+                <div class="variable-pill-bar" data-target="tpl-cast-greeting">
+                  <span class="variable-tag" data-var="{{userName}}">{{userName}}</span>
+                  <span class="variable-tag" data-var="{{primaryEndTrigger}}">{{primaryEndTrigger}}</span>
+                </div>
+              </div>
+
+              <!-- TEMPLATE 5: CAST SELECT SPEAKER -->
+              <div class="customizer-form-group">
+                <label for="tpl-cast-select-speaker" class="customizer-label">5. Speaker Selection Menu</label>
+                <textarea id="tpl-cast-select-speaker" class="customizer-textarea" rows="5"></textarea>
+                <div class="variable-pill-bar" data-target="tpl-cast-select-speaker">
+                  <span class="variable-tag" data-var="{{userName}}">{{userName}}</span>
+                  <span class="variable-tag" data-var="{{speakerList}}">{{speakerList}}</span>
+                  <span class="variable-tag" data-var="{{primaryEndTrigger}}">{{primaryEndTrigger}}</span>
+                </div>
+              </div>
+
+              <!-- TEMPLATE 6: CAST SUCCESS -->
+              <div class="customizer-form-group">
+                <label for="tpl-cast-success" class="customizer-label">6. Speaker Broadcast Confirmation</label>
+                <textarea id="tpl-cast-success" class="customizer-textarea" rows="4"></textarea>
+                <div class="variable-pill-bar" data-target="tpl-cast-success">
+                  <span class="variable-tag" data-var="{{userName}}">{{userName}}</span>
+                  <span class="variable-tag" data-var="{{speakerName}}">{{speakerName}}</span>
+                </div>
+              </div>
+
+              <!-- TEMPLATE 7: ACCESS DENIED -->
+              <div class="customizer-form-group">
+                <label for="tpl-access-denied" class="customizer-label">7. Access Denied (Unauthorized Number)</label>
+                <textarea id="tpl-access-denied" class="customizer-textarea" rows="4"></textarea>
+                <div class="variable-pill-bar" data-target="tpl-access-denied">
+                  <span class="variable-tag" data-var="{{userPhone}}">{{userPhone}}</span>
+                </div>
+              </div>
+
+              <!-- TEMPLATE 8: SESSION ENDED -->
+              <div class="customizer-form-group">
+                <label for="tpl-session-ended" class="customizer-label">8. Session Terminated</label>
+                <textarea id="tpl-session-ended" class="customizer-textarea" rows="3"></textarea>
+                <div class="variable-pill-bar" data-target="tpl-session-ended">
+                  <span class="variable-tag" data-var="{{userName}}">{{userName}}</span>
+                  <span class="variable-tag" data-var="{{primaryRemoteTrigger}}">{{primaryRemoteTrigger}}</span>
+                </div>
+              </div>
+
+              <!-- TEMPLATE 9: HELP TEXT -->
+              <div class="customizer-form-group">
+                <label for="tpl-help-text" class="customizer-label">9. Help &amp; Commands Guide</label>
+                <textarea id="tpl-help-text" class="customizer-textarea" rows="5"></textarea>
+                <div class="variable-pill-bar" data-target="tpl-help-text">
+                  <span class="variable-tag" data-var="{{primaryRemoteTrigger}}">{{primaryRemoteTrigger}}</span>
+                  <span class="variable-tag" data-var="{{primaryBackTrigger}}">{{primaryBackTrigger}}</span>
+                  <span class="variable-tag" data-var="{{primaryEndTrigger}}">{{primaryEndTrigger}}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT: LIVE WHATSAPP MESSAGE PREVIEW -->
+          <div class="customizer-right-col preview-sticky-wrap">
+            <div class="whatsapp-mock-phone">
+              <div class="whatsapp-mock-header">
+                <div class="whatsapp-mock-title">
+                  <svg style="width: 18px; height: 18px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                  <span>WhatsApp Live Preview</span>
+                </div>
+                <span class="badge" style="background: rgba(255,255,255,0.15); color: #fff; font-size: 0.68rem;">Real-time</span>
+              </div>
+
+              <div class="preview-selector-bar">
+                <button class="preview-tab-btn active" data-preview="remoteGreeting">Remote</button>
+                <button class="preview-tab-btn" data-preview="deviceMenu">Devices</button>
+                <button class="preview-tab-btn" data-preview="actionResult">Result</button>
+                <button class="preview-tab-btn" data-preview="castGreeting">Cast</button>
+                <button class="preview-tab-btn" data-preview="castSelectSpeaker">Speaker</button>
+                <button class="preview-tab-btn" data-preview="accessDenied">Denied</button>
+              </div>
+
+              <div class="whatsapp-mock-body">
+                <div class="whatsapp-msg-bubble" id="whatsapp-preview-bubble">
+                  LUMI SMART HOME REMOTE
+Welcome Mohan.
+Select a room by replying with its number:
+
+1. Living Room
+2. Bedroom
+
+─────────────────────
+Reply with a room number (e.g. 1) or 'end' to exit.
+                  <span class="whatsapp-msg-time" id="preview-timestamp">12:00 PM ✓✓</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>

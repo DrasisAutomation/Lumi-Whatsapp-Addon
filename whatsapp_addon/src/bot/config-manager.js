@@ -5,6 +5,33 @@ const fsp = require('node:fs/promises');
 const path = require('node:path');
 const { writeJsonAtomic, readJsonSafe } = require('../services/storage');
 
+function createDefaultSettings() {
+  return {
+    remoteTriggers: ['remote', 'lumi', 'control', '/remote'],
+    castTriggers: ['cast', 'broadcast', 'speak', '/cast'],
+    endTriggers: ['end', 'exit', '/end', 'stop', 'quit', 'close'],
+    backTriggers: ['back', '/back', 'rooms', 'menu'],
+    helpTriggers: ['help', '/help', 'info', 'commands'],
+    enableEmojis: false,
+    includeUserName: true,
+    templates: {
+      remoteGreeting: "LUMI SMART HOME REMOTE\nWelcome {{userName}}.\nSelect a room by replying with its number:\n\n{{roomList}}\n\n─────────────────────\nReply with a room number (e.g. 1) or '{{primaryEndTrigger}}' to exit.",
+      deviceMenu: "{{roomName}} Devices\nUser: {{userName}}\n─────────────────────\n{{deviceList}}\n\n─────────────────────\nHow to Control:\n• Single device: on 1 | off 1 | ON-1 | off-1\n• Multiple devices: on 1,2,3 | off 1,2\n• Navigation: '{{primaryBackTrigger}}' (Rooms) | '{{primaryEndTrigger}}' (Exit)",
+      actionResult: "{{roomName}}\nUpdated by {{userName}}:\n─────────────────────\n{{results}}\n\n─────────────────────\nControl more devices, '{{primaryBackTrigger}}' for rooms, or '{{primaryEndTrigger}}' to exit.",
+      castGreeting: "LUMI SPEAKER BROADCAST\nHello {{userName}}.\nPlease record a Voice Note or send an Audio File (.mp3, .ogg, .m4a) to play on your smart home speakers.\n─────────────────────\nType '{{primaryEndTrigger}}' to exit.",
+      castSelectSpeaker: "Audio Received! Select Speaker:\nUser: {{userName}}\n─────────────────────\n{{speakerList}}\n\n─────────────────────\nHow to Play:\n• Single: 1 (or play 1)\n• Multiple: 1,2 (or play 1,2)\n• All speakers: play all\n• Audio plays at speaker's current volume.\n• Type '{{primaryEndTrigger}}' to exit.",
+      castSuccess: "Broadcast Active:\nTarget: {{speakerName}}\nRequested by: {{userName}}\nVolume: Current Speaker Volume\nStatus: Playing Now",
+      accessDenied: "Access Denied:\nWhatsApp ID / Phone (+{{userPhone}}) is not authorized.\n\nTo authorize:\n1. Open Lumi Whatsapp Web UI > Authorized Numbers\n2. Add {{userPhone}}",
+      sessionEnded: "Session Ended.\nThank you {{userName}}! Send '{{primaryRemoteTrigger}}' anytime to control devices.",
+      helpText: "Lumi Remote Commands:\n• {{primaryRemoteTrigger}} - Open main smart home menu\n• 1, 2, 3... - Select room number\n• on 1 / off 1 - Toggle device #1\n• on 1,2,3 / off 1,2,3 - Toggle multiple\n• {{primaryBackTrigger}} - Go back to room list\n• {{primaryEndTrigger}} - Exit remote session",
+      noRooms: "No Rooms Configured:\nPlease open the Lumi Whatsapp Web UI and add rooms and devices under Remote Builder.",
+      noSpeakers: "No Speakers Configured:\nPlease open the Lumi Whatsapp Web UI and add speakers under Speakers & Casting.",
+      invalidChoice: "Invalid choice.\nPlease reply with a valid number, '{{primaryBackTrigger}}' for rooms, or '{{primaryEndTrigger}}' to exit.",
+      invalidAudio: "Audio Required:\nPlease record a voice note or upload an audio file to continue, or type '{{primaryEndTrigger}}' to exit.",
+    },
+  };
+}
+
 function createDefaultConfig() {
   return {
     version: '1.0',
@@ -12,6 +39,7 @@ function createDefaultConfig() {
     authorizedNumbers: [],
     rooms: [],
     speakers: [],
+    settings: createDefaultSettings(),
   };
 }
 
@@ -28,12 +56,21 @@ class BotConfigManager {
     try {
       const data = await readJsonSafe(this.filePath, null);
       if (data && typeof data === 'object') {
+        const defSettings = createDefaultSettings();
         this.config = {
           version: data.version || '1.0',
           exportedAt: data.exportedAt || null,
           authorizedNumbers: Array.isArray(data.authorizedNumbers) ? data.authorizedNumbers : [],
           rooms: Array.isArray(data.rooms) ? data.rooms : [],
           speakers: Array.isArray(data.speakers) ? data.speakers : [],
+          settings: {
+            ...defSettings,
+            ...(data.settings || {}),
+            templates: {
+              ...defSettings.templates,
+              ...((data.settings && data.settings.templates) || {}),
+            },
+          },
         };
         this.logger?.info({ rooms: this.config.rooms.length, authorized: this.config.authorizedNumbers.length }, 'Loaded Bot & Remote configuration');
       } else {
@@ -49,14 +86,75 @@ class BotConfigManager {
     return JSON.parse(JSON.stringify(this.config));
   }
 
+  getSettings() {
+    const def = createDefaultSettings();
+    return {
+      ...def,
+      ...(this.config.settings || {}),
+      templates: {
+        ...def.templates,
+        ...((this.config.settings && this.config.settings.templates) || {}),
+      },
+    };
+  }
+
+  async updateSettings(newSettings = {}) {
+    const current = this.getSettings();
+    this.config.settings = {
+      ...current,
+      ...newSettings,
+      templates: {
+        ...current.templates,
+        ...(newSettings.templates || {}),
+      },
+    };
+    await this.save();
+    return this.getSettings();
+  }
+
+  async resetSettingsToDefault() {
+    this.config.settings = createDefaultSettings();
+    await this.save();
+    return this.getSettings();
+  }
+
+  getAuthorizedEntry(rawPhone, rawJid = null) {
+    if (!this.config.authorizedNumbers || this.config.authorizedNumbers.length === 0) {
+      return null;
+    }
+    const cleanPhone = String(rawPhone || '').replace(/[^0-9]/g, '');
+    const cleanJid = rawJid ? String(rawJid).split('@')[0].split(':')[0].replace(/[^0-9]/g, '') : '';
+    return (
+      this.config.authorizedNumbers.find((item) => {
+        const authClean = String(item.phone || '').split('@')[0].split(':')[0].replace(/[^0-9]/g, '');
+        const authLid = item.lid ? String(item.lid).split('@')[0].split(':')[0].replace(/[^0-9]/g, '') : '';
+        return (
+          (cleanPhone && authClean === cleanPhone) ||
+          (cleanJid && authClean === cleanJid) ||
+          (cleanPhone && authLid && cleanPhone === authLid) ||
+          (cleanJid && authLid && cleanJid === authLid)
+        );
+      }) || null
+    );
+  }
+
   async save(newConfig = null) {
     if (newConfig) {
+      const defSettings = createDefaultSettings();
       this.config = {
         version: '1.0',
         exportedAt: new Date().toISOString(),
-        authorizedNumbers: Array.isArray(newConfig.authorizedNumbers) ? newConfig.authorizedNumbers : [],
-        rooms: Array.isArray(newConfig.rooms) ? newConfig.rooms : [],
-        speakers: Array.isArray(newConfig.speakers) ? newConfig.speakers : [],
+        authorizedNumbers: Array.isArray(newConfig.authorizedNumbers) ? newConfig.authorizedNumbers : (this.config.authorizedNumbers || []),
+        rooms: Array.isArray(newConfig.rooms) ? newConfig.rooms : (this.config.rooms || []),
+        speakers: Array.isArray(newConfig.speakers) ? newConfig.speakers : (this.config.speakers || []),
+        settings: newConfig.settings ? {
+          ...defSettings,
+          ...newConfig.settings,
+          templates: {
+            ...defSettings.templates,
+            ...(newConfig.settings.templates || {}),
+          },
+        } : (this.config.settings || defSettings),
       };
     }
     await writeJsonAtomic(this.filePath, this.config);

@@ -417,6 +417,39 @@ function createApiRouter({
     })
   );
 
+  // 25c. Bot Customizer & Template Settings
+  router.get(
+    '/bot/settings',
+    asyncHandler(async (req, res) => {
+      if (!botConfigManager) {
+        return res.status(503).json({ ok: false, error: 'Bot config manager not initialized' });
+      }
+      res.json({ ok: true, settings: botConfigManager.getSettings() });
+    })
+  );
+
+  router.post(
+    '/bot/settings',
+    asyncHandler(async (req, res) => {
+      if (!botConfigManager) {
+        return res.status(503).json({ ok: false, error: 'Bot config manager not initialized' });
+      }
+      const updated = await botConfigManager.updateSettings(req.body);
+      res.json({ ok: true, message: 'Bot settings updated successfully', settings: updated });
+    })
+  );
+
+  router.post(
+    '/bot/settings/reset',
+    asyncHandler(async (req, res) => {
+      if (!botConfigManager) {
+        return res.status(503).json({ ok: false, error: 'Bot config manager not initialized' });
+      }
+      const reset = await botConfigManager.resetSettingsToDefault();
+      res.json({ ok: true, message: 'Bot settings reset to clean defaults', settings: reset });
+    })
+  );
+
   // 26. GET /api/bot/ha-entities
   router.get(
     '/bot/ha-entities',

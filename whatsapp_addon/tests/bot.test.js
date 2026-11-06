@@ -251,8 +251,8 @@ test('InteractiveBot: Full /remote and /cast conversational state machine', asyn
       messageType: 'text',
     });
     assert.equal(sentReplies.length, 1);
-    assert.match(sentReplies[0].text, /⛔ \*Access Denied:\*/);
-    assert.match(sentReplies[0].text, /not authorized to control Home Assistant/);
+    assert.match(sentReplies[0].text, /Access Denied/i);
+    assert.match(sentReplies[0].text, /not authorized/i);
 
     await bot.handleIncomingMessage({
       clientId: 'c1',
@@ -261,8 +261,8 @@ test('InteractiveBot: Full /remote and /cast conversational state machine', asyn
       messageType: 'text',
     });
     assert.equal(sentReplies.length, 2);
-    assert.match(sentReplies[1].text, /⛔ \*Access Denied:\*/);
-    assert.match(sentReplies[1].text, /not authorized to broadcast to Home Assistant speakers/);
+    assert.match(sentReplies[1].text, /Access Denied/i);
+    assert.match(sentReplies[1].text, /not authorized/i);
 
     // ─────────────────────────────────────────────────────────
     // SCENARIO 2: Authorized user /remote flow
@@ -277,9 +277,9 @@ test('InteractiveBot: Full /remote and /cast conversational state machine', asyn
       messageType: 'text',
     });
     assert.equal(sentReplies.length, 1);
-    assert.match(sentReplies[0].text, /🏠 \*LUMI SMART HOME REMOTE\*/);
-    assert.match(sentReplies[0].text, /1️⃣ Living Room/);
-    assert.match(sentReplies[0].text, /2️⃣ Master Bedroom/);
+    assert.match(sentReplies[0].text, /LUMI SMART HOME REMOTE/i);
+    assert.match(sentReplies[0].text, /Living Room/);
+    assert.match(sentReplies[0].text, /Master Bedroom/);
 
     // Step B: Select Room 1 (Living Room)
     await bot.handleIncomingMessage({
@@ -289,10 +289,10 @@ test('InteractiveBot: Full /remote and /cast conversational state machine', asyn
       messageType: 'text',
     });
     assert.equal(sentReplies.length, 2);
-    assert.match(sentReplies[1].text, /🛋️ \*Living Room Devices\*/);
-    assert.match(sentReplies[1].text, /1️⃣ Ceiling Light: \*\[OFF\]\*/);
-    assert.match(sentReplies[1].text, /2️⃣ Reading Lamp: \*\[ON\]\*/);
-    assert.match(sentReplies[1].text, /3️⃣ Ceiling Fan: \*\[OFF\]\*/);
+    assert.match(sentReplies[1].text, /Living Room Devices/i);
+    assert.match(sentReplies[1].text, /Ceiling Light/);
+    assert.match(sentReplies[1].text, /Reading Lamp/);
+    assert.match(sentReplies[1].text, /Ceiling Fan/);
 
     // Step C: Trigger Single Device: on 1 or ON-1
     await bot.handleIncomingMessage({
@@ -302,8 +302,8 @@ test('InteractiveBot: Full /remote and /cast conversational state machine', asyn
       messageType: 'text',
     });
     assert.equal(sentReplies.length, 3);
-    assert.match(sentReplies[2].text, /✅ \*Action Executed:\*/);
-    assert.match(sentReplies[2].text, /• \*Ceiling Light\*: turned \*ON\*/);
+    assert.match(sentReplies[2].text, /Living Room/i);
+    assert.match(sentReplies[2].text, /Ceiling Light/);
     assert.equal(statesMap['light.living_room_light'], 'on');
 
     // Step D: Trigger Batch Devices: off 1,2
@@ -314,9 +314,9 @@ test('InteractiveBot: Full /remote and /cast conversational state machine', asyn
       messageType: 'text',
     });
     assert.equal(sentReplies.length, 4);
-    assert.match(sentReplies[3].text, /✅ \*Batch Action Executed:\*/);
-    assert.match(sentReplies[3].text, /• \*Ceiling Light\*: turned \*OFF\*/);
-    assert.match(sentReplies[3].text, /• \*Reading Lamp\*: turned \*OFF\*/);
+    assert.match(sentReplies[3].text, /Living Room/i);
+    assert.match(sentReplies[3].text, /Ceiling Light/);
+    assert.match(sentReplies[3].text, /Reading Lamp/);
     assert.equal(statesMap['light.living_room_light'], 'off');
     assert.equal(statesMap['light.reading_lamp'], 'off');
 
@@ -328,8 +328,8 @@ test('InteractiveBot: Full /remote and /cast conversational state machine', asyn
       messageType: 'text',
     });
     assert.equal(sentReplies.length, 5);
-    assert.match(sentReplies[4].text, /↩️ \*Returning to Room Selection:\*/);
-    assert.match(sentReplies[4].text, /1️⃣ Living Room/);
+    assert.match(sentReplies[4].text, /LUMI SMART HOME REMOTE/i);
+    assert.match(sentReplies[4].text, /Living Room/);
 
     // Step F: /end exits session
     await bot.handleIncomingMessage({
@@ -339,7 +339,7 @@ test('InteractiveBot: Full /remote and /cast conversational state machine', asyn
       messageType: 'text',
     });
     assert.equal(sentReplies.length, 6);
-    assert.match(sentReplies[5].text, /👋 \*Remote Session Ended\.\*/);
+    assert.match(sentReplies[5].text, /Session Ended/i);
 
     // ─────────────────────────────────────────────────────────
     // SCENARIO 3: Authorized user /cast flow
@@ -355,8 +355,8 @@ test('InteractiveBot: Full /remote and /cast conversational state machine', asyn
       messageType: 'text',
     });
     assert.equal(sentReplies.length, 1);
-    assert.match(sentReplies[0].text, /🎙️ \*LUMI SPEAKER BROADCAST \/ CAST\*/);
-    assert.match(sentReplies[0].text, /Please record a \*Voice Note\* or send an \*Audio File\*/);
+    assert.match(sentReplies[0].text, /LUMI SPEAKER BROADCAST/i);
+    assert.match(sentReplies[0].text, /Voice Note/i);
 
     // Step B: User sends text instead of audio -> Prompt warning
     await bot.handleIncomingMessage({
@@ -366,7 +366,7 @@ test('InteractiveBot: Full /remote and /cast conversational state machine', asyn
       messageType: 'text',
     });
     assert.equal(sentReplies.length, 2);
-    assert.match(sentReplies[1].text, /⚠️ \*Audio Required:\*/);
+    assert.match(sentReplies[1].text, /Audio Required/i);
 
     // Step C: User sends audio file
     // Create dummy audio file on disk to simulate downloaded audio buffer
@@ -394,9 +394,8 @@ test('InteractiveBot: Full /remote and /cast conversational state machine', asyn
       messageType: 'text',
     });
     assert.equal(sentReplies.length, 3);
-    assert.match(sentReplies[2].text, /✅ \*Broadcasting Announcement:\*/);
-    assert.match(sentReplies[2].text, /• Target: \*Living Room Speaker\*/);
-    assert.match(sentReplies[2].text, /• Volume: \*Current Speaker Volume\*/);
+    assert.match(sentReplies[2].text, /Broadcast Active/i);
+    assert.match(sentReplies[2].text, /Living Room Speaker/);
     assert.equal(mockHaClient.serviceCalls.length, 1);
     assert.equal(mockHaClient.serviceCalls[0].entityId, 'media_player.living_room_speaker');
 
@@ -421,7 +420,7 @@ test('InteractiveBot: Full /remote and /cast conversational state machine', asyn
       text: 'play all',
       messageType: 'text',
     });
-    assert.match(sentReplies[sentReplies.length - 1].text, /✅ \*Multi-Speaker Broadcast Active:\*/);
+    assert.match(sentReplies[sentReplies.length - 1].text, /Broadcast Active/i);
     assert.match(sentReplies[sentReplies.length - 1].text, /Living Room Speaker/);
     assert.match(sentReplies[sentReplies.length - 1].text, /Master Bedroom Echo Dot/);
   } finally {

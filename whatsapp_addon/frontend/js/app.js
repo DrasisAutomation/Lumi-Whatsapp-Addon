@@ -7,6 +7,8 @@
     diagnostics: null,
     activeQrClientId: null,
     botConfig: { authorizedNumbers: [], rooms: [], speakers: [] },
+    botSettings: null,
+    activePreviewTab: 'remoteGreeting',
     haEntities: [],
     ws: null,
     token:
@@ -532,8 +534,8 @@
       console.warn('Dashboard load error:', err);
     }
 
-    // Always fetch bot config and entities independently
-    await Promise.allSettled([loadBotConfig(), loadHaEntities()]);
+    // Always fetch bot config, entities, and customizer settings independently
+    await Promise.allSettled([loadBotConfig(), loadHaEntities(), loadBotSettings()]);
   }
 
   /* ───────────────────────────────────────────────────────────────────
@@ -579,6 +581,122 @@
         mediaDatalist.appendChild(opt);
       }
     }
+  }
+
+  /* ───────────────────────────────────────────────────────────────────
+     BOT CUSTOMIZER & RESPONSE TEMPLATES
+     ─────────────────────────────────────────────────────────────────── */
+  async function loadBotSettings() {
+    try {
+      const res = await apiRequest('api/bot/settings');
+      if (res?.ok && res.settings) {
+        state.botSettings = res.settings;
+        renderBotSettings();
+      }
+    } catch (err) {
+      console.warn('Could not load bot settings:', err.message);
+    }
+  }
+
+  function renderBotSettings() {
+    const s = state.botSettings;
+    if (!s) return;
+
+    const setVal = (id, val) => {
+      const el = document.getElementById(id);
+      if (el) el.value = val;
+    };
+
+    setVal('cfg-remote-triggers', (s.remoteTriggers || []).join(', '));
+    setVal('cfg-cast-triggers', (s.castTriggers || []).join(', '));
+    setVal('cfg-end-triggers', (s.endTriggers || []).join(', '));
+    setVal('cfg-back-triggers', (s.backTriggers || []).join(', '));
+    setVal('cfg-help-triggers', (s.helpTriggers || []).join(', '));
+
+    const emojiCb = document.getElementById('cfg-enable-emojis');
+    if (emojiCb) emojiCb.checked = !!s.enableEmojis;
+
+    const userCb = document.getElementById('cfg-include-user-name');
+    if (userCb) userCb.checked = s.includeUserName !== false;
+
+    const t = s.templates || {};
+    setVal('tpl-remote-greeting', t.remoteGreeting || '');
+    setVal('tpl-device-menu', t.deviceMenu || '');
+    setVal('tpl-action-result', t.actionResult || '');
+    setVal('tpl-cast-greeting', t.castGreeting || '');
+    setVal('tpl-cast-select-speaker', t.castSelectSpeaker || '');
+    setVal('tpl-cast-success', t.castSuccess || '');
+    setVal('tpl-access-denied', t.accessDenied || '');
+    setVal('tpl-session-ended', t.sessionEnded || '');
+    setVal('tpl-help-text', t.helpText || '');
+
+    updatePreview();
+  }
+
+  function updatePreview() {
+    const bubble = document.getElementById('whatsapp-preview-bubble');
+    if (!bubble) return;
+
+    const tab = state.activePreviewTab || 'remoteGreeting';
+    const enableEmojis = document.getElementById('cfg-enable-emojis')?.checked || false;
+    const includeUserName = document.getElementById('cfg-include-user-name')?.checked !== false;
+
+    const remoteTr = (document.getElementById('cfg-remote-triggers')?.value || 'remote')
+      .split(',')[0].trim() || 'remote';
+    const endTr = (document.getElementById('cfg-end-triggers')?.value || 'end')
+      .split(',')[0].trim() || 'end';
+    const backTr = (document.getElementById('cfg-back-triggers')?.value || 'back')
+      .split(',')[0].trim() || 'back';
+
+    const sampleUserName = includeUserName ? 'Mohan' : 'User';
+    const samplePhone = '919876543210';
+    const sampleRoomList = enableEmojis
+      ? '1️⃣ Living Room\n2️⃣ Master Bedroom'
+      : '1. Living Room\n2. Master Bedroom';
+    const sampleDeviceList = enableEmojis
+      ? '1️⃣ Main Ceiling Light [OFF]\n2️⃣ Ceiling Fan [ON]\n3️⃣ AC 24°C [OFF]'
+      : '1. Main Ceiling Light [OFF]\n2. Ceiling Fan [ON]\n3. AC 24C [OFF]';
+    const sampleResults = enableEmojis
+      ? '• Main Ceiling Light: ON ✅\n• Ceiling Fan: OFF ⭕'
+      : '• Main Ceiling Light: Turned ON\n• Ceiling Fan: Turned OFF';
+    const sampleSpeakerList = enableEmojis
+      ? '1️⃣ Living Room Echo\n2️⃣ Bedroom Soundbar\n3️⃣ 🔊 All Speakers'
+      : '1. Living Room Echo\n2. Bedroom Soundbar\n3. All Speakers (Whole House)';
+
+    const fieldMap = {
+      remoteGreeting: 'tpl-remote-greeting',
+      deviceMenu: 'tpl-device-menu',
+      actionResult: 'tpl-action-result',
+      castGreeting: 'tpl-cast-greeting',
+      castSelectSpeaker: 'tpl-cast-select-speaker',
+      castSuccess: 'tpl-cast-success',
+      accessDenied: 'tpl-access-denied',
+      sessionEnded: 'tpl-session-ended',
+      helpText: 'tpl-help-text',
+    };
+
+    const textareaId = fieldMap[tab] || 'tpl-remote-greeting';
+    let text = document.getElementById(textareaId)?.value || '';
+
+    text = text
+      .replace(/\{\{userName\}\}/g, sampleUserName)
+      .replace(/\{\{userPhone\}\}/g, samplePhone)
+      .replace(/\{\{roomName\}\}/g, 'Living Room')
+      .replace(/\{\{roomList\}\}/g, sampleRoomList)
+      .replace(/\{\{deviceList\}\}/g, sampleDeviceList)
+      .replace(/\{\{results\}\}/g, sampleResults)
+      .replace(/\{\{speakerList\}\}/g, sampleSpeakerList)
+      .replace(/\{\{speakerName\}\}/g, 'Living Room Echo')
+      .replace(/\{\{primaryRemoteTrigger\}\}/g, remoteTr)
+      .replace(/\{\{primaryEndTrigger\}\}/g, endTr)
+      .replace(/\{\{primaryBackTrigger\}\}/g, backTr);
+
+    if (!enableEmojis) {
+      text = text.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE00}-\u{FE0F}]/gu, '');
+    }
+
+    const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    bubble.innerHTML = `${escapeHtml(text)}<span class="whatsapp-msg-time">${timeStr} ✓✓</span>`;
   }
 
   function renderBotConfig() {
@@ -1024,6 +1142,7 @@
       remote: 'Smart Home Remote Control Builder',
       speakers: 'Speakers & Audio Broadcasting',
       authorized: 'Authorized WhatsApp Numbers',
+      customizer: 'Bot Customizer & Command Settings',
       backup: 'Backup & Restore Configuration',
       diagnostics: 'Integration & Setup Credentials',
     };
@@ -1599,6 +1718,113 @@
 
     const backupLoadDemoBtn = document.getElementById('backup-load-demo-btn');
     if (backupLoadDemoBtn) backupLoadDemoBtn.addEventListener('click', handleLoadDemo);
+
+    // ───────────────────────────────────────────────────────────────────
+    // BOT CUSTOMIZER & RESPONSE TEMPLATES HANDLERS
+    // ───────────────────────────────────────────────────────────────────
+    const saveCustomizerBtn = document.getElementById('save-customizer-btn');
+    if (saveCustomizerBtn) {
+      saveCustomizerBtn.addEventListener('click', async () => {
+        saveCustomizerBtn.classList.add('loading');
+        try {
+          const splitTr = (id) =>
+            (document.getElementById(id)?.value || '')
+              .split(',')
+              .map((s) => s.trim())
+              .filter(Boolean);
+
+          const payload = {
+            remoteTriggers: splitTr('cfg-remote-triggers'),
+            castTriggers: splitTr('cfg-cast-triggers'),
+            endTriggers: splitTr('cfg-end-triggers'),
+            backTriggers: splitTr('cfg-back-triggers'),
+            helpTriggers: splitTr('cfg-help-triggers'),
+            enableEmojis: !!document.getElementById('cfg-enable-emojis')?.checked,
+            includeUserName: !!document.getElementById('cfg-include-user-name')?.checked,
+            templates: {
+              remoteGreeting: document.getElementById('tpl-remote-greeting')?.value || '',
+              deviceMenu: document.getElementById('tpl-device-menu')?.value || '',
+              actionResult: document.getElementById('tpl-action-result')?.value || '',
+              castGreeting: document.getElementById('tpl-cast-greeting')?.value || '',
+              castSelectSpeaker: document.getElementById('tpl-cast-select-speaker')?.value || '',
+              castSuccess: document.getElementById('tpl-cast-success')?.value || '',
+              accessDenied: document.getElementById('tpl-access-denied')?.value || '',
+              sessionEnded: document.getElementById('tpl-session-ended')?.value || '',
+              helpText: document.getElementById('tpl-help-text')?.value || '',
+            },
+          };
+
+          const res = await apiRequest('api/bot/settings', {
+            method: 'POST',
+            body: JSON.stringify(payload),
+          });
+          if (res?.settings) {
+            state.botSettings = res.settings;
+            renderBotSettings();
+          }
+          showToast('Custom commands and templates saved successfully!', 'success');
+        } catch (err) {
+          showToast(`Save failed: ${err.message}`, 'error');
+        } finally {
+          saveCustomizerBtn.classList.remove('loading');
+        }
+      });
+    }
+
+    const resetCustomizerBtn = document.getElementById('reset-customizer-btn');
+    if (resetCustomizerBtn) {
+      resetCustomizerBtn.addEventListener('click', async () => {
+        if (confirm('Reset all triggers and message templates back to clean minimal defaults?')) {
+          try {
+            const res = await apiRequest('api/bot/settings/reset', { method: 'POST' });
+            if (res?.settings) {
+              state.botSettings = res.settings;
+              renderBotSettings();
+            }
+            showToast('Reset to clean defaults successfully.', 'info');
+          } catch (err) {
+            showToast(`Reset failed: ${err.message}`, 'error');
+          }
+        }
+      });
+    }
+
+    // Insert variable tag into focused/targeted textarea
+    document.querySelectorAll('.variable-pill-bar').forEach((bar) => {
+      bar.addEventListener('click', (e) => {
+        const tag = e.target.closest('.variable-tag');
+        if (!tag) return;
+        const varName = tag.getAttribute('data-var');
+        const targetId = bar.getAttribute('data-target');
+        const textarea = document.getElementById(targetId);
+        if (textarea && varName) {
+          const start = textarea.selectionStart || 0;
+          const end = textarea.selectionEnd || 0;
+          const val = textarea.value;
+          textarea.value = val.substring(0, start) + varName + val.substring(end);
+          textarea.focus();
+          textarea.selectionStart = textarea.selectionEnd = start + varName.length;
+          updatePreview();
+        }
+      });
+    });
+
+    // Live preview selector tabs
+    document.querySelectorAll('.preview-tab-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.preview-tab-btn').forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        state.activePreviewTab = btn.getAttribute('data-preview');
+        updatePreview();
+      });
+    });
+
+    // Real-time preview on input or change in customizer
+    const customizerEl = document.getElementById('tab-customizer');
+    if (customizerEl) {
+      customizerEl.addEventListener('input', () => updatePreview());
+      customizerEl.addEventListener('change', () => updatePreview());
+    }
   }
 
   document.addEventListener('DOMContentLoaded', () => {

@@ -156,7 +156,7 @@ test('Backend & Bot: Demo seeding and safe execution without speaker noise', asy
     messageType: 'text',
   });
   assert.equal(sentReplies.length, 4);
-  assert.match(sentReplies[3].text, /turned \*ON\*/i);
+  assert.match(sentReplies[3].text, /turned ON/i);
   assert.match(sentReplies[3].text, /Ceiling Light/);
   assert.match(sentReplies[3].text, /Ceiling Fan/);
 
@@ -172,7 +172,7 @@ test('Backend & Bot: Demo seeding and safe execution without speaker noise', asy
     messageType: 'text',
   });
   assert.equal(sentReplies.length, 5);
-  assert.match(sentReplies[4].text, /Remote Session Ended/i);
+  assert.match(sentReplies[4].text, /Session Ended/i);
 
   // 6. User initiates /cast broadcast
   await bot.handleIncomingMessage({
@@ -205,7 +205,7 @@ test('Backend & Bot: Demo seeding and safe execution without speaker noise', asy
     messageType: 'text',
   });
   assert.equal(sentReplies.length, 8);
-  assert.match(sentReplies[7].text, /Broadcasting Announcement/i);
+  assert.match(sentReplies[7].text, /Broadcast Active/i);
   assert.match(sentReplies[7].text, /Living Room Speaker/);
 
   // Verify HA client broadcast call was recorded in dryRun history
@@ -374,6 +374,109 @@ test('Connection & Bot: Self-chat Message Yourself and Owner Auto-Authorization'
     assert.equal(sentMessages.length, 3);
     const body2 = sentMessages[2].body || sentMessages[2].text;
     assert.match(body2, /Access Denied/i);
+  } finally {
+    await fs.promises.rm(tmpDir, { recursive: true, force: true });
+  }
+});
+
+test('Customizer & Triggers: Slashless keywords (remote, lumi, control), dynamic user name, and zero emojis', async () => {
+  const { BotConfigManager } = await import('../whatsapp_addon/src/bot/config-manager.js');
+  const { HomeAssistantClient } = await import('../whatsapp_addon/src/bot/homeassistant-client.js');
+  const { InteractiveBot } = await import('../whatsapp_addon/src/bot/interactive-bot.js');
+
+  const tmpDir = path.join(os.tmpdir(), `lumi_customizer_verify_${Date.now()}`);
+  await fs.promises.mkdir(tmpDir, { recursive: true });
+
+  try {
+    const configMgr = new BotConfigManager({ dataDir: tmpDir });
+    await configMgr.init();
+    await configMgr.loadDemoConfig();
+
+    // Verify authorized user has name "Home Admin"
+    assert.equal(configMgr.config.authorizedNumbers[0].name, 'Home Admin');
+
+    const haClient = new HomeAssistantClient({ dryRun: true });
+    const sent = [];
+    const mockMsgManager = {
+      sendMessage: async (args) => {
+        sent.push(args);
+        return { id: `msg_${Date.now()}` };
+      },
+    };
+
+    const bot = new InteractiveBot({
+      configManager: configMgr,
+      haClient,
+      messageManager: mockMsgManager,
+      dataDir: tmpDir,
+      logger: null,
+    });
+    bot.init();
+
+    const authPhone = '919876543210';
+
+    // 1. Slashless command "lumi" starts the remote
+    await bot.handleIncomingMessage({
+      clientId: 'default',
+      sender: authPhone,
+      text: 'lumi',
+      messageType: 'text',
+    });
+    assert.equal(sent.length, 1);
+    const msg0 = sent[0].body || sent[0].text;
+    assert.match(msg0, /LUMI SMART HOME REMOTE/);
+    assert.match(msg0, /Welcome Home Admin/); // Dynamic contact name!
+    // Must NOT contain emojis
+    assert.doesNotMatch(msg0, /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE00}-\u{FE0F}]/u);
+
+    // 2. Slashless command "control" also works
+    bot._destroySession(authPhone);
+    await bot.handleIncomingMessage({
+      clientId: 'default',
+      sender: authPhone,
+      text: 'Control',
+      messageType: 'text',
+    });
+    assert.equal(sent.length, 2);
+    const msg1 = sent[1].body || sent[1].text;
+    assert.match(msg1, /LUMI SMART HOME REMOTE/);
+
+    // 3. Slashless command "remote" also works
+    bot._destroySession(authPhone);
+    await bot.handleIncomingMessage({
+      clientId: 'default',
+      sender: authPhone,
+      text: 'remote',
+      messageType: 'text',
+    });
+    assert.equal(sent.length, 3);
+    const msg2 = sent[2].body || sent[2].text;
+    assert.match(msg2, /LUMI SMART HOME REMOTE/);
+
+    // 4. Update custom settings via config manager
+    await configMgr.updateSettings({
+      remoteTriggers: ['myhome', 'magic'],
+      templates: {
+        remoteGreeting: 'MY CUSTOM GREETING for {{userName}}:\n{{roomList}}',
+      },
+    });
+
+    // "myhome" triggers custom greeting
+    bot._destroySession(authPhone);
+    await bot.handleIncomingMessage({
+      clientId: 'default',
+      sender: authPhone,
+      text: 'myhome',
+      messageType: 'text',
+    });
+    assert.equal(sent.length, 4);
+    const msg3 = sent[3].body || sent[3].text;
+    assert.match(msg3, /MY CUSTOM GREETING for Home Admin/);
+
+    // Verify reset restores default
+    await configMgr.resetSettingsToDefault();
+    const current = configMgr.getSettings();
+    assert.equal(current.remoteTriggers.includes('remote'), true);
   } finally {
     await fs.promises.rm(tmpDir, { recursive: true, force: true });
   }
