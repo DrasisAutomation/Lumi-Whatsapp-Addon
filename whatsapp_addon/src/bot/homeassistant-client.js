@@ -277,6 +277,42 @@ class HomeAssistantClient {
   }
 
   /**
+   * Smart Locks (lock domain)
+   */
+  async lock(entityId) {
+    if (!entityId) throw new Error('entity_id is required');
+    return this.callService('lock', 'lock', { entity_id: entityId });
+  }
+
+  async unlock(entityId) {
+    if (!entityId) throw new Error('entity_id is required');
+    return this.callService('lock', 'unlock', { entity_id: entityId });
+  }
+
+  async openLock(entityId) {
+    if (!entityId) throw new Error('entity_id is required');
+    return this.callService('lock', 'open', { entity_id: entityId });
+  }
+
+  /**
+   * Scenes, Scripts & Automations
+   */
+  async activateScene(entityId) {
+    if (!entityId) throw new Error('entity_id is required');
+    return this.callService('scene', 'turn_on', { entity_id: entityId });
+  }
+
+  async runScript(entityId) {
+    if (!entityId) throw new Error('entity_id is required');
+    return this.callService('script', 'turn_on', { entity_id: entityId });
+  }
+
+  async triggerAutomation(entityId) {
+    if (!entityId) throw new Error('entity_id is required');
+    return this.callService('automation', 'trigger', { entity_id: entityId });
+  }
+
+  /**
    * Play media on a media_player entity.
    * NOTE: Audio plays at the speaker's CURRENT/LAST ACTIVE VOLUME.
    * No volume level is overridden.

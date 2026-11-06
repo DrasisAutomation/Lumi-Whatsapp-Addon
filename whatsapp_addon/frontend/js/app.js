@@ -534,8 +534,8 @@
       console.warn('Dashboard load error:', err);
     }
 
-    // Always fetch bot config, entities, and customizer settings independently
-    await Promise.allSettled([loadBotConfig(), loadHaEntities(), loadBotSettings()]);
+    // Always fetch bot config, entities, customizer settings, and device status independently
+    await Promise.allSettled([loadBotConfig(), loadHaEntities(), loadBotSettings(), loadDeviceStatus()]);
   }
 
   /* ───────────────────────────────────────────────────────────────────
@@ -892,6 +892,134 @@
   }
 
   /* ───────────────────────────────────────────────────────────────────
+     DEVICE LIVE STATUS & WHATSAPP PREVIEW
+     ─────────────────────────────────────────────────────────────────── */
+  async function loadDeviceStatus() {
+    const tbody = document.getElementById('status-devices-tbody');
+    try {
+      const res = await apiRequest('api/bot/device-status');
+      if (res && res.ok) {
+        state.deviceStatus = res;
+        renderDeviceStatus(res);
+      }
+    } catch (err) {
+      if (tbody) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 1.5rem; color: var(--danger);">Failed to load device status: ${escapeHtml(err.message)}</td></tr>`;
+      }
+    }
+  }
+
+  function renderDeviceStatus(data) {
+    if (!data) return;
+
+    // 1. Metric cards
+    const totalEl = document.getElementById('stat-status-total');
+    const onEl = document.getElementById('stat-status-on');
+    const locksEl = document.getElementById('stat-status-locks');
+    const locksPill = document.getElementById('stat-status-locks-pill');
+    const sensorsEl = document.getElementById('stat-status-sensors');
+
+    if (totalEl) totalEl.textContent = data.summary?.totalDevices ?? 0;
+    if (onEl) onEl.textContent = data.summary?.onCount ?? 0;
+    if (locksEl) locksEl.textContent = `${data.summary?.lockedCount ?? 0} Locked`;
+    if (locksPill) {
+      const un = data.summary?.unlockedCount || 0;
+      if (un > 0) {
+        locksPill.textContent = `${un} Unlocked`;
+        locksPill.className = 'stat-pill-trend trend-orange';
+      } else {
+        locksPill.textContent = 'Secure';
+        locksPill.className = 'stat-pill-trend trend-green';
+      }
+    }
+    if (sensorsEl) sensorsEl.textContent = `${data.summary?.sensorCount ?? 0} Sensors`;
+
+    // 2. Room filter dropdown
+    const roomFilter = document.getElementById('status-room-filter');
+    if (roomFilter) {
+      const currentVal = roomFilter.value;
+      const rooms = data.rooms || [];
+      let roomOpts = '<option value="all">All Rooms</option>';
+      for (const r of rooms) {
+        roomOpts += `<option value="${escapeHtml(r.id)}">${escapeHtml(r.name)}</option>`;
+      }
+      roomFilter.innerHTML = roomOpts;
+      if (currentVal) roomFilter.value = currentVal;
+    }
+
+    // 3. WhatsApp Preview
+    const previewEl = document.getElementById('whatsapp-status-preview-text');
+    if (previewEl && data.whatsappStatusPreview) {
+      previewEl.textContent = data.whatsappStatusPreview;
+    }
+
+    // 4. Render Table
+    filterAndRenderStatusTable();
+  }
+
+  function filterAndRenderStatusTable() {
+    const tbody = document.getElementById('status-devices-tbody');
+    const countBadge = document.getElementById('status-count-badge');
+    if (!tbody || !state.deviceStatus) return;
+
+    const data = state.deviceStatus;
+    const rooms = data.rooms || [];
+
+    const searchQuery = (document.getElementById('status-search-input')?.value || '').toLowerCase().trim();
+    const selectedRoom = document.getElementById('status-room-filter')?.value || 'all';
+    const selectedDomain = document.getElementById('status-domain-filter')?.value || 'all';
+
+    const flatDevices = [];
+    for (const r of rooms) {
+      if (selectedRoom !== 'all' && r.id !== selectedRoom) continue;
+      for (const d of (r.devices || [])) {
+        if (selectedDomain !== 'all' && d.domain !== selectedDomain) continue;
+        if (searchQuery) {
+          const matchName = String(d.name || '').toLowerCase().includes(searchQuery);
+          const matchEntity = String(d.entityId || '').toLowerCase().includes(searchQuery);
+          const matchRoom = String(r.name || '').toLowerCase().includes(searchQuery);
+          if (!matchName && !matchEntity && !matchRoom) continue;
+        }
+        flatDevices.push({ ...d, roomName: r.name });
+      }
+    }
+
+    if (countBadge) {
+      countBadge.textContent = `${flatDevices.length} ${flatDevices.length === 1 ? 'Entity' : 'Entities'}`;
+    }
+
+    if (flatDevices.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-muted);">No configured entities match the selected filters.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = flatDevices.map((d, idx) => {
+      let stateBadgeClass = 'badge-muted';
+      const raw = String(d.state || '').toLowerCase();
+      const domain = d.domain || '';
+
+      if (domain === 'lock') {
+        stateBadgeClass = raw === 'locked' ? 'badge-success' : 'badge-warning';
+      } else if (raw === 'on' || raw === 'playing' || raw === 'open') {
+        stateBadgeClass = 'badge-success';
+      } else if (domain === 'sensor' || domain === 'binary_sensor') {
+        stateBadgeClass = 'badge-info';
+      }
+
+      return `
+        <tr>
+          <td>${idx + 1}</td>
+          <td><strong>${escapeHtml(d.name)}</strong></td>
+          <td><span style="font-size: 0.82rem; color: var(--text-secondary);">${escapeHtml(d.roomName)}</span></td>
+          <td><span class="device-badge ${escapeHtml(d.domain || 'other')}">${escapeHtml(d.domain || 'other')}</span></td>
+          <td><code>${escapeHtml(d.entityId)}</code></td>
+          <td><span class="badge ${stateBadgeClass}" style="font-family: monospace; font-size: 0.8rem;">[${escapeHtml(d.formattedState || 'OFF')}]</span></td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  /* ───────────────────────────────────────────────────────────────────
      DASHBOARD METRICS & DONUT DISTRIBUTION
      ─────────────────────────────────────────────────────────────────── */
   function updateDashboardMetrics() {
@@ -1140,6 +1268,7 @@
       messaging: 'Send Messages & Media',
       history: 'Message Audit Log',
       remote: 'Smart Home Remote Control Builder',
+      status: 'Live Device & Entity Status',
       speakers: 'Speakers & Audio Broadcasting',
       authorized: 'Authorized WhatsApp Numbers',
       customizer: 'Bot Customizer & Command Settings',
@@ -1148,6 +1277,9 @@
     };
     const titleEl = document.getElementById('page-title');
     if (titleEl) titleEl.textContent = titles[tabName] || 'Dashboard';
+    if (tabName === 'status') {
+      loadDeviceStatus();
+    }
   }
 
   let openSidebar = () => {};
@@ -1506,11 +1638,57 @@
           showToast(`Device "${name}" added!`, 'success');
           hideDevModal();
           await loadBotConfig();
+          await loadDeviceStatus();
         } catch (err) {
           showToast(err.message, 'error');
         }
       });
     }
+
+    // Auto-detect entity domain in Add Device Modal
+    const modalDevEntity = document.getElementById('modal-dev-entity');
+    const modalDevType = document.getElementById('modal-dev-type');
+    if (modalDevEntity && modalDevType) {
+      modalDevEntity.addEventListener('input', () => {
+        const val = modalDevEntity.value.trim().toLowerCase();
+        const prefix = val.split('.')[0];
+        const knownDomains = ['light', 'switch', 'cover', 'lock', 'sensor', 'binary_sensor', 'climate', 'fan', 'media_player', 'scene', 'script'];
+        if (knownDomains.includes(prefix)) {
+          modalDevType.value = prefix;
+        }
+      });
+    }
+
+    // Status Tab Refresh & Copy & Filtering
+    const statusRefreshBtn = document.getElementById('status-refresh-btn');
+    if (statusRefreshBtn) {
+      statusRefreshBtn.addEventListener('click', async () => {
+        statusRefreshBtn.classList.add('loading');
+        await loadDeviceStatus();
+        statusRefreshBtn.classList.remove('loading');
+        showToast('Live device states refreshed.', 'info');
+      });
+    }
+
+    const copyStatusPreviewBtn = document.getElementById('copy-status-preview-btn');
+    if (copyStatusPreviewBtn) {
+      copyStatusPreviewBtn.addEventListener('click', async () => {
+        const text = document.getElementById('whatsapp-status-preview-text')?.textContent || '';
+        try {
+          await navigator.clipboard.writeText(text);
+          showToast('WhatsApp status preview copied to clipboard.', 'success');
+        } catch {
+          showToast('Could not copy preview text', 'error');
+        }
+      });
+    }
+
+    const statusSearchInput = document.getElementById('status-search-input');
+    const statusRoomFilter = document.getElementById('status-room-filter');
+    const statusDomainFilter = document.getElementById('status-domain-filter');
+    if (statusSearchInput) statusSearchInput.addEventListener('input', filterAndRenderStatusTable);
+    if (statusRoomFilter) statusRoomFilter.addEventListener('change', filterAndRenderStatusTable);
+    if (statusDomainFilter) statusDomainFilter.addEventListener('change', filterAndRenderStatusTable);
 
     // Speakers Add form
     const addSpkForm = document.getElementById('add-speaker-form');

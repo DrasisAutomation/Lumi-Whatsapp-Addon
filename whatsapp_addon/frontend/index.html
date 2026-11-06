@@ -48,6 +48,10 @@
           <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
           <span>Remote Builder</span>
         </button>
+        <button class="nav-btn" data-tab="status" role="tab">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
+          <span>Device Status</span>
+        </button>
         <button class="nav-btn" data-tab="speakers" role="tab">
           <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
           <span>Speakers &amp; Casting</span>
@@ -699,6 +703,175 @@
         </div>
       </section>
 
+      <!-- SECTION F2: LIVE DEVICE & ENTITY STATUS -->
+      <section id="tab-status" class="tab-panel">
+        <div class="content-header" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+          <div>
+            <h2 class="section-title">Live Device &amp; Entity Status</h2>
+            <p class="section-subtitle">Real-time status of all configured lights, switches, curtains, climate, locks, and sensors</p>
+          </div>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <button id="status-refresh-btn" class="btn btn-secondary btn-sm" title="Refresh Live States">
+              <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+              <span>Refresh States</span>
+            </button>
+            <button class="btn btn-primary btn-sm" data-goto-tab="remote" title="Configure Devices">
+              <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              <span>Configure Entities</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 4 CLEAN METRIC CARDS (ZERO BORDER RADIUS, WHITE SURFACE) -->
+        <div class="dash-top-grid" style="margin-bottom: 1.5rem;">
+          <div class="stat-card">
+            <div class="stat-header">
+              <div class="stat-icon-wrap icon-green">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="0" ry="0"></rect><rect x="2" y="14" width="20" height="8" rx="0" ry="0"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
+              </div>
+              <span id="stat-status-total" class="stat-value">0</span>
+            </div>
+            <div class="stat-footer">
+              <span class="stat-pill-trend trend-green">Configured</span>
+              <span class="stat-label">Total Entities</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-header">
+              <div class="stat-icon-wrap icon-blue">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+              </div>
+              <span id="stat-status-on" class="stat-value">0</span>
+            </div>
+            <div class="stat-footer">
+              <span class="stat-pill-trend trend-blue">Active</span>
+              <span class="stat-label">Devices ON / Open</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-header">
+              <div class="stat-icon-wrap icon-green">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="0" ry="0"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+              </div>
+              <span id="stat-status-locks" class="stat-value">0</span>
+            </div>
+            <div class="stat-footer">
+              <span id="stat-status-locks-pill" class="stat-pill-trend trend-green">Secure</span>
+              <span class="stat-label">Smart Locks</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-header">
+              <div class="stat-icon-wrap icon-orange">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"></path></svg>
+              </div>
+              <span id="stat-status-sensors" class="stat-value">0</span>
+            </div>
+            <div class="stat-footer">
+              <span class="stat-pill-trend trend-orange">Monitors</span>
+              <span class="stat-label">Sensors &amp; Binary</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- SEARCH AND FILTER BAR -->
+        <div class="white-card" style="margin-bottom: 1.5rem; padding: 1rem 1.25rem;">
+          <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 220px;">
+              <input id="status-search-input" type="text" placeholder="Search devices by name or entity_id..." class="cred-input" />
+            </div>
+            <div style="min-width: 180px;">
+              <select id="status-room-filter" class="cred-input">
+                <option value="all">All Rooms</option>
+              </select>
+            </div>
+            <div style="min-width: 180px;">
+              <select id="status-domain-filter" class="cred-input">
+                <option value="all">All Entity Domains</option>
+                <option value="light">Lights</option>
+                <option value="switch">Switches &amp; Relays</option>
+                <option value="cover">Curtains &amp; Covers</option>
+                <option value="lock">Smart Locks</option>
+                <option value="sensor">Sensors</option>
+                <option value="binary_sensor">Binary Sensors</option>
+                <option value="climate">Climate &amp; AC</option>
+                <option value="fan">Fans</option>
+                <option value="media_player">Media Players</option>
+                <option value="scene">Scenes</option>
+                <option value="script">Scripts</option>
+              </select>
+            </div>
+            <div class="status-whatsapp-tip" style="font-size: 0.82rem; color: var(--primary-hover); background: var(--primary-light); padding: 0.5rem 0.75rem; border: 1px solid var(--border-strong);">
+              💬 WhatsApp: Send <code>status</code> or <code>/status</code> for live report
+            </div>
+          </div>
+        </div>
+
+        <!-- TWO-COLUMN LAYOUT: ENTITIES TABLE + WHATSAPP STATUS LIVE PREVIEW -->
+        <div class="grid-2col-responsive" style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; align-items: start;">
+          <!-- LEFT: LIVE ENTITIES TABLE -->
+          <div class="white-card" style="padding: 0;">
+            <div class="card-header" style="padding: 1.25rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <h3 style="margin: 0; font-size: 1rem; font-weight: 700;">Configured Smart Home Entities</h3>
+                <p class="card-subtitle" style="margin: 0.25rem 0 0;">Live states queried directly from Home Assistant</p>
+              </div>
+              <span id="status-count-badge" class="badge badge-info">0 Entities</span>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table" style="margin: 0;">
+                <thead>
+                  <tr>
+                    <th style="width: 40px;">#</th>
+                    <th>Device Name</th>
+                    <th>Room</th>
+                    <th>Domain</th>
+                    <th>HA Entity ID</th>
+                    <th>Live State</th>
+                  </tr>
+                </thead>
+                <tbody id="status-devices-tbody">
+                  <tr>
+                    <td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                      Loading real-time entity statuses...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- RIGHT: WHATSAPP "status" PREVIEW PHONE CARD -->
+          <div class="white-card" style="padding: 1.25rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+              <h3 style="margin: 0; font-size: 0.95rem; font-weight: 700;">WhatsApp 'status' Preview</h3>
+              <button id="copy-status-preview-btn" class="btn btn-ghost btn-sm" title="Copy preview text">
+                Copy
+              </button>
+            </div>
+            <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 1rem;">
+              This is the exact live report sent to WhatsApp when an authorized user types <code>status</code> or <code>/status</code>:
+            </p>
+
+            <!-- AUTHENTIC WHATSAPP CHAT BUBBLE -->
+            <div class="wa-chat-mock" style="background: #efeae2; border: 1px solid var(--border); padding: 1rem; border-radius: 0px;">
+              <div class="wa-chat-header" style="background: #075e54; color: #ffffff; padding: 0.5rem 0.75rem; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; justify-content: space-between;">
+                <span>Lumi WhatsApp Bot</span>
+                <span style="font-size: 0.72rem; opacity: 0.85;">Live</span>
+              </div>
+              <div class="wa-message-bubble" style="background: #ffffff; padding: 0.75rem 1rem; margin-top: 0.75rem; box-shadow: 0 1px 2px rgba(0,0,0,0.08); font-family: monospace; font-size: 0.82rem; white-space: pre-wrap; word-break: break-word; line-height: 1.45; color: #111b21;" id="whatsapp-status-preview-text">
+LUMI HOME STATUS
+─────────────────────
+Loading live device states...
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- SECTION G: SPEAKERS & BROADCASTING -->
       <section id="tab-speakers" class="tab-panel">
         <div class="white-card">
@@ -1209,11 +1382,17 @@ Reply with a room number (e.g. 1) or 'end' to exit.
               <label for="modal-dev-type" class="form-label">Device Type</label>
               <select id="modal-dev-type" class="cred-input">
                 <option value="light">Light</option>
-                <option value="switch" selected>Switch</option>
-                <option value="fan">Fan</option>
-                <option value="climate">Climate / AC</option>
-                <option value="cover">Cover / Curtain</option>
-                <option value="other">Other / Relay</option>
+                <option value="switch" selected>Switch / Relay</option>
+                <option value="cover">Curtain / Blind / Shutter (cover)</option>
+                <option value="lock">Smart Lock / Keyless Entry (lock)</option>
+                <option value="sensor">Sensor Monitor: Temp / Humidity / Power (sensor)</option>
+                <option value="binary_sensor">Binary Sensor: Door / Window / Motion (binary_sensor)</option>
+                <option value="climate">Climate / AC / Thermostat (climate)</option>
+                <option value="fan">Fan / Exhaust (fan)</option>
+                <option value="media_player">Media Player / Speaker / TV (media_player)</option>
+                <option value="scene">Scene (scene)</option>
+                <option value="script">Script / Automation (script)</option>
+                <option value="other">Other / Generic Entity</option>
               </select>
             </div>
             <div class="form-field-wrap">

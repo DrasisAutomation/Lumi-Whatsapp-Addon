@@ -15,15 +15,17 @@ function formatNum(n) {
 
 const DEFAULT_TEMPLATES = {
   remoteGreeting: "LUMI SMART HOME REMOTE\nWelcome {{userName}}.\nSelect a room by replying with its number:\n\n{{roomList}}\n\n─────────────────────\nReply with a room number (e.g. 1) or '{{primaryEndTrigger}}' to exit.",
-  deviceMenu: "{{roomName}} Devices\nUser: {{userName}}\n─────────────────────\n{{deviceList}}\n\n─────────────────────\nHow to Control:\n• On / Off: on 1 | off 1 | ON-1\n• Curtains: open 1 | close 1 | stop 1 | 1 50%\n• Brightness & Color: dim 1 40% | color 1 blue | warm 1\n• AC & Climate: temp 1 24 | cool 22\n• Or reply with device number (e.g. 1) for detailed controls!\n• Navigation: '{{primaryBackTrigger}}' (Rooms) | '{{primaryEndTrigger}}' (Exit)",
+  deviceMenu: "{{roomName}} Devices\nUser: {{userName}}\n─────────────────────\n{{deviceList}}\n\n─────────────────────\nHow to Control:\n• On / Off: on 1 | off 1 | ON-1\n• Curtains: open 1 | close 1 | stop 1 | 1 50%\n• Smart Locks: lock 1 | unlock 1\n• Brightness & Color: dim 1 40% | color 1 blue | warm 1\n• AC & Climate: temp 1 24 | cool 22\n• Live Status: type 'status' anytime\n• Or reply with device number (e.g. 1) for detailed controls!\n• Navigation: '{{primaryBackTrigger}}' (Rooms) | '{{primaryEndTrigger}}' (Exit)",
   deviceSubmenu: "{{deviceName}} [{{deviceStatus}}]\nRoom: {{roomName}}\n─────────────────────\nControls for this device:\n{{controlHints}}\n\n─────────────────────\nReply with an action above, '{{primaryBackTrigger}}' for room devices, or '{{primaryEndTrigger}}' to exit.",
   actionResult: "{{roomName}}\nUpdated by {{userName}}:\n─────────────────────\n{{results}}\n\n─────────────────────\nControl more devices, '{{primaryBackTrigger}}' for rooms, or '{{primaryEndTrigger}}' to exit.",
+  statusReport: "LUMI HOME STATUS\nUser: {{userName}}\n─────────────────────\n{{statusSummary}}\n\n─────────────────────\nSend '{{primaryRemoteTrigger}}' for controls or '{{primaryCastTrigger}}' to broadcast.",
+  noDevicesStatus: "LUMI HOME STATUS\nHello {{userName}}.\nNo devices configured yet.\nPlease configure rooms and devices in the Lumi Remote Builder.",
   castGreeting: "LUMI SPEAKER BROADCAST\nHello {{userName}}.\nPlease record a Voice Note or send an Audio File (.mp3, .ogg, .m4a) to play on your smart home speakers.\n─────────────────────\nType '{{primaryEndTrigger}}' to exit.",
   castSelectSpeaker: "Audio Received! Select Speaker:\nUser: {{userName}}\n─────────────────────\n{{speakerList}}\n\n─────────────────────\nHow to Play:\n• Single: 1 (or play 1, play-1)\n• Multiple: 1,2 (or play 1,2, play-1,2,4)\n• All speakers: play all (or all)\n• Audio plays at speaker's current volume.\n• Type '{{primaryEndTrigger}}' to exit.",
   castSuccess: "Broadcast Active:\nTarget: {{speakerName}}\nRequested by: {{userName}}\nVolume: Current Speaker Volume\nStatus: Playing Now",
   accessDenied: "Access Denied:\nWhatsApp ID / Phone (+{{userPhone}}) is not authorized.\n\nTo authorize:\n1. Open Lumi Whatsapp Web UI > Authorized Numbers\n2. Add {{userPhone}}",
   sessionEnded: "Session Ended.\nThank you {{userName}}! Send '{{primaryRemoteTrigger}}' anytime to control devices.",
-  helpText: "Lumi Remote Commands:\n• {{primaryRemoteTrigger}} - Open main smart home menu\n• 1, 2, 3... - Select room number\n• on 1 / off 1 - Toggle device #1\n• on 1,2,3 / off 1,2,3 - Toggle multiple\n• {{primaryBackTrigger}} - Go back to room list\n• {{primaryEndTrigger}} - Exit remote session",
+  helpText: "Lumi Remote Commands:\n• {{primaryRemoteTrigger}} - Open main smart home remote\n• status - View live status of all devices & sensors\n• 1, 2, 3... - Select room number\n• on 1 / off 1 - Toggle device #1\n• lock 1 / unlock 1 - Lock/unlock smart door lock\n• open 1 / close 1 - Open/close curtain\n• dim 1 30% / color 1 blue - Adjust lights\n• {{primaryBackTrigger}} - Go back to room list\n• {{primaryEndTrigger}} - Exit remote session",
   noRooms: "No Rooms Configured:\nPlease open the Lumi Whatsapp Web UI and add rooms and devices under Remote Builder.",
   noSpeakers: "No Speakers Configured:\nPlease open the Lumi Whatsapp Web UI and add speakers under Speakers & Casting.",
   invalidChoice: "Invalid choice.\nPlease reply with a valid number, '{{primaryBackTrigger}}' for rooms, or '{{primaryEndTrigger}}' to exit.",
@@ -366,6 +368,17 @@ class InteractiveBot {
       return this._startCastSession(clientId, phone, replyTarget);
     }
 
+    // 4.5. Trigger: Status (matches statusTriggers: status, /status, state, /state, etc.)
+    const statusTriggers = settings.statusTriggers || ['status', '/status', 'state', '/state'];
+    if (this._matchesTrigger(rawText, statusTriggers)) {
+      if (!(await this._isAuthorized(clientId, phone, msg.senderJid))) {
+        this.configManager.recordDeniedAttempt?.(phone || msg.senderJid, { senderName: msg.senderName });
+        const deniedMsg = this._render('accessDenied', { userPhone: phone, userName });
+        return this._sendMessage(clientId, replyTarget, deniedMsg);
+      }
+      return this._handleStatusCommand(clientId, phone, session?.replyTarget || replyTarget);
+    }
+
     // 5. Active Session Flow
     if (session) {
       if (session.type === 'remote') {
@@ -503,6 +516,12 @@ class InteractiveBot {
         }
       }
 
+      // Check status triggers inside room
+      const statusTriggers = settings.statusTriggers || ['status', '/status', 'state', '/state'];
+      if (this._matchesTrigger(rawText, statusTriggers)) {
+        return this._handleStatusCommand(clientId, phone, session.replyTarget || phone);
+      }
+
       // 2. Parse commands (on/off, open/close, dim/bright, color, temp, etc.)
       const parsed = this._parseDeviceCommand(rawText, devices);
       if (!parsed) {
@@ -522,6 +541,25 @@ class InteractiveBot {
         }
         resultsText = parsed.devices
           .map((d) => `• ${d.name}: turned ${parsed.action.toUpperCase()}`)
+          .join('\n');
+      } else if (parsed.kind === 'lock_multi') {
+        for (const dev of parsed.devices) {
+          if (parsed.action === 'lock') {
+            if (typeof this.haClient.lock === 'function') {
+              await this.haClient.lock(dev.entityId);
+            } else {
+              await this.haClient.callService('lock', 'lock', { entity_id: dev.entityId });
+            }
+          } else {
+            if (typeof this.haClient.unlock === 'function') {
+              await this.haClient.unlock(dev.entityId);
+            } else {
+              await this.haClient.callService('lock', 'unlock', { entity_id: dev.entityId });
+            }
+          }
+        }
+        resultsText = parsed.devices
+          .map((d) => `• ${d.name}: ${parsed.action === 'lock' ? 'LOCKED' : 'UNLOCKED'}`)
           .join('\n');
       } else if (parsed.kind === 'cover_multi') {
         const cmdUpper = parsed.cmd.toUpperCase();
@@ -564,6 +602,55 @@ class InteractiveBot {
     }
   }
 
+  async _handleStatusCommand(clientId, phone, replyTarget = null) {
+    const config = this.configManager.getConfig();
+    const rooms = config.rooms || [];
+    const target = replyTarget || phone;
+    const settings = this._getSettings();
+    const userName = this._getUserName(clientId, phone, target);
+
+    let totalDevices = 0;
+    const roomBlocks = [];
+
+    for (let rIdx = 0; rIdx < rooms.length; rIdx++) {
+      const room = rooms[rIdx];
+      const devices = room.devices || [];
+      if (devices.length === 0) continue;
+
+      const deviceLines = [];
+      for (let dIdx = 0; dIdx < devices.length; dIdx++) {
+        totalDevices++;
+        const dev = devices[dIdx];
+        let stateStr = 'OFF';
+        try {
+          const st = await this.haClient.getEntityState(dev.entityId);
+          stateStr = this._formatDeviceState(dev, st);
+        } catch {
+          stateStr = 'OFF';
+        }
+        deviceLines.push(`  • ${dev.name}: [${stateStr}]`);
+      }
+
+      if (deviceLines.length > 0) {
+        roomBlocks.push(`${room.name}:\n${deviceLines.join('\n')}`);
+      }
+    }
+
+    if (totalDevices === 0) {
+      const emptyMsg = this._render('noDevicesStatus', { userName, userPhone: phone });
+      return this._sendMessage(clientId, target, emptyMsg);
+    }
+
+    const summaryText = roomBlocks.join('\n\n');
+    const msg = this._render('statusReport', {
+      userName,
+      userPhone: phone,
+      statusSummary: summaryText,
+    });
+
+    return this._sendMessage(clientId, target, msg);
+  }
+
   _formatDeviceState(dev, st) {
     if (!st || st.state === 'unavailable' || st.state === 'unknown') {
       return 'OFF';
@@ -572,6 +659,45 @@ class InteractiveBot {
     const rawState = String(st.state || '').toLowerCase();
     const attrs = st.attributes || {};
 
+    // 1. Smart Locks
+    if (domain === 'lock') {
+      if (rawState === 'locked') return 'Locked';
+      if (rawState === 'unlocked') return 'Unlocked';
+      if (rawState === 'locking') return 'Locking...';
+      if (rawState === 'unlocking') return 'Unlocking...';
+      if (rawState === 'jammed') return 'JAMMED';
+      return rawState.toUpperCase();
+    }
+
+    // 2. Binary Sensors (Door, Window, Motion, Smoke, Moisture, etc.)
+    if (domain === 'binary_sensor') {
+      const dc = String(attrs.device_class || '').toLowerCase();
+      const isOn = rawState === 'on';
+      if (['door', 'window', 'garage_door', 'opening'].includes(dc)) {
+        return isOn ? 'Open' : 'Closed';
+      }
+      if (['motion', 'occupancy', 'presence'].includes(dc)) {
+        return isOn ? 'Motion' : 'Clear';
+      }
+      if (['smoke', 'gas', 'carbon_monoxide', 'problem', 'safety', 'tamper'].includes(dc)) {
+        return isOn ? 'ALERT' : 'Normal';
+      }
+      if (['moisture'].includes(dc)) {
+        return isOn ? 'Wet / Leak' : 'Dry';
+      }
+      if (['lock'].includes(dc)) {
+        return isOn ? 'Unlocked' : 'Locked';
+      }
+      return isOn ? 'ON' : 'OFF';
+    }
+
+    // 3. Environmental & Value Sensors
+    if (domain === 'sensor') {
+      const unit = attrs.unit_of_measurement ? ` ${attrs.unit_of_measurement}` : '';
+      return `${st.state}${unit}`;
+    }
+
+    // 4. Curtains / Covers
     if (domain === 'cover') {
       if (attrs.current_position !== undefined && attrs.current_position !== null) {
         const pos = Math.round(Number(attrs.current_position));
@@ -581,6 +707,7 @@ class InteractiveBot {
       return rawState === 'open' ? 'Open' : (rawState === 'closed' ? 'Closed' : rawState.toUpperCase());
     }
 
+    // 5. Lights
     if (domain === 'light') {
       if (rawState === 'on') {
         if (attrs.brightness !== undefined && attrs.brightness !== null) {
@@ -592,6 +719,7 @@ class InteractiveBot {
       return 'OFF';
     }
 
+    // 6. Climate / AC
     if (domain === 'climate') {
       if (rawState === 'off') {
         return 'OFF';
@@ -599,6 +727,16 @@ class InteractiveBot {
       const mode = rawState.toUpperCase();
       const targetTemp = attrs.temperature !== undefined && attrs.temperature !== null ? `${attrs.temperature}°C` : '';
       return targetTemp ? `${mode} - ${targetTemp}` : mode;
+    }
+
+    // 7. Media Players
+    if (domain === 'media_player') {
+      return rawState.toUpperCase();
+    }
+
+    // 8. Scenes & Scripts
+    if (['scene', 'script', 'automation'].includes(domain)) {
+      return rawState === 'on' ? 'ACTIVE' : 'READY';
     }
 
     if (rawState === 'on' || rawState === 'playing') return 'ON';
@@ -663,7 +801,18 @@ class InteractiveBot {
     const userName = session.userName || this._getUserName(session.clientId, session.phone, session.replyTarget);
 
     let controlHints = '';
-    if (domain === 'cover') {
+    if (domain === 'lock') {
+      controlHints =
+`• Lock: 'lock' | 'on'
+• Unlock: 'unlock' | 'off'
+• Status: 'status'`;
+    } else if (domain === 'sensor' || domain === 'binary_sensor') {
+      controlHints =
+`• Sensor Monitor (Read-Only)
+• Current Live Reading: [${deviceStatus}]
+• Entity ID: ${dev.entityId}
+• Send 'status' for all devices, or '${settings.backTriggers?.[0] || 'back'}' for room menu.`;
+    } else if (domain === 'cover') {
       controlHints =
 `• Open: 'open' | 'open 100%'
 • Close: 'close' | 'close 0%'
@@ -681,6 +830,10 @@ class InteractiveBot {
 • Set Temp: '24' | 'temp 24' | '22.5'
 • Mode: 'cool' | 'heat' | 'fan' | 'auto'
 • Quick combo: 'cool 22' | 'heat 25'`;
+    } else if (['scene', 'script', 'automation'].includes(domain)) {
+      controlHints =
+`• Run: 'activate' | 'run' | 'on'
+• Trigger: 'trigger'`;
     } else {
       controlHints =
 `• Power: 'on' | 'off'
@@ -728,6 +881,30 @@ class InteractiveBot {
       if (validTargets.length > 0) {
         return {
           kind: 'multi_power',
+          action,
+          devices: validTargets,
+        };
+      }
+    }
+
+    // 1b. Smart Locks: lock 1, unlock 1, lock-1, unlock-1, lock 1,2, unlock 1,2
+    const lockMatch = text.match(/^(lock|unlock)[\s-]*([0-9,\s]+)$/i);
+    if (lockMatch) {
+      const action = lockMatch[1].toLowerCase();
+      const indices = lockMatch[2]
+        .split(',')
+        .map((s) => parseInt(s.trim(), 10))
+        .filter((n) => !isNaN(n));
+
+      const validTargets = [];
+      for (const idx of indices) {
+        if (idx >= 1 && idx <= devices.length) {
+          validTargets.push(devices[idx - 1]);
+        }
+      }
+      if (validTargets.length > 0) {
+        return {
+          kind: 'lock_multi',
           action,
           devices: validTargets,
         };
@@ -931,10 +1108,37 @@ class InteractiveBot {
 
     // 1. Universal Power on / off
     if (text === 'on') {
+      if (domain === 'lock') return { kind: 'lock' };
+      if (domain === 'cover') return { kind: 'cover_open' };
+      if (domain === 'scene') return { kind: 'scene_activate' };
+      if (domain === 'script') return { kind: 'script_run' };
       return { kind: 'turn_on' };
     }
     if (text === 'off') {
+      if (domain === 'lock') return { kind: 'unlock' };
+      if (domain === 'cover') return { kind: 'cover_close' };
       return { kind: 'turn_off' };
+    }
+
+    // 1b. Smart Locks
+    if (domain === 'lock') {
+      if (text === 'lock' || text === 'l') return { kind: 'lock' };
+      if (text === 'unlock' || text === 'un') return { kind: 'unlock' };
+      if (text === 'open') return { kind: 'lock_open' };
+      if (text === 'status') return { kind: 'sensor_read' };
+    }
+
+    // 1c. Sensors & Binary Sensors (Read-only monitors)
+    if (domain === 'sensor' || domain === 'binary_sensor') {
+      return { kind: 'sensor_read' };
+    }
+
+    // 1d. Scenes & Scripts
+    if (domain === 'scene') {
+      if (['activate', 'run', 'start', 'trigger'].includes(text)) return { kind: 'scene_activate' };
+    }
+    if (domain === 'script' || domain === 'automation') {
+      if (['activate', 'run', 'start', 'trigger'].includes(text)) return { kind: 'script_run' };
     }
 
     // 2. Cover / Curtains
@@ -1088,6 +1292,54 @@ class InteractiveBot {
           });
         }
         return `${dev.name}: set to ${action.mode.toUpperCase()}${action.temp ? ` at ${action.temp}°C` : ''}`;
+      }
+      case 'lock': {
+        if (typeof this.haClient.lock === 'function') {
+          await this.haClient.lock(dev.entityId);
+        } else {
+          await this.haClient.callService('lock', 'lock', { entity_id: dev.entityId });
+        }
+        return `${dev.name}: LOCKED`;
+      }
+      case 'unlock': {
+        if (typeof this.haClient.unlock === 'function') {
+          await this.haClient.unlock(dev.entityId);
+        } else {
+          await this.haClient.callService('lock', 'unlock', { entity_id: dev.entityId });
+        }
+        return `${dev.name}: UNLOCKED`;
+      }
+      case 'lock_open': {
+        if (typeof this.haClient.openLock === 'function') {
+          await this.haClient.openLock(dev.entityId);
+        } else {
+          await this.haClient.callService('lock', 'open', { entity_id: dev.entityId });
+        }
+        return `${dev.name}: unlatched / opened`;
+      }
+      case 'sensor_read': {
+        let st = null;
+        try {
+          st = await this.haClient.getEntityState(dev.entityId);
+        } catch {}
+        const liveVal = this._formatDeviceState(dev, st);
+        return `${dev.name}: live reading [${liveVal}]`;
+      }
+      case 'scene_activate': {
+        if (typeof this.haClient.activateScene === 'function') {
+          await this.haClient.activateScene(dev.entityId);
+        } else {
+          await this.haClient.turnOn(dev.entityId);
+        }
+        return `${dev.name}: activated`;
+      }
+      case 'script_run': {
+        if (typeof this.haClient.runScript === 'function') {
+          await this.haClient.runScript(dev.entityId);
+        } else {
+          await this.haClient.turnOn(dev.entityId);
+        }
+        return `${dev.name}: executed`;
       }
       default: {
         await this.haClient.turnOn(dev.entityId);

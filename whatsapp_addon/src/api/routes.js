@@ -459,9 +459,101 @@ function createApiRouter({
       }
       const requestedDomains = req.query.domains
         ? req.query.domains.split(',')
-        : ['light', 'switch', 'fan', 'climate', 'cover', 'media_player', 'scene', 'script', 'input_boolean'];
+        : ['light', 'switch', 'fan', 'climate', 'cover', 'lock', 'sensor', 'binary_sensor', 'media_player', 'scene', 'script', 'automation', 'input_boolean'];
       const entities = await haClient.getEntities(requestedDomains);
       res.json({ ok: true, count: entities.length, entities });
+    })
+  );
+
+  // 26b. GET /api/bot/device-status (All configured entities live state & status preview)
+  router.get(
+    '/bot/device-status',
+    asyncHandler(async (req, res) => {
+      if (!botConfigManager) {
+        return res.status(503).json({ ok: false, error: 'Bot config manager not initialized' });
+      }
+      const config = botConfigManager.getConfig();
+      const rooms = config.rooms || [];
+      const resultRooms = [];
+
+      let totalDevices = 0;
+      let onCount = 0;
+      let lockedCount = 0;
+      let unlockedCount = 0;
+      let sensorCount = 0;
+
+      for (const room of rooms) {
+        const devList = [];
+        for (const dev of (room.devices || [])) {
+          totalDevices++;
+          let liveState = null;
+          let formatted = 'OFF';
+          const domain = dev.entityId ? dev.entityId.split('.')[0] : (dev.type || 'other');
+          if (domain === 'sensor' || domain === 'binary_sensor') sensorCount++;
+
+          if (haClient) {
+            try {
+              liveState = await haClient.getEntityState(dev.entityId);
+              if (interactiveBot && typeof interactiveBot._formatDeviceState === 'function') {
+                formatted = interactiveBot._formatDeviceState(dev, liveState);
+              } else {
+                formatted = liveState?.state || 'OFF';
+              }
+            } catch {
+              formatted = 'OFF';
+            }
+          }
+
+          const raw = String(liveState?.state || '').toLowerCase();
+          if (raw === 'on' || raw === 'playing' || raw === 'open') onCount++;
+          if (domain === 'lock') {
+            if (raw === 'locked') lockedCount++;
+            else unlockedCount++;
+          }
+
+          devList.push({
+            id: dev.id,
+            name: dev.name,
+            entityId: dev.entityId,
+            type: dev.type || domain,
+            domain,
+            state: liveState?.state || 'unknown',
+            formattedState: formatted,
+            attributes: liveState?.attributes || {},
+            friendlyName: liveState?.friendly_name || dev.name,
+          });
+        }
+        resultRooms.push({
+          id: room.id,
+          name: room.name,
+          devices: devList,
+        });
+      }
+
+      // Generate WhatsApp status preview
+      let whatsappStatusPreview = 'LUMI HOME STATUS\n─────────────────────\n';
+      const previewLines = [];
+      for (const r of resultRooms) {
+        if (!r.devices.length) continue;
+        const dLines = r.devices.map((d) => `  • ${d.name}: [${d.formattedState}]`);
+        previewLines.push(`${r.name}:\n${dLines.join('\n')}`);
+      }
+      whatsappStatusPreview += previewLines.length > 0 ? previewLines.join('\n\n') : 'No devices configured yet.';
+      whatsappStatusPreview += '\n─────────────────────\nSend \'remote\' for controls or \'cast\' to broadcast.';
+
+      res.json({
+        ok: true,
+        summary: {
+          totalDevices,
+          onCount,
+          lockedCount,
+          unlockedCount,
+          sensorCount,
+          roomsCount: rooms.length,
+        },
+        rooms: resultRooms,
+        whatsappStatusPreview,
+      });
     })
   );
 

@@ -9,6 +9,7 @@ function createDefaultSettings() {
   return {
     remoteTriggers: ['remote', 'lumi', 'control', '/remote'],
     castTriggers: ['cast', 'broadcast', 'speak', '/cast'],
+    statusTriggers: ['status', '/status', 'state', '/state'],
     endTriggers: ['end', 'exit', '/end', 'stop', 'quit', 'close'],
     backTriggers: ['back', '/back', 'rooms', 'menu'],
     helpTriggers: ['help', '/help', 'info', 'commands'],
@@ -16,8 +17,11 @@ function createDefaultSettings() {
     includeUserName: true,
     templates: {
       remoteGreeting: "LUMI SMART HOME REMOTE\nWelcome {{userName}}.\nSelect a room by replying with its number:\n\n{{roomList}}\n\n─────────────────────\nReply with a room number (e.g. 1) or '{{primaryEndTrigger}}' to exit.",
-      deviceMenu: "{{roomName}} Devices\nUser: {{userName}}\n─────────────────────\n{{deviceList}}\n\n─────────────────────\nHow to Control:\n• Single device: on 1 | off 1 | ON-1 | off-1\n• Multiple devices: on 1,2,3 | off 1,2\n• Navigation: '{{primaryBackTrigger}}' (Rooms) | '{{primaryEndTrigger}}' (Exit)",
+      deviceMenu: "{{roomName}} Devices\nUser: {{userName}}\n─────────────────────\n{{deviceList}}\n\n─────────────────────\nHow to Control:\n• On / Off: on 1 | off 1 | ON-1\n• Curtains: open 1 | close 1 | stop 1 | 1 50%\n• Locks: lock 1 | unlock 1\n• Brightness & Color: dim 1 40% | color 1 blue | warm 1\n• AC & Climate: temp 1 24 | cool 22\n• Or reply with device number (e.g. 1) for detailed controls!\n• Navigation: '{{primaryBackTrigger}}' (Rooms) | '{{primaryEndTrigger}}' (Exit)",
+      deviceSubmenu: "{{deviceName}} [{{deviceStatus}}]\nRoom: {{roomName}}\n─────────────────────\nControls for this device:\n{{controlHints}}\n\n─────────────────────\nReply with an action above, '{{primaryBackTrigger}}' for room devices, or '{{primaryEndTrigger}}' to exit.",
       actionResult: "{{roomName}}\nUpdated by {{userName}}:\n─────────────────────\n{{results}}\n\n─────────────────────\nControl more devices, '{{primaryBackTrigger}}' for rooms, or '{{primaryEndTrigger}}' to exit.",
+      statusReport: "LUMI HOME STATUS\nUser: {{userName}}\n─────────────────────\n{{statusSummary}}\n\n─────────────────────\nSend '{{primaryRemoteTrigger}}' for controls or '{{primaryCastTrigger}}' to broadcast.",
+      noDevicesStatus: "LUMI HOME STATUS\nHello {{userName}}.\nNo devices configured yet.\nPlease configure rooms and devices in the Lumi Remote Builder.",
       castGreeting: "LUMI SPEAKER BROADCAST\nHello {{userName}}.\nPlease record a Voice Note or send an Audio File (.mp3, .ogg, .m4a) to play on your smart home speakers.\n─────────────────────\nType '{{primaryEndTrigger}}' to exit.",
       castSelectSpeaker: "Audio Received! Select Speaker:\nUser: {{userName}}\n─────────────────────\n{{speakerList}}\n\n─────────────────────\nHow to Play:\n• Single: 1 (or play 1)\n• Multiple: 1,2 (or play 1,2)\n• All speakers: play all\n• Audio plays at speaker's current volume.\n• Type '{{primaryEndTrigger}}' to exit.",
       castSuccess: "Broadcast Active:\nTarget: {{speakerName}}\nRequested by: {{userName}}\nVolume: Current Speaker Volume\nStatus: Playing Now",

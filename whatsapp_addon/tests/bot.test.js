@@ -176,6 +176,21 @@ test('InteractiveBot: Full /remote and /cast conversational state machine', asyn
       entityId: 'cover.living_room_curtain',
       type: 'cover',
     });
+    await configMgr.addDevice(livingRoom.id, {
+      name: 'Front Door Lock',
+      entityId: 'lock.front_door',
+      type: 'lock',
+    });
+    await configMgr.addDevice(livingRoom.id, {
+      name: 'Room Temperature',
+      entityId: 'sensor.room_temp',
+      type: 'sensor',
+    });
+    await configMgr.addDevice(livingRoom.id, {
+      name: 'Door Contact',
+      entityId: 'binary_sensor.door_contact',
+      type: 'binary_sensor',
+    });
 
     const bedroom = await configMgr.addRoom('Master Bedroom');
     await configMgr.addDevice(bedroom.id, {
@@ -199,17 +214,30 @@ test('InteractiveBot: Full /remote and /cast conversational state machine', asyn
       'light.reading_lamp': 'on',
       'fan.living_room_fan': 'off',
       'cover.living_room_curtain': 'closed',
+      'lock.front_door': 'locked',
+      'sensor.room_temp': '24.5',
+      'binary_sensor.door_contact': 'off',
       'climate.bedroom_ac': 'off',
     };
 
     const mockHaClient = {
       dryRun: true,
       serviceCalls: [],
-      getEntityState: async (entityId) => ({
-        entity_id: entityId,
-        state: statesMap[entityId] || 'off',
-        attributes: entityId === 'cover.living_room_curtain' ? { current_position: statesMap[entityId] === 'open' ? 100 : 0 } : {},
-      }),
+      getEntityState: async (entityId) => {
+        let attrs = {};
+        if (entityId === 'cover.living_room_curtain') {
+          attrs = { current_position: statesMap[entityId] === 'open' ? 100 : 0 };
+        } else if (entityId === 'sensor.room_temp') {
+          attrs = { unit_of_measurement: '°C' };
+        } else if (entityId === 'binary_sensor.door_contact') {
+          attrs = { device_class: 'door' };
+        }
+        return {
+          entity_id: entityId,
+          state: statesMap[entityId] || 'off',
+          attributes: attrs,
+        };
+      },
       turnOn: async (entityId, attributes = {}) => {
         statesMap[entityId] = 'on';
         mockHaClient.serviceCalls.push({ action: 'turn_on', entityId, attributes });
@@ -218,6 +246,16 @@ test('InteractiveBot: Full /remote and /cast conversational state machine', asyn
       turnOff: async (entityId) => {
         statesMap[entityId] = 'off';
         mockHaClient.serviceCalls.push({ action: 'turn_off', entityId });
+        return { success: true };
+      },
+      lock: async (entityId) => {
+        statesMap[entityId] = 'locked';
+        mockHaClient.serviceCalls.push({ action: 'lock', entityId });
+        return { success: true };
+      },
+      unlock: async (entityId) => {
+        statesMap[entityId] = 'unlocked';
+        mockHaClient.serviceCalls.push({ action: 'unlock', entityId });
         return { success: true };
       },
       openCover: async (entityId) => {
@@ -423,6 +461,58 @@ test('InteractiveBot: Full /remote and /cast conversational state machine', asyn
       messageType: 'text',
     });
     assert.match(sentReplies[sentReplies.length - 1].text, /Living Room Devices/i);
+
+    // Step D5: Smart Lock control: unlock 5, lock 5
+    await bot.handleIncomingMessage({
+      clientId: 'c1',
+      sender: '917904598574',
+      text: 'unlock 5',
+      messageType: 'text',
+    });
+    assert.match(sentReplies[sentReplies.length - 1].text, /Front Door Lock: UNLOCKED/i);
+    assert.equal(statesMap['lock.front_door'], 'unlocked');
+
+    await bot.handleIncomingMessage({
+      clientId: 'c1',
+      sender: '917904598574',
+      text: 'lock 5',
+      messageType: 'text',
+    });
+    assert.match(sentReplies[sentReplies.length - 1].text, /Front Door Lock: LOCKED/i);
+    assert.equal(statesMap['lock.front_door'], 'locked');
+
+    // Step D6: Sensor monitor drilldown: reply "6" (Room Temperature)
+    await bot.handleIncomingMessage({
+      clientId: 'c1',
+      sender: '917904598574',
+      text: '6',
+      messageType: 'text',
+    });
+    assert.match(sentReplies[sentReplies.length - 1].text, /Room Temperature/i);
+    assert.match(sentReplies[sentReplies.length - 1].text, /24.5 °C/);
+
+    await bot.handleIncomingMessage({
+      clientId: 'c1',
+      sender: '917904598574',
+      text: '/back',
+      messageType: 'text',
+    });
+    assert.match(sentReplies[sentReplies.length - 1].text, /Living Room Devices/i);
+
+    // Step D7: Live Status command
+    await bot.handleIncomingMessage({
+      clientId: 'c1',
+      sender: '917904598574',
+      text: 'status',
+      messageType: 'text',
+    });
+    const statusMsg = sentReplies[sentReplies.length - 1].text;
+    assert.match(statusMsg, /LUMI HOME STATUS/i);
+    assert.match(statusMsg, /Living Room:/i);
+    assert.match(statusMsg, /Front Door Lock: \[Locked\]/i);
+    assert.match(statusMsg, /Room Temperature: \[24.5 °C\]/i);
+    assert.match(statusMsg, /Door Contact: \[Closed\]/i);
+    assert.match(statusMsg, /Master Bedroom:/i);
 
     // Step E: Navigation /back returns to room list
     await bot.handleIncomingMessage({
@@ -692,6 +782,15 @@ test('REST API: Bot Config, Rooms, Speakers, Authorized Numbers & Export/Import 
     assert.equal(demoData.config.speakers.length, 2);
     assert.equal(demoData.config.authorizedNumbers.length, 1);
     assert.equal(demoData.config.authorizedNumbers[0].phone, '919876543210');
+
+    // 9. GET /api/bot/device-status
+    const statusRes = await fetch(`${baseUrl}/api/bot/device-status`, { headers: authHeaders });
+    assert.equal(statusRes.status, 200);
+    const statusData = await statusRes.json();
+    assert.equal(statusData.ok, true);
+    assert.ok(statusData.summary.totalDevices >= 3);
+    assert.ok(Array.isArray(statusData.rooms));
+    assert.match(statusData.whatsappStatusPreview, /LUMI HOME STATUS/i);
   } finally {
     await close();
     await cleanupDir(tmpDir);
