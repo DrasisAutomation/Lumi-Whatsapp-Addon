@@ -604,7 +604,8 @@ class InteractiveBot {
     const config = this.configManager.getConfig();
     const speakers = config.speakers || [];
     const settings = this._getSettings();
-    const userName = session.userName || this._getUserName(clientId, phone, session.replyTarget);
+    const target = session.replyTarget || msg.senderJid || phone;
+    const userName = session.userName || this._getUserName(clientId, phone, target);
 
     // State 1: Waiting for Audio/Voice note
     if (session.state === 'WAITING_AUDIO') {
@@ -612,7 +613,7 @@ class InteractiveBot {
 
       if (!isAudio) {
         const audioReqMsg = this._render('invalidAudio', { userName });
-        return this._sendMessage(clientId, phone, audioReqMsg);
+        return this._sendMessage(clientId, target, audioReqMsg);
       }
 
       // Download audio buffer from Baileys or direct buffer
@@ -635,7 +636,7 @@ class InteractiveBot {
 
       if (!buffer || buffer.length === 0) {
         const failMsg = `Audio Download Failed: Could not process the audio file. Please try recording again or send a valid .mp3 / .ogg file, or type '${settings.endTriggers?.[0] || 'end'}' to exit.`;
-        return this._sendMessage(clientId, phone, failMsg);
+        return this._sendMessage(clientId, target, failMsg);
       }
 
       // Determine extension and file path
@@ -655,7 +656,7 @@ class InteractiveBot {
       } catch (err) {
         this.logger?.error({ err: err.message, filePath }, 'Failed writing cast audio file to disk');
         const writeFailMsg = `Storage Error: Could not save broadcast audio to disk. Please check add-on permissions.`;
-        return this._sendMessage(clientId, phone, writeFailMsg);
+        return this._sendMessage(clientId, target, writeFailMsg);
       }
 
       let publicUrl = `/local/whatsapp_casts/${fileName}`;
@@ -676,6 +677,7 @@ class InteractiveBot {
       this._setSession(phone, {
         ...session,
         state: 'SPEAKER_SELECT',
+        replyTarget: target,
         savedAudio: {
           filePath,
           publicUrl,
@@ -683,7 +685,7 @@ class InteractiveBot {
         },
       });
 
-      return this._sendMessage(clientId, phone, menuPrompt);
+      return this._sendMessage(clientId, target, menuPrompt);
     }
 
     // State 2: Speaker Selection & Broadcast Trigger
@@ -710,7 +712,7 @@ class InteractiveBot {
 
       if (selectedSpeakers.length === 0) {
         const invalidChoiceMsg = this._render('invalidChoice', { userName });
-        return this._sendMessage(clientId, phone, invalidChoiceMsg);
+        return this._sendMessage(clientId, target, invalidChoiceMsg);
       }
 
       // Play audio on all selected speakers (preserving current/last active volume!)
@@ -732,7 +734,7 @@ class InteractiveBot {
 
       // Cast completed - terminate session
       this._destroySession(phone);
-      return this._sendMessage(clientId, phone, confirmMsg);
+      return this._sendMessage(clientId, target, confirmMsg);
     }
   }
 }
