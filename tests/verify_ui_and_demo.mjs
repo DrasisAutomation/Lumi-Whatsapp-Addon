@@ -215,3 +215,73 @@ test('Backend & Bot: Demo seeding and safe execution without speaker noise', asy
   // Clean up
   await fs.promises.rm(tmpDir, { recursive: true, force: true });
 });
+
+test('MessageManager & Bot: sendMessage method and LID reply routing', async () => {
+  const { MessageManager } = await import('../whatsapp_addon/src/whatsapp/message-manager.js');
+  const { InteractiveBot } = await import('../whatsapp_addon/src/bot/interactive-bot.js');
+  const { BotConfigManager } = await import('../whatsapp_addon/src/bot/config-manager.js');
+  const { HomeAssistantClient } = await import('../whatsapp_addon/src/bot/homeassistant-client.js');
+
+  const tmpDir = path.join(os.tmpdir(), `lumi_lid_verify_${Date.now()}`);
+  await fs.promises.mkdir(tmpDir, { recursive: true });
+
+  try {
+    // 1. Verify MessageManager has sendMessage method
+    assert.equal(typeof MessageManager.prototype.sendMessage, 'function', 'MessageManager must have sendMessage method');
+
+    // 2. Test mock MessageManager with ONLY sendText (like real MessageManager)
+    const sentMessages = [];
+    const mockRealMessageManager = {
+      sendText: async ({ clientId, to, body }) => {
+        sentMessages.push({ clientId, to, body });
+        return { messageId: 'msg_test_1' };
+      },
+      sendMessage: async (args) => {
+        return mockRealMessageManager.sendText({ ...args, body: args.text });
+      },
+    };
+
+    const configMgr = new BotConfigManager({ dataDir: tmpDir });
+    await configMgr.init();
+    await configMgr.addAuthorizedNumber('189322762391632', 'LID User');
+
+    const bot = new InteractiveBot({
+      configManager: configMgr,
+      haClient: new HomeAssistantClient({ dryRun: true }),
+      messageManager: mockRealMessageManager,
+      dataDir: tmpDir,
+      logger: null,
+    });
+    bot.init();
+
+    // 3. User sends /remote from an @lid JID (e.g. 189322762391632@lid)
+    await bot.handleIncomingMessage({
+      clientId: 'default',
+      sender: '189322762391632',
+      senderJid: '189322762391632@lid',
+      text: '/remote',
+      messageType: 'text',
+    });
+
+    // 4. Assert message was sent without crashing
+    assert.equal(sentMessages.length, 1);
+    assert.equal(sentMessages[0].to, '189322762391632@lid', 'Must reply to @lid JID directly');
+    assert.match(sentMessages[0].body, /No Rooms Configured|LUMI SMART HOME REMOTE/i);
+
+    // 5. Test unauthorized user from an LID
+    await bot.handleIncomingMessage({
+      clientId: 'default',
+      sender: '999999999999999',
+      senderJid: '999999999999999@lid',
+      text: '/remote',
+      messageType: 'text',
+    });
+
+    assert.equal(sentMessages.length, 2);
+    assert.equal(sentMessages[1].to, '999999999999999@lid');
+    assert.match(sentMessages[1].body, /Access Denied/i);
+    assert.match(sentMessages[1].body, /999999999999999/);
+  } finally {
+    await fs.promises.rm(tmpDir, { recursive: true, force: true });
+  }
+});

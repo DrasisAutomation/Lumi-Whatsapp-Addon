@@ -80,6 +80,7 @@ class InteractiveBot {
     this.sessions.set(phone, {
       ...sessionData,
       phone,
+      replyTarget: sessionData.replyTarget || sessionData.senderJid || phone,
       timer: timeout,
       lastActiveAt: Date.now(),
     });
@@ -108,12 +109,27 @@ class InteractiveBot {
 
   async _sendMessage(clientId, to, text) {
     try {
-      return await this.messageManager.sendMessage({
-        clientId,
-        to,
-        messageType: 'text',
-        text,
-      });
+      // If 'to' is a phone digits string and has a matching session with replyTarget, use replyTarget
+      const session = this.sessions.get(to);
+      const targetJid = session?.replyTarget || to;
+
+      if (typeof this.messageManager?.sendText === 'function') {
+        return await this.messageManager.sendText({
+          clientId,
+          to: targetJid,
+          body: text,
+        });
+      }
+      if (typeof this.messageManager?.sendMessage === 'function') {
+        return await this.messageManager.sendMessage({
+          clientId,
+          to: targetJid,
+          messageType: 'text',
+          text,
+          body: text,
+        });
+      }
+      throw new Error('MessageManager does not implement sendText or sendMessage');
     } catch (err) {
       this.logger?.error({ err: err.message, clientId, to }, 'InteractiveBot: Failed to send reply');
     }
@@ -124,12 +140,13 @@ class InteractiveBot {
     if (!session) return;
     this._destroySession(phone);
 
+    const target = session.replyTarget || phone;
     if (session.type === 'remote') {
       const msg = `⏱️ *Session Timed Out:*\nYour remote control session has ended due to 5 minutes of inactivity. \nSend */remote* to start a new session.`;
-      await this._sendMessage(session.clientId, phone, msg);
+      await this._sendMessage(session.clientId, target, msg);
     } else if (session.type === 'cast') {
       const msg = `⏱️ *Cast Session Timed Out:*\nYour broadcast session has ended due to 5 minutes of inactivity. \nSend */cast* whenever you are ready.`;
-      await this._sendMessage(session.clientId, phone, msg);
+      await this._sendMessage(session.clientId, target, msg);
     }
   }
 
@@ -140,6 +157,8 @@ class InteractiveBot {
     if (!msg || msg.isGroup) return; // Only direct 1-on-1 private messages are handled by bot
 
     const phone = String(msg.sender || '').replace(/[^0-9]/g, '');
+    const senderJid = msg.senderJid || (msg.sender ? (msg.sender.includes('@') ? msg.sender : `${msg.sender}@s.whatsapp.net`) : null);
+    const replyTarget = msg.senderJid || phone;
     const rawText = String(msg.text || '').trim();
     const clientId = msg.clientId;
     const session = this._getSession(phone);
@@ -148,15 +167,16 @@ class InteractiveBot {
     if (rawText.toLowerCase() === '/end') {
       if (session) {
         const isCast = session.type === 'cast';
+        const target = session.replyTarget || replyTarget;
         this._destroySession(phone);
         const exitMsg = isCast
           ? `👋 *Cast Session Ended.*\nAudio broadcast cancelled. Send */cast* anytime to broadcast or */remote* for smart home controls.`
           : `👋 *Remote Session Ended.*\nThank you! Send */remote* anytime you want to control your devices.`;
-        return this._sendMessage(clientId, phone, exitMsg);
+        return this._sendMessage(clientId, target, exitMsg);
       } else {
         return this._sendMessage(
           clientId,
-          phone,
+          replyTarget,
           `👋 *Session Ended.*\nSend */remote* to control devices or */cast* to broadcast audio.`
         );
       }
@@ -165,25 +185,25 @@ class InteractiveBot {
     // 2. Global Help command (/help)
     if (rawText.toLowerCase() === '/help') {
       const helpMsg = `ℹ️ *Lumi Remote Commands:*\n• */remote* - Open main smart home menu\n• *1, 2, 3...* - Select room number\n• *on 1* or *on-1* - Turn ON device #1\n• *off 1* or *off-1* - Turn OFF device #1\n• *on 1,2,3* - Turn ON multiple devices\n• *off 1,2,3* - Turn OFF multiple devices\n• */back* - Go back to room list\n• */end* - Exit remote session`;
-      return this._sendMessage(clientId, phone, helpMsg);
+      return this._sendMessage(clientId, session?.replyTarget || replyTarget, helpMsg);
     }
 
     // 3. Trigger: /remote
     if (rawText.toLowerCase() === '/remote') {
-      if (!this.configManager.isAuthorized(phone)) {
-        const deniedMsg = `⛔ *Access Denied:*\nThis phone number (+${phone}) is not authorized to control Home Assistant. \nPlease add this number in the Lumi Whatsapp Web UI under *Authorized Numbers*.`;
-        return this._sendMessage(clientId, phone, deniedMsg);
+      if (!this.configManager.isAuthorized(phone, msg.senderJid)) {
+        const deniedMsg = `⛔ *Access Denied:*\nThis phone number / ID (+${phone}) is not authorized to control Home Assistant. \nPlease add this number in the Lumi Whatsapp Web UI under *Authorized Numbers*.`;
+        return this._sendMessage(clientId, replyTarget, deniedMsg);
       }
-      return this._startRemoteSession(clientId, phone);
+      return this._startRemoteSession(clientId, phone, replyTarget);
     }
 
     // 4. Trigger: /cast
     if (rawText.toLowerCase() === '/cast') {
-      if (!this.configManager.isAuthorized(phone)) {
-        const deniedMsg = `⛔ *Access Denied:*\nThis phone number (+${phone}) is not authorized to broadcast to Home Assistant speakers.\nPlease add this number in the Lumi Whatsapp Web UI under *Authorized Numbers*.`;
-        return this._sendMessage(clientId, phone, deniedMsg);
+      if (!this.configManager.isAuthorized(phone, msg.senderJid)) {
+        const deniedMsg = `⛔ *Access Denied:*\nThis phone number / ID (+${phone}) is not authorized to broadcast to Home Assistant speakers.\nPlease add this number in the Lumi Whatsapp Web UI under *Authorized Numbers*.`;
+        return this._sendMessage(clientId, replyTarget, deniedMsg);
       }
-      return this._startCastSession(clientId, phone);
+      return this._startCastSession(clientId, phone, replyTarget);
     }
 
     // 5. Active Session Flow
@@ -201,28 +221,30 @@ class InteractiveBot {
   // REMOTE CONTROL (/remote) FLOW
   // ==========================================
 
-  async _startRemoteSession(clientId, phone) {
+  async _startRemoteSession(clientId, phone, replyTarget = null) {
     const config = this.configManager.getConfig();
     const rooms = config.rooms || [];
+    const target = replyTarget || phone;
 
     if (rooms.length === 0) {
       const noRoomsMsg = `⚠️ *No Rooms Configured:*\nPlease open the Lumi Whatsapp Web UI and add rooms and devices under *Smart Home Remote Control Builder*.`;
-      return this._sendMessage(clientId, phone, noRoomsMsg);
+      return this._sendMessage(clientId, target, noRoomsMsg);
     }
 
     const roomList = rooms
       .map((room, idx) => `${formatNum(idx + 1)} ${room.name}`)
       .join('\n');
 
-    const prompt = `🏠 *LUMI SMART HOME REMOTE*\n━━━━━━━━━━━━━━━━━━━━━\nSelect a room to view and control devices:\n\n${roomList}\n\n─────────────────────\n💡 *Instructions:*\n• Reply with the room number (e.g. *1*)\n• Type */end* to exit`;
+    const prompt = `🏠 *LUMI SMART HOME REMOTE*\n━━━━━━━━━━━━━━━━━━━━━\nSelect a room by replying with its number:\n\n${roomList}\n\n─────────────────────\n💡 Reply with a room number (e.g. *1*) or */end* to exit.`;
 
     this._setSession(phone, {
       type: 'remote',
       state: 'ROOM_SELECT',
       clientId,
+      replyTarget: target,
     });
 
-    return this._sendMessage(clientId, phone, prompt);
+    return this._sendMessage(clientId, target, prompt);
   }
 
   async _handleRemoteFlow(session, msg) {
@@ -365,13 +387,14 @@ class InteractiveBot {
   // SPEAKER BROADCAST (/cast) FLOW
   // ==========================================
 
-  async _startCastSession(clientId, phone) {
+  async _startCastSession(clientId, phone, replyTarget = null) {
     const config = this.configManager.getConfig();
     const speakers = config.speakers || [];
+    const target = replyTarget || phone;
 
     if (speakers.length === 0) {
       const noSpeakersMsg = `⚠️ *No Speakers Configured:*\nPlease open the Lumi Whatsapp Web UI and add speakers under *Speakers & Audio Broadcasting*.`;
-      return this._sendMessage(clientId, phone, noSpeakersMsg);
+      return this._sendMessage(clientId, target, noSpeakersMsg);
     }
 
     const prompt = `🎙️ *LUMI SPEAKER BROADCAST / CAST*\n━━━━━━━━━━━━━━━━━━━━━\nPlease record a *Voice Note* or send an *Audio File* (.mp3, .ogg, .m4a) that you want to play on your smart home speakers.\n─────────────────────\n💡 *Instructions:*\n• Press & hold Mic on WhatsApp to record, then send.\n• Or attach an audio file.\n• Type */end* to exit.`;
@@ -380,9 +403,10 @@ class InteractiveBot {
       type: 'cast',
       state: 'WAITING_AUDIO',
       clientId,
+      replyTarget: target,
     });
 
-    return this._sendMessage(clientId, phone, prompt);
+    return this._sendMessage(clientId, target, prompt);
   }
 
   async _handleCastFlow(session, msg) {

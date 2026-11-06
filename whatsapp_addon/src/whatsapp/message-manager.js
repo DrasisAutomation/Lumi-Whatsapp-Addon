@@ -169,6 +169,20 @@ class MessageManager {
     };
   }
 
+  async sendMessage(options = {}) {
+    const { clientId = 'default', to, text, body, messageType = 'text', idempotencyKey = null, ...rest } = options;
+    if (messageType === 'text') {
+      return this.sendText({ clientId, to, body: text !== undefined ? text : body, idempotencyKey });
+    }
+    if (['image', 'video', 'audio', 'document'].includes(messageType)) {
+      return this.sendMedia({ clientId, to, mediaCategory: messageType, idempotencyKey, ...rest });
+    }
+    if (messageType === 'location') {
+      return this.sendLocation({ clientId, to, idempotencyKey, ...rest });
+    }
+    return this.sendText({ clientId, to, body: text !== undefined ? text : body, idempotencyKey });
+  }
+
   async sendText({ clientId = 'default', to, body, idempotencyKey = null }) {
     const validClientId = validateClientId(clientId);
     this.sessionManager.getAccount(validClientId);

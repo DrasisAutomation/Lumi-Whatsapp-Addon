@@ -61,15 +61,16 @@ class BotConfigManager {
     await writeJsonAtomic(this.filePath, this.config);
   }
 
-  isAuthorized(rawPhone) {
+  isAuthorized(rawPhone, rawJid = null) {
     if (!this.config.authorizedNumbers || this.config.authorizedNumbers.length === 0) {
       // If no authorized numbers are configured, all numbers are blocked by default for security
       return false;
     }
     const cleanPhone = String(rawPhone || '').replace(/[^0-9]/g, '');
+    const cleanJid = rawJid ? String(rawJid).split('@')[0].replace(/[^0-9]/g, '') : '';
     return this.config.authorizedNumbers.some((item) => {
       const authClean = String(item.phone || '').replace(/[^0-9]/g, '');
-      return authClean === cleanPhone;
+      return (cleanPhone && authClean === cleanPhone) || (cleanJid && authClean === cleanJid);
     });
   }
 
