@@ -160,6 +160,8 @@ class MessageManager {
       throw err;
     }
 
+    conn.recordSentMessageId?.(response.key.id);
+
     // Save message to connection messageStore so Baileys getMessage callback can handle decryption retries
     conn.saveMessage(response);
 

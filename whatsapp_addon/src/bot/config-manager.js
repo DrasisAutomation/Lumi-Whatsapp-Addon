@@ -67,9 +67,9 @@ class BotConfigManager {
       return false;
     }
     const cleanPhone = String(rawPhone || '').replace(/[^0-9]/g, '');
-    const cleanJid = rawJid ? String(rawJid).split('@')[0].replace(/[^0-9]/g, '') : '';
+    const cleanJid = rawJid ? String(rawJid).split('@')[0].split(':')[0].replace(/[^0-9]/g, '') : '';
     return this.config.authorizedNumbers.some((item) => {
-      const authClean = String(item.phone || '').replace(/[^0-9]/g, '');
+      const authClean = String(item.phone || '').split('@')[0].split(':')[0].replace(/[^0-9]/g, '');
       return (cleanPhone && authClean === cleanPhone) || (cleanJid && authClean === cleanJid);
     });
   }

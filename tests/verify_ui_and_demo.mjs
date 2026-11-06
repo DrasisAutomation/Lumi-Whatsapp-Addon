@@ -285,3 +285,96 @@ test('MessageManager & Bot: sendMessage method and LID reply routing', async () 
     await fs.promises.rm(tmpDir, { recursive: true, force: true });
   }
 });
+
+test('Connection & Bot: Self-chat Message Yourself and Owner Auto-Authorization', async () => {
+  const { BotConfigManager } = await import('../whatsapp_addon/src/bot/config-manager.js');
+  const { HomeAssistantClient } = await import('../whatsapp_addon/src/bot/homeassistant-client.js');
+  const { InteractiveBot } = await import('../whatsapp_addon/src/bot/interactive-bot.js');
+
+  const tmpDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'owner-auth-'));
+  try {
+    const configMgr = new BotConfigManager({ dataDir: tmpDir });
+    await configMgr.init();
+    // Do NOT add any authorized numbers — whitelist is completely empty
+
+    const sentMessages = [];
+    const mockMsgManager = {
+      sessionManager: {
+        getConnection: (clientId) => {
+          return {
+            clientId,
+            phone: '919876543210',
+            jid: '919876543210@s.whatsapp.net',
+            sock: {
+              user: {
+                id: '919876543210:0@s.whatsapp.net',
+                lid: '189322762391632:0@lid',
+              },
+            },
+          };
+        },
+      },
+      sendMessage: async (args) => {
+        sentMessages.push(args);
+        return { id: `msg_${Date.now()}` };
+      },
+      sendText: async (args) => {
+        sentMessages.push(args);
+        return { id: `msg_${Date.now()}` };
+      },
+    };
+
+    const bot = new InteractiveBot({
+      configManager: configMgr,
+      haClient: new HomeAssistantClient({ dryRun: true }),
+      messageManager: mockMsgManager,
+      dataDir: tmpDir,
+      logger: null,
+    });
+    bot.init();
+
+    // 1. Connected account owner sends /remote from their own phone (not in authorizedNumbers)
+    await bot.handleIncomingMessage({
+      clientId: 'default',
+      sender: '919876543210',
+      senderJid: '919876543210@s.whatsapp.net',
+      text: '/remote',
+      messageType: 'text',
+    });
+
+    // Owner MUST be auto-authorized
+    assert.equal(sentMessages.length, 1);
+    const body0 = sentMessages[0].body || sentMessages[0].text;
+    assert.ok(!body0.includes('Access Denied'));
+    assert.match(body0, /No Rooms Configured/i);
+
+    // 2. Connected account owner sends /remote from their @lid
+    await bot.handleIncomingMessage({
+      clientId: 'default',
+      sender: '189322762391632',
+      senderJid: '189322762391632@lid',
+      text: '/remote',
+      messageType: 'text',
+    });
+
+    assert.equal(sentMessages.length, 2);
+    const body1 = sentMessages[1].body || sentMessages[1].text;
+    assert.ok(!body1.includes('Access Denied'));
+    assert.match(body1, /No Rooms Configured/i);
+
+    // 3. Foreign user is denied
+    await bot.handleIncomingMessage({
+      clientId: 'default',
+      sender: '1234567890',
+      senderJid: '1234567890@s.whatsapp.net',
+      text: '/remote',
+      messageType: 'text',
+    });
+
+    assert.equal(sentMessages.length, 3);
+    const body2 = sentMessages[2].body || sentMessages[2].text;
+    assert.match(body2, /Access Denied/i);
+  } finally {
+    await fs.promises.rm(tmpDir, { recursive: true, force: true });
+  }
+});

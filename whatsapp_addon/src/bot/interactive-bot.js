@@ -150,6 +150,37 @@ class InteractiveBot {
     }
   }
 
+  _isAuthorized(clientId, phone, senderJid) {
+    if (this.configManager.isAuthorized(phone, senderJid)) {
+      return true;
+    }
+
+    // Auto-authorize the account owner (the device currently linked to this add-on)
+    const conn =
+      this.messageManager?.sessionManager?.getConnection?.(clientId) ||
+      this.messageManager?.sessionManager?.accounts?.get?.(clientId);
+    if (conn) {
+      const ownerPhone = conn.phone ? String(conn.phone).split('@')[0].split(':')[0].replace(/[^0-9]/g, '') : null;
+      const ownerJid = conn.jid ? String(conn.jid).split('@')[0].split(':')[0].replace(/[^0-9]/g, '') : null;
+      const ownerLid = conn.sock?.user?.lid ? String(conn.sock.user.lid).split('@')[0].split(':')[0].replace(/[^0-9]/g, '') : null;
+      const cleanPhone = String(phone || '').replace(/[^0-9]/g, '');
+      const cleanJid = senderJid ? String(senderJid).split('@')[0].split(':')[0].replace(/[^0-9]/g, '') : '';
+
+      if (
+        (cleanPhone && ownerPhone && cleanPhone === ownerPhone) ||
+        (cleanPhone && ownerJid && cleanPhone === ownerJid) ||
+        (cleanPhone && ownerLid && cleanPhone === ownerLid) ||
+        (cleanJid && ownerLid && cleanJid === ownerLid) ||
+        (cleanJid && ownerJid && cleanJid === ownerJid) ||
+        (cleanJid && ownerPhone && cleanJid === ownerPhone)
+      ) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   /**
    * Main entry point for incoming messages.
    */
@@ -190,8 +221,12 @@ class InteractiveBot {
 
     // 3. Trigger: /remote
     if (rawText.toLowerCase() === '/remote') {
-      if (!this.configManager.isAuthorized(phone, msg.senderJid)) {
-        const deniedMsg = `⛔ *Access Denied:*\nThis phone number / ID (+${phone}) is not authorized to control Home Assistant. \nPlease add this number in the Lumi Whatsapp Web UI under *Authorized Numbers*.`;
+      if (!this._isAuthorized(clientId, phone, msg.senderJid)) {
+        const config = this.configManager.getConfig();
+        const hasWhitelisted = Array.isArray(config.authorizedNumbers) && config.authorizedNumbers.length > 0;
+        const deniedMsg = hasWhitelisted
+          ? `⛔ *Access Denied:*\nThis phone number / ID (+${phone}) is not authorized to control Home Assistant.\nPlease add this number in the Lumi Whatsapp Web UI under *Authorized Numbers*.`
+          : `🔒 *Access Denied:*\nCurrently no authorized phone numbers are whitelisted in Lumi Whatsapp.\nPlease open the Home Assistant Add-on Web UI and add your phone number under *Authorized Numbers* to enable smart home controls.`;
         return this._sendMessage(clientId, replyTarget, deniedMsg);
       }
       return this._startRemoteSession(clientId, phone, replyTarget);
@@ -199,8 +234,12 @@ class InteractiveBot {
 
     // 4. Trigger: /cast
     if (rawText.toLowerCase() === '/cast') {
-      if (!this.configManager.isAuthorized(phone, msg.senderJid)) {
-        const deniedMsg = `⛔ *Access Denied:*\nThis phone number / ID (+${phone}) is not authorized to broadcast to Home Assistant speakers.\nPlease add this number in the Lumi Whatsapp Web UI under *Authorized Numbers*.`;
+      if (!this._isAuthorized(clientId, phone, msg.senderJid)) {
+        const config = this.configManager.getConfig();
+        const hasWhitelisted = Array.isArray(config.authorizedNumbers) && config.authorizedNumbers.length > 0;
+        const deniedMsg = hasWhitelisted
+          ? `⛔ *Access Denied:*\nThis phone number / ID (+${phone}) is not authorized to broadcast to Home Assistant speakers.\nPlease add this number in the Lumi Whatsapp Web UI under *Authorized Numbers*.`
+          : `🔒 *Access Denied:*\nCurrently no authorized phone numbers are whitelisted in Lumi Whatsapp.\nPlease open the Home Assistant Add-on Web UI and add your phone number under *Authorized Numbers* to enable audio broadcasting.`;
         return this._sendMessage(clientId, replyTarget, deniedMsg);
       }
       return this._startCastSession(clientId, phone, replyTarget);
@@ -227,7 +266,7 @@ class InteractiveBot {
     const target = replyTarget || phone;
 
     if (rooms.length === 0) {
-      const noRoomsMsg = `⚠️ *No Rooms Configured:*\nPlease open the Lumi Whatsapp Web UI and add rooms and devices under *Smart Home Remote Control Builder*.`;
+      const noRoomsMsg = `⚠️ *No Rooms Configured:*\nPlease open the Lumi Whatsapp Web UI to add your rooms and devices under *Remote Builder*, or click *Load Demo Configuration* on the Dashboard to get started instantly.`;
       return this._sendMessage(clientId, target, noRoomsMsg);
     }
 
@@ -393,7 +432,7 @@ class InteractiveBot {
     const target = replyTarget || phone;
 
     if (speakers.length === 0) {
-      const noSpeakersMsg = `⚠️ *No Speakers Configured:*\nPlease open the Lumi Whatsapp Web UI and add speakers under *Speakers & Audio Broadcasting*.`;
+      const noSpeakersMsg = `⚠️ *No Speakers Configured:*\nPlease open the Lumi Whatsapp Web UI to add your Home Assistant media_player speakers under *Speakers & Casting*, or click *Load Demo Configuration* on the Dashboard to get started instantly.`;
       return this._sendMessage(clientId, target, noSpeakersMsg);
     }
 

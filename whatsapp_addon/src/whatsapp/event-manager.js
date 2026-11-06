@@ -45,16 +45,35 @@ class WhatsAppEventManager extends EventEmitter {
 
   /**
    * Extracts normalized incoming message info from a Baileys WAMessage.
-   * Returns null if message is outgoing (fromMe), status@broadcast, or protocol message.
+   * Returns null if message is outgoing (fromMe) unless it is a genuine self-chat (Message Yourself),
+   * or if it was dispatched by our bot, status@broadcast, or protocol message.
    */
-  parseIncomingBaileysMessage(clientId, msg) {
+  parseIncomingBaileysMessage(clientId, msg, options = {}) {
     if (!msg || !msg.key) return null;
-    if (msg.key.fromMe) return null; // Never treat outgoing messages as incoming!
+    const messageId = msg.key.id;
+    if (!messageId) return null;
+
+    const connection = options.connection;
+    // 1. Ignore outgoing messages dispatched by our own bot code to avoid loops
+    if (connection && typeof connection.isBotSentMessage === 'function' && connection.isBotSentMessage(messageId)) {
+      return null;
+    }
+
     const remoteJid = msg.key.remoteJid || '';
     if (!remoteJid || remoteJid === 'status@broadcast') return null;
 
-    const messageId = msg.key.id;
-    if (!messageId) return null;
+    let isSelfChat = false;
+    if (msg.key.fromMe) {
+      // Baileys sets fromMe: true when message originated from the connected account.
+      // If user typed in WhatsApp to themselves ("Message Yourself" notes-to-self chat),
+      // allow it so the owner can interact with the bot from their own phone!
+      if (connection && typeof connection.isSelfChat === 'function' && connection.isSelfChat(remoteJid)) {
+        isSelfChat = true;
+      } else {
+        // Outgoing message to another contact or group -> ignore
+        return null;
+      }
+    }
 
     const dedupKey = `${clientId}:${messageId}`;
     if (this.seenIncomingMessageIds.has(dedupKey)) {
@@ -104,12 +123,33 @@ class WhatsAppEventManager extends EventEmitter {
       return null;
     }
 
+    if (isSelfChat) {
+      // In self-chat (Message Yourself), only forward messages if they are interactive bot commands or voice notes
+      const cleanCmd = text.trim().toLowerCase();
+      const isBotCommand =
+        cleanCmd.startsWith('/') ||
+        cleanCmd.startsWith('on') ||
+        cleanCmd.startsWith('off') ||
+        cleanCmd.startsWith('play') ||
+        /^[0-9,\s]+$/.test(cleanCmd) ||
+        messageType === 'voice_note' ||
+        messageType === 'audio';
+
+      if (!isBotCommand) {
+        return null; // Regular notes-to-self text -> ignore
+      }
+    }
+
     this.seenIncomingMessageIds.set(dedupKey, Date.now());
     this._pruneMap(this.seenIncomingMessageIds);
 
     const isGroup = remoteJid.endsWith('@g.us');
-    const senderJid = isGroup ? msg.key.participant || remoteJid : remoteJid;
-    const senderNumber = senderJid.replace(/@(s\.whatsapp\.net|lid|g\.us)$/, '');
+    let senderJid = isGroup ? msg.key.participant || remoteJid : remoteJid;
+    let senderNumber = senderJid.replace(/@(s\.whatsapp\.net|lid|g\.us)$/, '');
+
+    if (isSelfChat && connection?.phone) {
+      senderNumber = String(connection.phone).replace(/[^0-9]/g, '');
+    }
 
     const rawTimestamp = msg.messageTimestamp
       ? Number(msg.messageTimestamp) * 1000
@@ -121,9 +161,10 @@ class WhatsAppEventManager extends EventEmitter {
       messageId,
       sender: senderNumber,
       senderJid,
-      senderName: msg.pushName || senderNumber,
+      senderName: isSelfChat ? (msg.pushName || 'Owner (Self)') : (msg.pushName || senderNumber),
       isGroup,
       groupId: isGroup ? remoteJid : null,
+      isSelfChat,
       messageType,
       text,
       rawMessage: msg,

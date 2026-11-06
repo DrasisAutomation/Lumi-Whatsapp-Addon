@@ -67,6 +67,38 @@ class WhatsAppAccountConnection extends EventEmitter {
       lastMessagePreview: null,
       lastMessageAt: null,
     };
+
+    this.sentMessageIds = new Map();
+    this.maxSentIds = 2000;
+  }
+
+  recordSentMessageId(messageId) {
+    if (!messageId) return;
+    this.sentMessageIds.set(messageId, Date.now());
+    if (this.sentMessageIds.size > this.maxSentIds) {
+      const oldestKeys = Array.from(this.sentMessageIds.keys()).slice(0, 500);
+      for (const k of oldestKeys) {
+        this.sentMessageIds.delete(k);
+      }
+    }
+  }
+
+  isBotSentMessage(messageId) {
+    if (!messageId) return false;
+    return this.sentMessageIds.has(messageId);
+  }
+
+  isSelfChat(remoteJid) {
+    if (!remoteJid) return false;
+    const cleanRemote = String(remoteJid).split('@')[0].split(':')[0].replace(/[^0-9]/g, '');
+    const cleanPhone = this.phone ? String(this.phone).replace(/[^0-9]/g, '') : '';
+    const cleanJid = this.jid ? String(this.jid).split('@')[0].split(':')[0].replace(/[^0-9]/g, '') : '';
+    const cleanLid = this.sock?.user?.lid ? String(this.sock.user.lid).split('@')[0].split(':')[0].replace(/[^0-9]/g, '') : '';
+
+    if (cleanRemote && (cleanRemote === cleanPhone || cleanRemote === cleanJid || (cleanLid && cleanRemote === cleanLid))) {
+      return true;
+    }
+    return false;
   }
 
   async connect({ regenerateQr = false } = {}) {
@@ -334,7 +366,7 @@ class WhatsAppAccountConnection extends EventEmitter {
       if (msg && msg.key && msg.key.id && msg.message) {
         this.messageStore?.saveMessage(msg);
       }
-      const parsed = this.eventManager?.parseIncomingBaileysMessage(this.clientId, msg);
+      const parsed = this.eventManager?.parseIncomingBaileysMessage(this.clientId, msg, { connection: this });
       if (parsed) {
         this.stats.messagesReceived += 1;
         this.stats.lastMessageAt = parsed.timestamp;
