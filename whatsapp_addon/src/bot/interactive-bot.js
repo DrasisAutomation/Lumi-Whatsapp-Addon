@@ -150,7 +150,7 @@ class InteractiveBot {
     }
   }
 
-  _isAuthorized(clientId, phone, senderJid) {
+  async _isAuthorized(clientId, phone, senderJid) {
     if (this.configManager.isAuthorized(phone, senderJid)) {
       return true;
     }
@@ -162,7 +162,8 @@ class InteractiveBot {
     if (conn) {
       const ownerPhone = conn.phone ? String(conn.phone).split('@')[0].split(':')[0].replace(/[^0-9]/g, '') : null;
       const ownerJid = conn.jid ? String(conn.jid).split('@')[0].split(':')[0].replace(/[^0-9]/g, '') : null;
-      const ownerLid = conn.sock?.user?.lid ? String(conn.sock.user.lid).split('@')[0].split(':')[0].replace(/[^0-9]/g, '') : null;
+      const rawOwnerLid = conn.lid || conn.sock?.user?.lid || conn.sock?.authState?.creds?.me?.lid;
+      const ownerLid = rawOwnerLid ? String(rawOwnerLid).split('@')[0].split(':')[0].replace(/[^0-9]/g, '') : null;
       const cleanPhone = String(phone || '').replace(/[^0-9]/g, '');
       const cleanJid = senderJid ? String(senderJid).split('@')[0].split(':')[0].replace(/[^0-9]/g, '') : '';
 
@@ -175,6 +176,27 @@ class InteractiveBot {
         (cleanJid && ownerPhone && cleanJid === ownerPhone)
       ) {
         return true;
+      }
+
+      // If sender is an @lid and not yet matched, dynamically resolve unmapped authorized numbers using onWhatsApp
+      if (senderJid && senderJid.endsWith('@lid') && conn.sock && typeof conn.sock.onWhatsApp === 'function') {
+        const config = this.configManager.getConfig();
+        const unmapped = (config.authorizedNumbers || []).filter((item) => !item.lid && item.phone);
+        for (const item of unmapped) {
+          try {
+            const results = await conn.sock.onWhatsApp(item.phone);
+            if (Array.isArray(results) && results[0]?.lid) {
+              const resLid = results[0].lid.split('@')[0].split(':')[0].replace(/[^0-9]/g, '');
+              item.lid = resLid;
+              await this.configManager.save();
+              if (resLid === cleanJid || resLid === cleanPhone) {
+                return true;
+              }
+            }
+          } catch {
+            // USync query failed, continue
+          }
+        }
       }
     }
 
@@ -221,12 +243,13 @@ class InteractiveBot {
 
     // 3. Trigger: /remote
     if (rawText.toLowerCase() === '/remote') {
-      if (!this._isAuthorized(clientId, phone, msg.senderJid)) {
+      if (!(await this._isAuthorized(clientId, phone, msg.senderJid))) {
+        this.configManager.recordDeniedAttempt?.(phone || msg.senderJid, { senderName: msg.senderName });
         const config = this.configManager.getConfig();
         const hasWhitelisted = Array.isArray(config.authorizedNumbers) && config.authorizedNumbers.length > 0;
         const deniedMsg = hasWhitelisted
-          ? `⛔ *Access Denied:*\nThis phone number / ID (+${phone}) is not authorized to control Home Assistant.\nPlease add this number in the Lumi Whatsapp Web UI under *Authorized Numbers*.`
-          : `🔒 *Access Denied:*\nCurrently no authorized phone numbers are whitelisted in Lumi Whatsapp.\nPlease open the Home Assistant Add-on Web UI and add your phone number under *Authorized Numbers* to enable smart home controls.`;
+          ? `⛔ *Access Denied:*\nWhatsApp ID / Number (+${phone}) is not authorized to control Home Assistant.\n\n💡 *To Authorize:*\nOpen Lumi Whatsapp Web UI ➔ *Authorized Numbers* and add *${phone}* (or click "Authorize Recent ID").`
+          : `🔒 *Access Denied:*\nCurrently no authorized phone numbers are whitelisted in Lumi Whatsapp.\n\n💡 *To Authorize:*\nOpen Lumi Whatsapp Web UI ➔ *Authorized Numbers* and add *${phone}*.`;
         return this._sendMessage(clientId, replyTarget, deniedMsg);
       }
       return this._startRemoteSession(clientId, phone, replyTarget);
@@ -234,12 +257,13 @@ class InteractiveBot {
 
     // 4. Trigger: /cast
     if (rawText.toLowerCase() === '/cast') {
-      if (!this._isAuthorized(clientId, phone, msg.senderJid)) {
+      if (!(await this._isAuthorized(clientId, phone, msg.senderJid))) {
+        this.configManager.recordDeniedAttempt?.(phone || msg.senderJid, { senderName: msg.senderName });
         const config = this.configManager.getConfig();
         const hasWhitelisted = Array.isArray(config.authorizedNumbers) && config.authorizedNumbers.length > 0;
         const deniedMsg = hasWhitelisted
-          ? `⛔ *Access Denied:*\nThis phone number / ID (+${phone}) is not authorized to broadcast to Home Assistant speakers.\nPlease add this number in the Lumi Whatsapp Web UI under *Authorized Numbers*.`
-          : `🔒 *Access Denied:*\nCurrently no authorized phone numbers are whitelisted in Lumi Whatsapp.\nPlease open the Home Assistant Add-on Web UI and add your phone number under *Authorized Numbers* to enable audio broadcasting.`;
+          ? `⛔ *Access Denied:*\nWhatsApp ID / Number (+${phone}) is not authorized to broadcast to Home Assistant speakers.\n\n💡 *To Authorize:*\nOpen Lumi Whatsapp Web UI ➔ *Authorized Numbers* and add *${phone}* (or click "Authorize Recent ID").`
+          : `🔒 *Access Denied:*\nCurrently no authorized phone numbers are whitelisted in Lumi Whatsapp.\n\n💡 *To Authorize:*\nOpen Lumi Whatsapp Web UI ➔ *Authorized Numbers* and add *${phone}*.`;
         return this._sendMessage(clientId, replyTarget, deniedMsg);
       }
       return this._startCastSession(clientId, phone, replyTarget);

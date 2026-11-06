@@ -38,6 +38,7 @@ class WhatsAppAccountConnection extends EventEmitter {
     this.sessionHealth = 'uninitialized'; // uninitialized | healthy | pairing | degraded | invalid_logged_out
     this.phone = null;
     this.jid = null;
+    this.lid = null;
     this.qrRaw = null;
     this.qrDataUrl = null;
     this.qrExpiresAt = null;
@@ -194,6 +195,9 @@ class WhatsAppAccountConnection extends EventEmitter {
       sock.ev.on('creds.update', async () => {
         try {
           await saveCreds();
+          if (sock.user?.lid || sock.authState?.creds?.me?.lid) {
+            this.lid = sock.user?.lid || sock.authState?.creds?.me?.lid;
+          }
         } catch (err) {
           this.logger?.error({ err, clientId: this.clientId }, 'Failed to persist credentials update');
         }
@@ -279,6 +283,7 @@ class WhatsAppAccountConnection extends EventEmitter {
         this.jid = userJid;
         this.phone = userJid.split(':')[0].split('@')[0];
       }
+      this.lid = this.sock?.user?.lid || this.sock?.authState?.creds?.me?.lid || null;
 
       this._emitState();
       this.emit('connected', this.clientId);

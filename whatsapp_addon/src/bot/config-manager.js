@@ -21,6 +21,7 @@ class BotConfigManager {
     this.logger = logger;
     this.filePath = path.join(dataDir, 'lumi_remote_config.json');
     this.config = createDefaultConfig();
+    this.recentDenied = new Map(); // id -> { id, senderJid, senderName, timestamp }
   }
 
   async init() {
@@ -70,20 +71,50 @@ class BotConfigManager {
     const cleanJid = rawJid ? String(rawJid).split('@')[0].split(':')[0].replace(/[^0-9]/g, '') : '';
     return this.config.authorizedNumbers.some((item) => {
       const authClean = String(item.phone || '').split('@')[0].split(':')[0].replace(/[^0-9]/g, '');
-      return (cleanPhone && authClean === cleanPhone) || (cleanJid && authClean === cleanJid);
+      const authLid = item.lid ? String(item.lid).split('@')[0].split(':')[0].replace(/[^0-9]/g, '') : '';
+      return (
+        (cleanPhone && authClean === cleanPhone) ||
+        (cleanJid && authClean === cleanJid) ||
+        (cleanPhone && authLid && cleanPhone === authLid) ||
+        (cleanJid && authLid && cleanJid === authLid)
+      );
     });
   }
 
-  async addAuthorizedNumber(phone, name = '') {
+  recordDeniedAttempt(phoneOrJid, { senderName = null } = {}) {
+    if (!phoneOrJid) return;
+    const clean = String(phoneOrJid).split('@')[0].split(':')[0].replace(/[^0-9]/g, '');
+    if (!clean) return;
+    this.recentDenied.set(clean, {
+      id: clean,
+      raw: phoneOrJid,
+      senderName,
+      timestamp: new Date().toISOString(),
+    });
+    if (this.recentDenied.size > 20) {
+      const oldest = Array.from(this.recentDenied.keys())[0];
+      this.recentDenied.delete(oldest);
+    }
+  }
+
+  getRecentDenied() {
+    return Array.from(this.recentDenied.values()).sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+  }
+
+  async addAuthorizedNumber(phone, name = '', { lid = null } = {}) {
     const cleanPhone = String(phone || '').replace(/[^0-9]/g, '');
     if (!cleanPhone || cleanPhone.length < 7) {
-      throw new Error('Please enter a valid numeric phone number with country code (10-15 digits).');
+      throw new Error('Please enter a valid numeric phone number or WhatsApp ID (7-16 digits).');
     }
+    const cleanLid = lid ? String(lid).split('@')[0].split(':')[0].replace(/[^0-9]/g, '') : null;
     const existingIdx = this.config.authorizedNumbers.findIndex((a) => {
-      return String(a.phone).replace(/[^0-9]/g, '') === cleanPhone;
+      const aClean = String(a.phone).replace(/[^0-9]/g, '');
+      const aLid = a.lid ? String(a.lid).replace(/[^0-9]/g, '') : null;
+      return aClean === cleanPhone || (cleanLid && aLid === cleanLid);
     });
     const entry = {
       phone: cleanPhone,
+      lid: cleanLid || (existingIdx >= 0 ? this.config.authorizedNumbers[existingIdx]?.lid : null) || null,
       name: name?.trim() || cleanPhone,
       addedAt: new Date().toISOString(),
     };

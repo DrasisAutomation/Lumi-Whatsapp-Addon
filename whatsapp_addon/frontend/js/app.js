@@ -703,7 +703,49 @@
     });
   }
 
+  async function renderRecentDenied() {
+    const container = document.getElementById('recent-denied-container');
+    if (!container) return;
+    try {
+      const res = await apiRequest('api/bot/recent-denied');
+      const list = res?.recentDenied || [];
+      if (list.length === 0) {
+        container.innerHTML = '';
+        return;
+      }
+      container.innerHTML = `
+        <div style="background: #fffbeb; border: 1px solid #fde68a; border-left: 4px solid #f59e0b; border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
+          <div>
+            <strong style="color: #92400e; display: flex; align-items: center; gap: 0.5rem;">
+              <span>⚠️</span> Recent WhatsApp Access Request:
+            </strong>
+            <p style="margin: 0.25rem 0 0; font-size: 0.875rem; color: #b45309;">
+              WhatsApp user <code>+${escapeHtml(list[0].id)}</code> ${list[0].senderName ? `(${escapeHtml(list[0].senderName)})` : ''} sent a command but is not authorized yet.
+            </p>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="window.quickAuthorize('${escapeHtml(list[0].id)}', '${escapeHtml(list[0].senderName || 'Authorized User')}')" style="background:#f59e0b; border-color:#f59e0b; color:#fff;">
+            + Authorize +${escapeHtml(list[0].id)} Now
+          </button>
+        </div>
+      `;
+    } catch {
+      // Ignore
+    }
+  }
+
+  window.quickAuthorize = async function(id, name) {
+    const phoneInput = document.getElementById('new-auth-phone');
+    const nameInput = document.getElementById('new-auth-name');
+    if (phoneInput) phoneInput.value = id;
+    if (nameInput) nameInput.value = name || 'Authorized User';
+    const form = document.getElementById('add-auth-form');
+    if (form) {
+      form.dispatchEvent(new Event('submit', { cancelable: true }));
+    }
+  };
+
   function renderAuthorizedNumbers() {
+    renderRecentDenied();
     const tbody = document.getElementById('bot-auth-tbody');
     if (!tbody) return;
     tbody.innerHTML = '';
@@ -1385,8 +1427,8 @@
         const name = nameInput?.value.trim() || 'Family Member';
 
         const cleanPhone = String(rawPhone || '').replace(/[^0-9]/g, '');
-        if (!cleanPhone || cleanPhone.length < 7 || cleanPhone.length > 15) {
-          showToast('Please enter a valid numeric phone number with country code (10-15 digits).', 'error');
+        if (!cleanPhone || cleanPhone.length < 7 || cleanPhone.length > 18) {
+          showToast('Please enter a valid numeric phone number or WhatsApp ID (7-18 digits).', 'error');
           phoneInput?.focus();
           return;
         }

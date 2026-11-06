@@ -17,7 +17,7 @@
         </div>
         <div class="brand-text">
           <h1>LUMI WHATSAPP</h1>
-          <span class="badge-version">v1.1.5</span>
+          <span class="badge-version">v1.1.6</span>
         </div>
       </div>
 
@@ -744,15 +744,18 @@
             </div>
           </div>
 
+          <!-- RECENT DENIED ATTEMPTS (1-CLICK QUICK AUTHORIZE) -->
+          <div id="recent-denied-container"></div>
+
           <!-- ADD AUTHORIZED NUMBER FORM -->
           <div class="form-card" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.25rem; margin-bottom: 1.5rem;">
-            <h4 style="margin-top: 0; margin-bottom: 0.75rem;">Add Authorized Phone Number</h4>
+            <h4 style="margin-top: 0; margin-bottom: 0.75rem;">Add Authorized WhatsApp Phone or ID</h4>
             <form id="add-auth-form">
               <div class="form-row-responsive">
                 <div style="flex: 1; min-width: 240px;">
-                  <label for="new-auth-phone" class="form-label">Phone Number (with Country Code)*</label>
-                  <input id="new-auth-phone" type="text" placeholder="e.g. 917904598574" class="cred-input" style="width: 100%;" required />
-                  <span class="field-hint">Enter international digits only without '+' or spaces (e.g. 91 for India, 1 for US).</span>
+                  <label for="new-auth-phone" class="form-label">Phone Number or WhatsApp ID (LID)*</label>
+                  <input id="new-auth-phone" type="text" placeholder="e.g. 919876543210 or 189322762391632" class="cred-input" style="width: 100%;" required />
+                  <span class="field-hint">Enter international digits (e.g. 919876543210) OR WhatsApp ID (e.g. 189322762391632).</span>
                 </div>
                 <div style="flex: 1; min-width: 240px;">
                   <label for="new-auth-name" class="form-label">User Label / Name</label>

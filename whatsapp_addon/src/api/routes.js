@@ -433,11 +433,35 @@ function createApiRouter({
   );
 
   // 27. Authorized Numbers CRUD
+  router.get(
+    '/bot/recent-denied',
+    asyncHandler(async (req, res) => {
+      if (!botConfigManager) {
+        return res.json({ ok: true, recentDenied: [] });
+      }
+      res.json({ ok: true, recentDenied: botConfigManager.getRecentDenied() });
+    })
+  );
+
   router.post(
     '/bot/authorized-numbers',
     asyncHandler(async (req, res) => {
-      const { phone, name } = req.body || {};
-      const entry = await botConfigManager.addAuthorizedNumber(phone, name);
+      const { phone, name, lid } = req.body || {};
+      let resolvedLid = lid || null;
+      if (!resolvedLid && phone) {
+        try {
+          const conn = sessionManager?.getConnection('default') || sessionManager?.accounts?.get('default');
+          if (conn?.sock && typeof conn.sock.onWhatsApp === 'function') {
+            const results = await conn.sock.onWhatsApp(phone);
+            if (Array.isArray(results) && results[0]?.lid) {
+              resolvedLid = results[0].lid.split('@')[0].split(':')[0].replace(/[^0-9]/g, '');
+            }
+          }
+        } catch {
+          // Ignore lookup failures
+        }
+      }
+      const entry = await botConfigManager.addAuthorizedNumber(phone, name, { lid: resolvedLid });
       res.status(201).json({ ok: true, entry, config: botConfigManager.getConfig() });
     })
   );
