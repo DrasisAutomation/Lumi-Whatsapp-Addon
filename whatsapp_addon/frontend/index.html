@@ -409,20 +409,25 @@
               <p class="card-subtitle">Register a client session identifier (e.g. default, office, alerts)</p>
             </div>
           </div>
-          <form id="add-account-form" class="form-inline">
-            <div class="form-group">
-              <label for="new-client-id">Account ID (clientId)*</label>
-              <input id="new-client-id" type="text" placeholder="e.g. default, office, alerts" required pattern="[a-zA-Z0-9_-]{1,32}" />
-            </div>
-            <div class="form-group">
-              <label for="new-account-name">Display Name</label>
-              <input id="new-account-name" type="text" placeholder="e.g. Office WhatsApp" />
-            </div>
-            <div class="form-group form-actions-inline">
-              <button type="submit" class="btn btn-primary">
-                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                <span>Add Account</span>
-              </button>
+          <form id="add-account-form">
+            <div class="form-grid-clean">
+              <div class="form-field-wrap">
+                <label for="new-client-id" class="form-label">Account ID (clientId)*</label>
+                <input id="new-client-id" type="text" placeholder="e.g. default, office, alerts" required pattern="[a-zA-Z0-9_-]{1,32}" class="cred-input" />
+                <span class="field-hint">Unique alphanumeric session identifier.</span>
+              </div>
+              <div class="form-field-wrap">
+                <label for="new-account-name" class="form-label">Display Name</label>
+                <input id="new-account-name" type="text" placeholder="e.g. Office WhatsApp" class="cred-input" />
+                <span class="field-hint">Friendly name shown in dashboard cards.</span>
+              </div>
+              <div class="form-field-wrap form-btn-wrap">
+                <label class="form-label form-label-spacer" aria-hidden="true">&nbsp;</label>
+                <button type="submit" class="btn btn-primary form-action-btn">
+                  <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                  <span>Add Account</span>
+                </button>
+              </div>
             </div>
           </form>
         </div>
@@ -478,51 +483,55 @@
             </div>
           </div>
           <form id="send-message-form" class="form-stack">
-            <div class="form-row">
-              <div class="form-group">
-                <label for="msg-account">Sending Account*</label>
-                <select id="msg-account" required></select>
+            <div class="form-row-3">
+              <div class="form-field-wrap">
+                <label for="msg-account" class="form-label">Sending Account*</label>
+                <select id="msg-account" class="cred-input" required></select>
+                <span class="field-hint">Active connected WhatsApp session.</span>
               </div>
-              <div class="form-group">
-                <label for="msg-type">Message Type*</label>
-                <select id="msg-type" required>
+              <div class="form-field-wrap">
+                <label for="msg-type" class="form-label">Message Type*</label>
+                <select id="msg-type" class="cred-input" required>
                   <option value="text">Text Message</option>
                   <option value="image">Image / CCTV Snapshot</option>
                   <option value="video">Video (MP4)</option>
                   <option value="document">Document (PDF)</option>
                 </select>
+                <span class="field-hint">Select text or media payload type.</span>
               </div>
-              <div class="form-group">
-                <label for="msg-recipient">Recipient Phone Number / Group JID*</label>
-                <input id="msg-recipient" type="text" placeholder="e.g. 917904598574 or 1203630...@g.us" required />
-                <span class="field-hint">Country code + number (no spaces or '+')</span>
+              <div class="form-field-wrap">
+                <label for="msg-recipient" class="form-label">Recipient Phone Number / Group JID*</label>
+                <input id="msg-recipient" type="text" placeholder="e.g. 917904598574 or 1203630...@g.us" class="cred-input" required />
+                <span class="field-hint">Country code + number (no spaces or '+').</span>
               </div>
             </div>
 
-            <div id="msg-text-group" class="form-group">
-              <label for="msg-body">Message Body*</label>
-              <textarea id="msg-body" rows="4" placeholder="Hello from Home Assistant Lumi Whatsapp!"></textarea>
+            <div id="msg-text-group" class="form-field-wrap">
+              <label for="msg-body" class="form-label">Message Body*</label>
+              <textarea id="msg-body" rows="4" class="cred-input customizer-textarea" placeholder="Hello from Home Assistant Lumi Whatsapp!"></textarea>
             </div>
 
             <div id="msg-media-group" class="form-stack hidden">
-              <div class="form-row">
-                <div class="form-group">
-                  <label for="msg-media-source">Local Path (/config/www, /media, /share) or HTTPS URL</label>
-                  <input id="msg-media-source" type="text" placeholder="/config/www/snapshots/entrance.jpg" />
+              <div class="form-row-2">
+                <div class="form-field-wrap">
+                  <label for="msg-media-source" class="form-label">Local Path (/config/www, /media, /share) or HTTPS URL</label>
+                  <input id="msg-media-source" type="text" placeholder="/config/www/snapshots/entrance.jpg" class="cred-input" />
+                  <span class="field-hint">Absolute file path or accessible HTTPS media URL.</span>
                 </div>
-                <div class="form-group">
-                  <label for="msg-media-file">Or Upload File Directly</label>
-                  <input id="msg-media-file" type="file" />
+                <div class="form-field-wrap">
+                  <label for="msg-media-file" class="form-label">Or Upload File Directly</label>
+                  <input id="msg-media-file" type="file" class="cred-input" />
+                  <span class="field-hint">Upload image, video, audio, or PDF file.</span>
                 </div>
               </div>
-              <div class="form-group">
-                <label for="msg-caption">Caption (Optional)</label>
-                <input id="msg-caption" type="text" placeholder="Motion detected at entrance!" />
+              <div class="form-field-wrap">
+                <label for="msg-caption" class="form-label">Caption (Optional)</label>
+                <input id="msg-caption" type="text" placeholder="Motion detected at entrance!" class="cred-input" />
               </div>
             </div>
 
             <div class="form-actions">
-              <button type="submit" class="btn btn-primary">
+              <button type="submit" class="btn btn-primary form-action-btn">
                 <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
                 <span>Send WhatsApp Message</span>
               </button>
@@ -545,7 +554,7 @@
               <p class="card-subtitle">Complete chronological record of all outbound &amp; inbound messages</p>
             </div>
             <div class="filter-bar">
-              <select id="history-account-filter">
+              <select id="history-account-filter" class="cred-input" style="min-width: 170px; height: 38px;">
                 <option value="">All Accounts</option>
               </select>
             </div>
@@ -592,36 +601,36 @@
             <!-- URL ROW -->
             <div class="cred-item">
               <div class="cred-item-header">
-                <label>Primary Integration API URL (Recommended)</label>
-                <span class="pill-rec">Host Loopback</span>
+                <label class="form-label">Primary Integration API URL (Recommended)</label>
+                <span class="badge badge-success">Host Loopback</span>
               </div>
-              <div class="input-copy-group">
+              <div class="input-action-row">
                 <input id="diag-internal-url" type="text" readonly value="http://127.0.0.1:8653" class="cred-input code-font" />
-                <button id="copy-url-btn" class="btn btn-secondary btn-copy">Copy URL</button>
+                <button id="copy-url-btn" class="btn btn-secondary form-action-btn">Copy URL</button>
               </div>
             </div>
 
             <!-- API TOKEN ROW -->
             <div class="cred-item">
               <div class="cred-item-header">
-                <label>API Bearer Token</label>
-                <span class="pill-key">Secret Key</span>
+                <label class="form-label">API Bearer Token</label>
+                <span class="badge badge-warning">Secret Key</span>
               </div>
-              <div class="input-copy-group">
+              <div class="input-action-row">
                 <input id="diag-api-key" type="password" readonly value="" class="cred-input code-font" />
-                <button id="toggle-token-btn" type="button" class="btn btn-ghost">Show</button>
-                <button id="copy-token-btn" type="button" class="btn btn-primary btn-copy">Copy Token</button>
+                <button id="toggle-token-btn" type="button" class="btn btn-ghost form-action-btn">Show</button>
+                <button id="copy-token-btn" type="button" class="btn btn-primary form-action-btn">Copy Token</button>
               </div>
             </div>
 
             <!-- ALTERNATIVE URL ROW -->
             <div class="cred-item">
               <div class="cred-item-header">
-                <label>Alternative URL (if running directly on host network)</label>
+                <label class="form-label">Alternative URL (if running directly on host network)</label>
               </div>
-              <div class="input-copy-group">
+              <div class="input-action-row">
                 <input id="diag-alt-url" type="text" readonly value="http://localhost:8653" class="cred-input code-font" />
-                <button id="copy-alt-url-btn" class="btn btn-secondary btn-copy">Copy</button>
+                <button id="copy-alt-url-btn" class="btn btn-secondary form-action-btn">Copy</button>
               </div>
             </div>
           </div>
@@ -659,13 +668,15 @@
             </div>
           </div>
           <form id="add-room-form">
-            <div class="form-row-responsive">
-              <div style="flex: 1; min-width: 260px;">
+            <div class="form-grid-clean form-grid-2col">
+              <div class="form-field-wrap">
                 <label for="new-room-name" class="form-label">Room Name*</label>
-                <input id="new-room-name" type="text" placeholder="e.g. Living Room, Master Bedroom, Kitchen, Balcony" class="cred-input" style="width: 100%;" required />
+                <input id="new-room-name" type="text" placeholder="e.g. Living Room, Master Bedroom, Kitchen, Balcony" class="cred-input" required />
+                <span class="field-hint">Organizes entities for interactive WhatsApp remote menu.</span>
               </div>
-              <div class="btn-wrap-responsive">
-                <button type="submit" id="save-room-btn" class="btn btn-primary" style="height: 42px; min-width: 150px;">
+              <div class="form-field-wrap form-btn-wrap">
+                <label class="form-label form-label-spacer" aria-hidden="true">&nbsp;</label>
+                <button type="submit" id="save-room-btn" class="btn btn-primary form-action-btn">
                   <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                   <span>Add Room</span>
                 </button>
@@ -720,7 +731,8 @@
                   <datalist id="ha-media-entities-datalist"></datalist>
                   <span class="field-hint">Target media_player entity in Home Assistant.</span>
                 </div>
-                <div class="form-btn-wrap">
+                <div class="form-field-wrap form-btn-wrap">
+                  <label class="form-label form-label-spacer" aria-hidden="true">&nbsp;</label>
                   <button type="submit" id="save-speaker-btn" class="btn btn-primary form-action-btn">
                     <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                     <span>Add Speaker</span>
@@ -777,7 +789,8 @@
                   <input id="new-auth-name" type="text" placeholder="e.g. Family Member or Home Admin" class="cred-input" />
                   <span class="field-hint">Reference name used for dynamic greetings.</span>
                 </div>
-                <div class="form-btn-wrap">
+                <div class="form-field-wrap form-btn-wrap">
+                  <label class="form-label form-label-spacer" aria-hidden="true">&nbsp;</label>
                   <button type="submit" id="save-auth-btn" class="btn btn-primary form-action-btn">
                     <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                     <span>Add Authorized</span>
@@ -1186,15 +1199,15 @@ Reply with a room number (e.g. 1) or 'end' to exit.
             <h3 id="modal-room-title">Add Device to Room</h3>
             <button id="close-device-modal-btn" class="btn-close">&times;</button>
           </div>
-          <div class="modal-body" style="display: flex; flex-direction: column; gap: 1rem;">
+          <div class="modal-body form-stack">
             <input type="hidden" id="modal-room-id" />
-            <div>
-              <label style="display: block; font-size: 0.825rem; font-weight: 600; margin-bottom: 0.35rem; color: #475569;">Device Display Name*</label>
-              <input id="modal-dev-name" type="text" placeholder="e.g. Ceiling Light, Reading Lamp, Split AC" class="cred-input" style="width: 100%;" />
+            <div class="form-field-wrap">
+              <label for="modal-dev-name" class="form-label">Device Display Name*</label>
+              <input id="modal-dev-name" type="text" placeholder="e.g. Ceiling Light, Reading Lamp, Split AC" class="cred-input" required />
             </div>
-            <div>
-              <label style="display: block; font-size: 0.825rem; font-weight: 600; margin-bottom: 0.35rem; color: #475569;">Device Type</label>
-              <select id="modal-dev-type" class="cred-input" style="width: 100%;">
+            <div class="form-field-wrap">
+              <label for="modal-dev-type" class="form-label">Device Type</label>
+              <select id="modal-dev-type" class="cred-input">
                 <option value="light">Light</option>
                 <option value="switch" selected>Switch</option>
                 <option value="fan">Fan</option>
@@ -1203,15 +1216,15 @@ Reply with a room number (e.g. 1) or 'end' to exit.
                 <option value="other">Other / Relay</option>
               </select>
             </div>
-            <div>
-              <label style="display: block; font-size: 0.825rem; font-weight: 600; margin-bottom: 0.35rem; color: #475569;">Home Assistant Entity*</label>
-              <input id="modal-dev-entity" type="text" list="ha-all-entities-datalist" placeholder="Search entity (e.g. light.living_room_light)..." class="cred-input" style="width: 100%;" />
+            <div class="form-field-wrap">
+              <label for="modal-dev-entity" class="form-label">Home Assistant Entity*</label>
+              <input id="modal-dev-entity" type="text" list="ha-all-entities-datalist" placeholder="Search entity (e.g. light.living_room_light)..." class="cred-input" required />
               <datalist id="ha-all-entities-datalist"></datalist>
             </div>
           </div>
           <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.25rem;">
-            <button id="cancel-device-modal-btn" class="btn btn-ghost">Cancel</button>
-            <button id="save-device-modal-btn" class="btn btn-primary">Save Device</button>
+            <button id="cancel-device-modal-btn" class="btn btn-ghost form-action-btn">Cancel</button>
+            <button id="save-device-modal-btn" class="btn btn-primary form-action-btn">Save Device</button>
           </div>
         </div>
       </div>
