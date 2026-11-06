@@ -1829,6 +1829,11 @@
 
   document.addEventListener('DOMContentLoaded', () => {
     bindEvents();
+    const urlParams = new URLSearchParams(window.location.search);
+    const initialTab = urlParams.get('tab') || window.location.hash.replace(/^#/, '');
+    if (initialTab) {
+      switchTab(initialTab);
+    }
     loadAllData();
     connectWebSocket();
   });

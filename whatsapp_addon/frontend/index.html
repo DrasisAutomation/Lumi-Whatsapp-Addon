@@ -823,31 +823,31 @@
 
               <div class="customizer-form-group">
                 <label for="cfg-remote-triggers" class="customizer-label">Remote Builder Triggers (Comma separated)</label>
-                <input id="cfg-remote-triggers" type="text" class="customizer-input" placeholder="remote, lumi, control, /remote" />
+                <input id="cfg-remote-triggers" type="text" class="customizer-input" value="remote, lumi, control, /remote" placeholder="remote, lumi, control, /remote" />
                 <span class="field-hint">Triggers that start the interactive smart home remote menu.</span>
               </div>
 
               <div class="customizer-form-group">
                 <label for="cfg-cast-triggers" class="customizer-label">Speaker Cast Triggers (Comma separated)</label>
-                <input id="cfg-cast-triggers" type="text" class="customizer-input" placeholder="cast, broadcast, speak, /cast" />
+                <input id="cfg-cast-triggers" type="text" class="customizer-input" value="cast, broadcast, speak, /cast" placeholder="cast, broadcast, speak, /cast" />
                 <span class="field-hint">Triggers that start the voice note and audio broadcast flow.</span>
               </div>
 
               <div class="customizer-form-group">
                 <label for="cfg-end-triggers" class="customizer-label">Exit / End Triggers (Comma separated)</label>
-                <input id="cfg-end-triggers" type="text" class="customizer-input" placeholder="end, exit, /end, stop, quit, close" />
+                <input id="cfg-end-triggers" type="text" class="customizer-input" value="end, exit, /end, stop, quit, close" placeholder="end, exit, /end, stop, quit, close" />
                 <span class="field-hint">Keywords to close the active session.</span>
               </div>
 
               <div class="customizer-form-group">
                 <label for="cfg-back-triggers" class="customizer-label">Back / Navigation Triggers (Comma separated)</label>
-                <input id="cfg-back-triggers" type="text" class="customizer-input" placeholder="back, /back, rooms, menu" />
+                <input id="cfg-back-triggers" type="text" class="customizer-input" value="back, /back, rooms, menu" placeholder="back, /back, rooms, menu" />
                 <span class="field-hint">Keywords to return to room selection from device menu.</span>
               </div>
 
               <div class="customizer-form-group">
                 <label for="cfg-help-triggers" class="customizer-label">Help Triggers (Comma separated)</label>
-                <input id="cfg-help-triggers" type="text" class="customizer-input" placeholder="help, /help, info, commands" />
+                <input id="cfg-help-triggers" type="text" class="customizer-input" value="help, /help, info, commands" placeholder="help, /help, info, commands" />
                 <span class="field-hint">Keywords to display usage instructions.</span>
               </div>
             </div>
@@ -892,7 +892,14 @@
               <!-- TEMPLATE 1: REMOTE GREETING -->
               <div class="customizer-form-group">
                 <label for="tpl-remote-greeting" class="customizer-label">1. Remote Greeting &amp; Room List</label>
-                <textarea id="tpl-remote-greeting" class="customizer-textarea" rows="4"></textarea>
+                <textarea id="tpl-remote-greeting" class="customizer-textarea" rows="4">LUMI SMART HOME REMOTE
+Welcome {{userName}}.
+Select a room by replying with its number:
+
+{{roomList}}
+
+─────────────────────
+Reply with a room number (e.g. 1) or '{{primaryEndTrigger}}' to exit.</textarea>
                 <div class="variable-pill-bar" data-target="tpl-remote-greeting">
                   <span class="variable-tag" data-var="{{userName}}">{{userName}}</span>
                   <span class="variable-tag" data-var="{{roomList}}">{{roomList}}</span>
@@ -903,7 +910,16 @@
               <!-- TEMPLATE 2: DEVICE MENU -->
               <div class="customizer-form-group">
                 <label for="tpl-device-menu" class="customizer-label">2. Room Device Control Menu</label>
-                <textarea id="tpl-device-menu" class="customizer-textarea" rows="5"></textarea>
+                <textarea id="tpl-device-menu" class="customizer-textarea" rows="5">{{roomName}} Devices
+User: {{userName}}
+─────────────────────
+{{deviceList}}
+
+─────────────────────
+How to Control:
+• Single device: on 1 | off 1 | ON-1 | off-1
+• Multiple devices: on 1,2,3 | off 1,2
+• Navigation: '{{primaryBackTrigger}}' (Rooms) | '{{primaryEndTrigger}}' (Exit)</textarea>
                 <div class="variable-pill-bar" data-target="tpl-device-menu">
                   <span class="variable-tag" data-var="{{userName}}">{{userName}}</span>
                   <span class="variable-tag" data-var="{{roomName}}">{{roomName}}</span>
@@ -916,7 +932,13 @@
               <!-- TEMPLATE 3: ACTION RESULT -->
               <div class="customizer-form-group">
                 <label for="tpl-action-result" class="customizer-label">3. Device Action Execution Confirmation</label>
-                <textarea id="tpl-action-result" class="customizer-textarea" rows="4"></textarea>
+                <textarea id="tpl-action-result" class="customizer-textarea" rows="4">{{roomName}}
+Updated by {{userName}}:
+─────────────────────
+{{results}}
+
+─────────────────────
+Control more devices, '{{primaryBackTrigger}}' for rooms, or '{{primaryEndTrigger}}' to exit.</textarea>
                 <div class="variable-pill-bar" data-target="tpl-action-result">
                   <span class="variable-tag" data-var="{{userName}}">{{userName}}</span>
                   <span class="variable-tag" data-var="{{roomName}}">{{roomName}}</span>
@@ -929,7 +951,11 @@
               <!-- TEMPLATE 4: CAST GREETING -->
               <div class="customizer-form-group">
                 <label for="tpl-cast-greeting" class="customizer-label">4. Voice / Audio Cast Prompt</label>
-                <textarea id="tpl-cast-greeting" class="customizer-textarea" rows="4"></textarea>
+                <textarea id="tpl-cast-greeting" class="customizer-textarea" rows="4">LUMI SPEAKER BROADCAST
+Hello {{userName}}.
+Please record a Voice Note or send an Audio File (.mp3, .ogg, .m4a) to play on your smart home speakers.
+─────────────────────
+Type '{{primaryEndTrigger}}' to exit.</textarea>
                 <div class="variable-pill-bar" data-target="tpl-cast-greeting">
                   <span class="variable-tag" data-var="{{userName}}">{{userName}}</span>
                   <span class="variable-tag" data-var="{{primaryEndTrigger}}">{{primaryEndTrigger}}</span>
@@ -939,7 +965,18 @@
               <!-- TEMPLATE 5: CAST SELECT SPEAKER -->
               <div class="customizer-form-group">
                 <label for="tpl-cast-select-speaker" class="customizer-label">5. Speaker Selection Menu</label>
-                <textarea id="tpl-cast-select-speaker" class="customizer-textarea" rows="5"></textarea>
+                <textarea id="tpl-cast-select-speaker" class="customizer-textarea" rows="5">Audio Received! Select Speaker:
+User: {{userName}}
+─────────────────────
+{{speakerList}}
+
+─────────────────────
+How to Play:
+• Single: 1 (or play 1)
+• Multiple: 1,2 (or play 1,2)
+• All speakers: play all
+• Audio plays at speaker's current volume.
+• Type '{{primaryEndTrigger}}' to exit.</textarea>
                 <div class="variable-pill-bar" data-target="tpl-cast-select-speaker">
                   <span class="variable-tag" data-var="{{userName}}">{{userName}}</span>
                   <span class="variable-tag" data-var="{{speakerList}}">{{speakerList}}</span>
@@ -950,7 +987,11 @@
               <!-- TEMPLATE 6: CAST SUCCESS -->
               <div class="customizer-form-group">
                 <label for="tpl-cast-success" class="customizer-label">6. Speaker Broadcast Confirmation</label>
-                <textarea id="tpl-cast-success" class="customizer-textarea" rows="4"></textarea>
+                <textarea id="tpl-cast-success" class="customizer-textarea" rows="4">Broadcast Active:
+Target: {{speakerName}}
+Requested by: {{userName}}
+Volume: Current Speaker Volume
+Status: Playing Now</textarea>
                 <div class="variable-pill-bar" data-target="tpl-cast-success">
                   <span class="variable-tag" data-var="{{userName}}">{{userName}}</span>
                   <span class="variable-tag" data-var="{{speakerName}}">{{speakerName}}</span>
@@ -960,7 +1001,12 @@
               <!-- TEMPLATE 7: ACCESS DENIED -->
               <div class="customizer-form-group">
                 <label for="tpl-access-denied" class="customizer-label">7. Access Denied (Unauthorized Number)</label>
-                <textarea id="tpl-access-denied" class="customizer-textarea" rows="4"></textarea>
+                <textarea id="tpl-access-denied" class="customizer-textarea" rows="4">Access Denied:
+WhatsApp ID / Phone (+{{userPhone}}) is not authorized.
+
+To authorize:
+1. Open Lumi Whatsapp Web UI > Authorized Numbers
+2. Add {{userPhone}}</textarea>
                 <div class="variable-pill-bar" data-target="tpl-access-denied">
                   <span class="variable-tag" data-var="{{userPhone}}">{{userPhone}}</span>
                 </div>
@@ -969,7 +1015,8 @@
               <!-- TEMPLATE 8: SESSION ENDED -->
               <div class="customizer-form-group">
                 <label for="tpl-session-ended" class="customizer-label">8. Session Terminated</label>
-                <textarea id="tpl-session-ended" class="customizer-textarea" rows="3"></textarea>
+                <textarea id="tpl-session-ended" class="customizer-textarea" rows="3">Session Ended.
+Thank you {{userName}}! Send '{{primaryRemoteTrigger}}' anytime to control devices.</textarea>
                 <div class="variable-pill-bar" data-target="tpl-session-ended">
                   <span class="variable-tag" data-var="{{userName}}">{{userName}}</span>
                   <span class="variable-tag" data-var="{{primaryRemoteTrigger}}">{{primaryRemoteTrigger}}</span>
@@ -979,7 +1026,13 @@
               <!-- TEMPLATE 9: HELP TEXT -->
               <div class="customizer-form-group">
                 <label for="tpl-help-text" class="customizer-label">9. Help &amp; Commands Guide</label>
-                <textarea id="tpl-help-text" class="customizer-textarea" rows="5"></textarea>
+                <textarea id="tpl-help-text" class="customizer-textarea" rows="5">Lumi Remote Commands:
+• {{primaryRemoteTrigger}} - Open main smart home menu
+• 1, 2, 3... - Select room number
+• on 1 / off 1 - Toggle device #1
+• on 1,2,3 / off 1,2,3 - Toggle multiple
+• {{primaryBackTrigger}} - Go back to room list
+• {{primaryEndTrigger}} - Exit remote session</textarea>
                 <div class="variable-pill-bar" data-target="tpl-help-text">
                   <span class="variable-tag" data-var="{{primaryRemoteTrigger}}">{{primaryRemoteTrigger}}</span>
                   <span class="variable-tag" data-var="{{primaryBackTrigger}}">{{primaryBackTrigger}}</span>
