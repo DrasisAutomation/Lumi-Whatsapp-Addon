@@ -15,7 +15,8 @@ function formatNum(n) {
 
 const DEFAULT_TEMPLATES = {
   remoteGreeting: "LUMI SMART HOME REMOTE\nWelcome {{userName}}.\nSelect a room by replying with its number:\n\n{{roomList}}\n\n─────────────────────\nReply with a room number (e.g. 1) or '{{primaryEndTrigger}}' to exit.",
-  deviceMenu: "{{roomName}} Devices\nUser: {{userName}}\n─────────────────────\n{{deviceList}}\n\n─────────────────────\nHow to Control:\n• Single device: on 1 | off 1 | ON-1 | off-1\n• Multiple devices: on 1,2,3 | off 1,2\n• Navigation: '{{primaryBackTrigger}}' (Rooms) | '{{primaryEndTrigger}}' (Exit)",
+  deviceMenu: "{{roomName}} Devices\nUser: {{userName}}\n─────────────────────\n{{deviceList}}\n\n─────────────────────\nHow to Control:\n• On / Off: on 1 | off 1 | ON-1\n• Curtains: open 1 | close 1 | stop 1 | 1 50%\n• Brightness & Color: dim 1 40% | color 1 blue | warm 1\n• AC & Climate: temp 1 24 | cool 22\n• Or reply with device number (e.g. 1) for detailed controls!\n• Navigation: '{{primaryBackTrigger}}' (Rooms) | '{{primaryEndTrigger}}' (Exit)",
+  deviceSubmenu: "{{deviceName}} [{{deviceStatus}}]\nRoom: {{roomName}}\n─────────────────────\nControls for this device:\n{{controlHints}}\n\n─────────────────────\nReply with an action above, '{{primaryBackTrigger}}' for room devices, or '{{primaryEndTrigger}}' to exit.",
   actionResult: "{{roomName}}\nUpdated by {{userName}}:\n─────────────────────\n{{results}}\n\n─────────────────────\nControl more devices, '{{primaryBackTrigger}}' for rooms, or '{{primaryEndTrigger}}' to exit.",
   castGreeting: "LUMI SPEAKER BROADCAST\nHello {{userName}}.\nPlease record a Voice Note or send an Audio File (.mp3, .ogg, .m4a) to play on your smart home speakers.\n─────────────────────\nType '{{primaryEndTrigger}}' to exit.",
   castSelectSpeaker: "Audio Received! Select Speaker:\nUser: {{userName}}\n─────────────────────\n{{speakerList}}\n\n─────────────────────\nHow to Play:\n• Single: 1 (or play 1, play-1)\n• Multiple: 1,2 (or play 1,2, play-1,2,4)\n• All speakers: play all (or all)\n• Audio plays at speaker's current volume.\n• Type '{{primaryEndTrigger}}' to exit.",
@@ -434,6 +435,36 @@ class InteractiveBot {
       return this._showRoomDevices(session, room);
     }
 
+    // State: Device Submenu (Drill-down parameter control for a single device)
+    if (session.state === 'DEVICE_SUBMENU') {
+      const room = rooms.find((r) => r.id === session.currentRoomId);
+      if (!room) {
+        return this._startRemoteSession(clientId, phone);
+      }
+
+      // Back trigger returns to device list for this room
+      if (this._matchesTrigger(rawText, settings.backTriggers)) {
+        return this._showRoomDevices(session, room);
+      }
+
+      const dev = (room.devices || []).find((d) => d.entityId === session.selectedDeviceId);
+      if (!dev) {
+        return this._showRoomDevices(session, room);
+      }
+
+      const action = this._parseSubmenuCommand(rawText, dev);
+      if (!action) {
+        const invalidCmdMsg = this._render('invalidChoice', { userName });
+        return this._sendMessage(clientId, phone, invalidCmdMsg);
+      }
+
+      const resText = await this._executeParsedAction(dev, action);
+      const resultMsg = `${room.name}\nUpdated by ${userName}:\n─────────────────────\n• ${resText}\n\n─────────────────────\nControl more devices, '${settings.backTriggers?.[0] || 'back'}' for rooms, or '${settings.endTriggers?.[0] || 'end'}' to exit.`;
+
+      this._setSession(phone, session);
+      return this._sendMessage(clientId, phone, resultMsg);
+    }
+
     // State: Device Control inside a Room
     if (session.state === 'DEVICE_CONTROL') {
       // Check back triggers to return to room list
@@ -451,6 +482,7 @@ class InteractiveBot {
           ...session,
           state: 'ROOM_SELECT',
           currentRoomId: null,
+          selectedDeviceId: null,
         });
         return this._sendMessage(clientId, phone, backPrompt);
       }
@@ -460,53 +492,64 @@ class InteractiveBot {
         return this._startRemoteSession(clientId, phone);
       }
 
-      // Parse commands: on 1, ON-1, on-1, on 1,2,3, off 1, OFF-2, etc.
-      const match = rawText.match(/^(on|off)[\s-]*([0-9,\s]+)$/i);
-      if (!match) {
+      const devices = room.devices || [];
+
+      // 1. Drill-down check: single number e.g. "1" or "#1"
+      const singleNumMatch = rawText.match(/^#?([0-9]+)$/);
+      if (singleNumMatch) {
+        const idx = parseInt(singleNumMatch[1], 10);
+        if (idx >= 1 && idx <= devices.length) {
+          return this._showDeviceSubmenu(session, room, devices[idx - 1]);
+        }
+      }
+
+      // 2. Parse commands (on/off, open/close, dim/bright, color, temp, etc.)
+      const parsed = this._parseDeviceCommand(rawText, devices);
+      if (!parsed) {
         const invalidCmdMsg = this._render('invalidChoice', { userName });
         return this._sendMessage(clientId, phone, invalidCmdMsg);
       }
 
-      const action = match[1].toLowerCase(); // 'on' or 'off'
-      const indices = match[2]
-        .split(',')
-        .map((s) => parseInt(s.trim(), 10))
-        .filter((n) => !isNaN(n));
-
-      const devices = room.devices || [];
-      const validTargets = [];
-      const invalidIndices = [];
-
-      for (const idx of indices) {
-        if (idx >= 1 && idx <= devices.length) {
-          validTargets.push(devices[idx - 1]);
-        } else {
-          invalidIndices.push(idx);
-        }
-      }
-
-      if (validTargets.length === 0) {
-        const errPrompt = `Invalid Device Number: Please select between 1 and ${devices.length} (e.g. ${action} 1 or ${action} 1,2).`;
-        return this._sendMessage(clientId, phone, errPrompt);
-      }
-
-      // Execute action for each target device
-      for (const dev of validTargets) {
-        if (action === 'on') {
-          await this.haClient.turnOn(dev.entityId);
-        } else {
-          await this.haClient.turnOff(dev.entityId);
-        }
-      }
-
-      // Format execution response
       let resultsText = '';
-      if (validTargets.length === 1) {
-        resultsText = `• ${validTargets[0].name}: turned ${action.toUpperCase()}`;
-      } else {
-        resultsText = validTargets
-          .map((d) => `• ${d.name}: turned ${action.toUpperCase()}`)
+
+      if (parsed.kind === 'multi_power') {
+        for (const dev of parsed.devices) {
+          if (parsed.action === 'on') {
+            await this.haClient.turnOn(dev.entityId);
+          } else {
+            await this.haClient.turnOff(dev.entityId);
+          }
+        }
+        resultsText = parsed.devices
+          .map((d) => `• ${d.name}: turned ${parsed.action.toUpperCase()}`)
           .join('\n');
+      } else if (parsed.kind === 'cover_multi') {
+        const cmdUpper = parsed.cmd.toUpperCase();
+        for (const dev of parsed.devices) {
+          if (parsed.cmd === 'open') {
+            if (typeof this.haClient.openCover === 'function') {
+              await this.haClient.openCover(dev.entityId);
+            } else {
+              await this.haClient.turnOn(dev.entityId);
+            }
+          } else if (parsed.cmd === 'close') {
+            if (typeof this.haClient.closeCover === 'function') {
+              await this.haClient.closeCover(dev.entityId);
+            } else {
+              await this.haClient.turnOff(dev.entityId);
+            }
+          } else {
+            if (typeof this.haClient.stopCover === 'function') {
+              await this.haClient.stopCover(dev.entityId);
+            }
+          }
+        }
+        resultsText = parsed.devices
+          .map((d) => `• ${d.name}: ${cmdUpper === 'OPEN' ? 'opened' : (cmdUpper === 'CLOSE' ? 'closed' : 'stopped')}`)
+          .join('\n');
+      } else if (parsed.kind === 'single_action') {
+        const res = await this._executeParsedAction(parsed.device, parsed.action);
+        resultsText = `• ${res}`;
       }
 
       const resultMsg = this._render('actionResult', {
@@ -519,6 +562,47 @@ class InteractiveBot {
       this._setSession(phone, session);
       return this._sendMessage(clientId, phone, resultMsg);
     }
+  }
+
+  _formatDeviceState(dev, st) {
+    if (!st || st.state === 'unavailable' || st.state === 'unknown') {
+      return 'OFF';
+    }
+    const domain = dev.entityId ? dev.entityId.split('.')[0] : (dev.type || '');
+    const rawState = String(st.state || '').toLowerCase();
+    const attrs = st.attributes || {};
+
+    if (domain === 'cover') {
+      if (attrs.current_position !== undefined && attrs.current_position !== null) {
+        const pos = Math.round(Number(attrs.current_position));
+        if (pos === 0) return 'Closed';
+        return `Open - ${pos}%`;
+      }
+      return rawState === 'open' ? 'Open' : (rawState === 'closed' ? 'Closed' : rawState.toUpperCase());
+    }
+
+    if (domain === 'light') {
+      if (rawState === 'on') {
+        if (attrs.brightness !== undefined && attrs.brightness !== null) {
+          const pct = Math.max(1, Math.min(100, Math.round((Number(attrs.brightness) / 255) * 100)));
+          return `ON - ${pct}%`;
+        }
+        return 'ON';
+      }
+      return 'OFF';
+    }
+
+    if (domain === 'climate') {
+      if (rawState === 'off') {
+        return 'OFF';
+      }
+      const mode = rawState.toUpperCase();
+      const targetTemp = attrs.temperature !== undefined && attrs.temperature !== null ? `${attrs.temperature}°C` : '';
+      return targetTemp ? `${mode} - ${targetTemp}` : mode;
+    }
+
+    if (rawState === 'on' || rawState === 'playing') return 'ON';
+    return 'OFF';
   }
 
   async _showRoomDevices(session, room) {
@@ -543,9 +627,7 @@ class InteractiveBot {
       let stateStr = 'OFF';
       try {
         const st = await this.haClient.getEntityState(dev.entityId);
-        if (st && (st.state === 'on' || st.state === 'playing' || st.state === 'open')) {
-          stateStr = 'ON';
-        }
+        stateStr = this._formatDeviceState(dev, st);
       } catch {
         stateStr = 'OFF';
       }
@@ -562,9 +644,456 @@ class InteractiveBot {
       ...session,
       state: 'DEVICE_CONTROL',
       currentRoomId: room.id,
+      selectedDeviceId: null,
     });
 
     return this._sendMessage(session.clientId, session.phone, prompt);
+  }
+
+  async _showDeviceSubmenu(session, room, dev) {
+    const domain = dev.entityId ? dev.entityId.split('.')[0] : (dev.type || '');
+    let st = null;
+    try {
+      st = await this.haClient.getEntityState(dev.entityId);
+    } catch {
+      st = null;
+    }
+    const deviceStatus = this._formatDeviceState(dev, st);
+    const settings = this._getSettings();
+    const userName = session.userName || this._getUserName(session.clientId, session.phone, session.replyTarget);
+
+    let controlHints = '';
+    if (domain === 'cover') {
+      controlHints =
+`• Open: 'open' | 'open 100%'
+• Close: 'close' | 'close 0%'
+• Stop: 'stop'
+• Set Position: '50%' | 'pos 50%' | '25%'`;
+    } else if (domain === 'light') {
+      controlHints =
+`• Power: 'on' | 'off'
+• Brightness: '30%' | 'dim 20%' | 'bright 80%'
+• Color: 'red' | 'blue' | 'green' | 'warm' | 'cool' | 'white'
+• Color Temp: 'temp 3000k' | '2700k'`;
+    } else if (domain === 'climate') {
+      controlHints =
+`• Power: 'on' | 'off'
+• Set Temp: '24' | 'temp 24' | '22.5'
+• Mode: 'cool' | 'heat' | 'fan' | 'auto'
+• Quick combo: 'cool 22' | 'heat 25'`;
+    } else {
+      controlHints =
+`• Power: 'on' | 'off'
+• Toggle: 'toggle'`;
+    }
+
+    const prompt = this._render('deviceSubmenu', {
+      userName,
+      roomName: room.name,
+      deviceName: dev.name,
+      deviceStatus,
+      controlHints,
+    });
+
+    this._setSession(session.phone, {
+      ...session,
+      state: 'DEVICE_SUBMENU',
+      currentRoomId: room.id,
+      selectedDeviceId: dev.entityId,
+      selectedDeviceName: dev.name,
+    });
+
+    return this._sendMessage(session.clientId, session.phone, prompt);
+  }
+
+  _parseDeviceCommand(rawText, devices = []) {
+    if (!rawText || !devices.length) return null;
+    const text = rawText.trim();
+
+    // 1. Check Standard On / Off (single or multi): on 1, off 1, ON-1, on 1,2,3, off 1,2
+    const onOffMatch = text.match(/^(on|off)[\s-]*([0-9,\s]+)$/i);
+    if (onOffMatch) {
+      const action = onOffMatch[1].toLowerCase();
+      const indices = onOffMatch[2]
+        .split(',')
+        .map((s) => parseInt(s.trim(), 10))
+        .filter((n) => !isNaN(n));
+
+      const validTargets = [];
+      for (const idx of indices) {
+        if (idx >= 1 && idx <= devices.length) {
+          validTargets.push(devices[idx - 1]);
+        }
+      }
+      if (validTargets.length > 0) {
+        return {
+          kind: 'multi_power',
+          action,
+          devices: validTargets,
+        };
+      }
+    }
+
+    // 2. Open / Close / Stop (Curtains / Covers)
+    // e.g. open 1, close 1, stop 1, open-1, close-2, open 1,2, close 1,2
+    const coverBasicMatch = text.match(/^(open|close|stop)[\s-]*([0-9,\s]+)$/i);
+    if (coverBasicMatch) {
+      const cmd = coverBasicMatch[1].toLowerCase();
+      const indices = coverBasicMatch[2]
+        .split(',')
+        .map((s) => parseInt(s.trim(), 10))
+        .filter((n) => !isNaN(n));
+
+      const validTargets = [];
+      for (const idx of indices) {
+        if (idx >= 1 && idx <= devices.length) {
+          validTargets.push(devices[idx - 1]);
+        }
+      }
+      if (validTargets.length > 0) {
+        return {
+          kind: 'cover_multi',
+          cmd, // 'open' | 'close' | 'stop'
+          devices: validTargets,
+        };
+      }
+    }
+
+    // 3. Cover Position: open 1 50%, pos 1 50%, pos-1 50%, position 1 50%, curtain 1 50%, curtain-1 50%
+    const coverPosMatch = text.match(/^(?:pos|position|curtain|open|close)[\s-]*([0-9]+)[\s-]+([0-9]{1,3})%?$/i);
+    if (coverPosMatch) {
+      const idx = parseInt(coverPosMatch[1], 10);
+      const pos = Math.max(0, Math.min(100, parseInt(coverPosMatch[2], 10)));
+      if (idx >= 1 && idx <= devices.length) {
+        return {
+          kind: 'single_action',
+          device: devices[idx - 1],
+          action: { kind: 'cover_position', position: pos },
+        };
+      }
+    }
+
+    // 4. Light Brightness: dim 1 30%, bright 1 80%, brightness 1 50%, dim-1 30%
+    const dimMatch = text.match(/^(?:dim|bright|brightness)[\s-]*([0-9]+)[\s-]+([0-9]{1,3})%?$/i);
+    if (dimMatch) {
+      const idx = parseInt(dimMatch[1], 10);
+      const pct = Math.max(0, Math.min(100, parseInt(dimMatch[2], 10)));
+      if (idx >= 1 && idx <= devices.length) {
+        return {
+          kind: 'single_action',
+          device: devices[idx - 1],
+          action: { kind: 'light_brightness', pct },
+        };
+      }
+    }
+
+    // 5. Percentage Shorthand: e.g. "1 50%" or "1 50" (if target device is cover or light)
+    const shorthandPctMatch = text.match(/^([0-9]+)[\s-]+([0-9]{1,3})%?$/);
+    if (shorthandPctMatch) {
+      const idx = parseInt(shorthandPctMatch[1], 10);
+      const val = Math.max(0, Math.min(100, parseInt(shorthandPctMatch[2], 10)));
+      if (idx >= 1 && idx <= devices.length) {
+        const dev = devices[idx - 1];
+        const domain = dev.entityId ? dev.entityId.split('.')[0] : (dev.type || '');
+        if (domain === 'cover') {
+          return {
+            kind: 'single_action',
+            device: dev,
+            action: { kind: 'cover_position', position: val },
+          };
+        } else if (domain === 'light') {
+          return {
+            kind: 'single_action',
+            device: dev,
+            action: { kind: 'light_brightness', pct: val },
+          };
+        }
+      }
+    }
+
+    // 6. Color commands: color 1 blue, color-1 red, color 1 green
+    const colorMatch = text.match(/^color[\s-]*([0-9]+)[\s-]+([a-z_]+|#[0-9a-f]{3,6})$/i);
+    if (colorMatch) {
+      const idx = parseInt(colorMatch[1], 10);
+      const color = colorMatch[2].toLowerCase();
+      if (idx >= 1 && idx <= devices.length) {
+        return {
+          kind: 'single_action',
+          device: devices[idx - 1],
+          action: { kind: 'light_color', color },
+        };
+      }
+    }
+
+    // 7. Warm / Cool / White shortcuts: warm 1, cool 1, white 1, warm-1, cool-1, white-1
+    const warmCoolMatch = text.match(/^(warm|cool|white)[\s-]*([0-9]+)$/i);
+    if (warmCoolMatch) {
+      const type = warmCoolMatch[1].toLowerCase();
+      const idx = parseInt(warmCoolMatch[2], 10);
+      if (idx >= 1 && idx <= devices.length) {
+        let kelvin = 3000;
+        let label = 'Warm White (2700K)';
+        if (type === 'warm') { kelvin = 2700; label = 'Warm White (2700K)'; }
+        else if (type === 'cool') { kelvin = 5000; label = 'Cool White (5000K)'; }
+        else if (type === 'white') { kelvin = 4000; label = 'Neutral White (4000K)'; }
+        return {
+          kind: 'single_action',
+          device: devices[idx - 1],
+          action: { kind: 'light_temp', kelvin, label },
+        };
+      }
+    }
+
+    // 8. Temp commands: temp 1 3000k (light) OR temp 1 24 (climate)
+    const tempMatch = text.match(/^(?:temp|temperature)[\s-]*([0-9]+)[\s-]+([0-9]+(?:\.[0-9]+)?)(?:c|k)?$/i);
+    if (tempMatch) {
+      const idx = parseInt(tempMatch[1], 10);
+      const val = parseFloat(tempMatch[2]);
+      if (idx >= 1 && idx <= devices.length) {
+        const dev = devices[idx - 1];
+        const domain = dev.entityId ? dev.entityId.split('.')[0] : (dev.type || '');
+        if (domain === 'light' || val > 1000) {
+          const kelvin = val < 1000 ? 3000 : Math.round(val);
+          return {
+            kind: 'single_action',
+            device: dev,
+            action: { kind: 'light_temp', kelvin, label: `${kelvin}K` },
+          };
+        } else {
+          return {
+            kind: 'single_action',
+            device: dev,
+            action: { kind: 'climate_temp', temp: val },
+          };
+        }
+      }
+    }
+
+    // 9. Climate Modes: cool 1 22, cool 1, heat 1 26, heat 1, fan 1, mode 1 cool
+    const climateModeMatch = text.match(/^(cool|heat|fan|auto|mode)[\s-]*([0-9]+)(?:[\s-]+([a-z]+|[0-9]+(?:\.[0-9]+)?))?$/i);
+    if (climateModeMatch) {
+      const rawMode = climateModeMatch[1].toLowerCase();
+      const idx = parseInt(climateModeMatch[2], 10);
+      const extra = climateModeMatch[3] ? climateModeMatch[3].toLowerCase() : null;
+
+      if (idx >= 1 && idx <= devices.length) {
+        const dev = devices[idx - 1];
+        let mode = rawMode === 'mode' ? extra : (rawMode === 'fan' ? 'fan_only' : rawMode);
+        let temp = null;
+        if (extra && !isNaN(parseFloat(extra))) {
+          temp = parseFloat(extra);
+        }
+        return {
+          kind: 'single_action',
+          device: dev,
+          action: { kind: 'climate_mode', mode: mode || 'cool', temp },
+        };
+      }
+    }
+
+    // 10. Room-wide Climate Shorthand: "ac 24", "ac cool 22", "ac off"
+    const acMatch = text.match(/^ac[\s-]+([a-z]+|[0-9]+(?:\.[0-9]+)?)(?:[\s-]+([0-9]+(?:\.[0-9]+)?))?$/i);
+    if (acMatch) {
+      // Find first climate device in this room
+      const climateDev = devices.find((d) => (d.entityId && d.entityId.startsWith('climate.')) || d.type === 'climate');
+      if (climateDev) {
+        const p1 = acMatch[1].toLowerCase();
+        const p2 = acMatch[2] ? parseFloat(acMatch[2]) : null;
+        if (!isNaN(parseFloat(p1))) {
+          return {
+            kind: 'single_action',
+            device: climateDev,
+            action: { kind: 'climate_temp', temp: parseFloat(p1) },
+          };
+        } else if (p1 === 'off') {
+          return {
+            kind: 'single_action',
+            device: climateDev,
+            action: { kind: 'turn_off' },
+          };
+        } else {
+          return {
+            kind: 'single_action',
+            device: climateDev,
+            action: { kind: 'climate_mode', mode: p1 === 'fan' ? 'fan_only' : p1, temp: p2 },
+          };
+        }
+      }
+    }
+
+    return null;
+  }
+
+  _parseSubmenuCommand(rawText, dev) {
+    if (!rawText || !dev) return null;
+    const text = rawText.trim().toLowerCase();
+    const domain = dev.entityId ? dev.entityId.split('.')[0] : (dev.type || '');
+
+    // 1. Universal Power on / off
+    if (text === 'on') {
+      return { kind: 'turn_on' };
+    }
+    if (text === 'off') {
+      return { kind: 'turn_off' };
+    }
+
+    // 2. Cover / Curtains
+    if (domain === 'cover') {
+      if (text === 'open') return { kind: 'cover_open' };
+      if (text === 'close') return { kind: 'cover_close' };
+      if (text === 'stop') return { kind: 'cover_stop' };
+
+      const posMatch = text.match(/^(?:pos|position|open)?[\s-]*([0-9]{1,3})%?$/i);
+      if (posMatch) {
+        const val = Math.max(0, Math.min(100, parseInt(posMatch[1], 10)));
+        return { kind: 'cover_position', position: val };
+      }
+    }
+
+    // 3. Light
+    if (domain === 'light') {
+      // Percent brightness: 50%, 50, dim 30%, bright 80%
+      const brMatch = text.match(/^(?:dim|bright|brightness)?[\s-]*([0-9]{1,3})%?$/i);
+      if (brMatch) {
+        const val = Math.max(0, Math.min(100, parseInt(brMatch[1], 10)));
+        return { kind: 'light_brightness', pct: val };
+      }
+
+      // Color names: red, blue, green, etc.
+      const colors = ['red', 'green', 'blue', 'yellow', 'orange', 'purple', 'pink', 'cyan', 'magenta', 'white', 'gold'];
+      if (colors.includes(text) || text.startsWith('#')) {
+        return { kind: 'light_color', color: text };
+      }
+
+      // Warm / Cool
+      if (text === 'warm' || text === 'warm white') {
+        return { kind: 'light_temp', kelvin: 2700, label: 'Warm White (2700K)' };
+      }
+      if (text === 'cool' || text === 'cool white') {
+        return { kind: 'light_temp', kelvin: 5000, label: 'Cool White (5000K)' };
+      }
+
+      // Temperature Kelvin: 3000k, 2700k, temp 3000k
+      const kMatch = text.match(/^(?:temp)?[\s-]*([0-9]{4})k?$/i);
+      if (kMatch) {
+        const kelvin = parseInt(kMatch[1], 10);
+        return { kind: 'light_temp', kelvin, label: `${kelvin}K` };
+      }
+    }
+
+    // 4. Climate
+    if (domain === 'climate') {
+      // Numeric temp: 24, 24c, 24°c, temp 24
+      const tMatch = text.match(/^(?:temp|temperature)?[\s-]*([0-9]{2}(?:\.[0-9]+)?)(?:c|°c)?$/i);
+      if (tMatch) {
+        return { kind: 'climate_temp', temp: parseFloat(tMatch[1]) };
+      }
+
+      // Mode: cool, heat, fan, auto, cool 22, heat 26
+      const cmMatch = text.match(/^(cool|heat|fan|auto)(?:[\s-]+([0-9]{2}(?:\.[0-9]+)?))?$/i);
+      if (cmMatch) {
+        const mode = cmMatch[1].toLowerCase() === 'fan' ? 'fan_only' : cmMatch[1].toLowerCase();
+        const temp = cmMatch[2] ? parseFloat(cmMatch[2]) : null;
+        return { kind: 'climate_mode', mode, temp };
+      }
+    }
+
+    return null;
+  }
+
+  async _executeParsedAction(dev, action) {
+    const domain = dev.entityId ? dev.entityId.split('.')[0] : (dev.type || '');
+
+    switch (action.kind) {
+      case 'turn_on': {
+        if (domain === 'cover' && typeof this.haClient.openCover === 'function') {
+          await this.haClient.openCover(dev.entityId);
+          return `${dev.name}: opened`;
+        }
+        await this.haClient.turnOn(dev.entityId);
+        return `${dev.name}: turned ON`;
+      }
+      case 'turn_off': {
+        if (domain === 'cover' && typeof this.haClient.closeCover === 'function') {
+          await this.haClient.closeCover(dev.entityId);
+          return `${dev.name}: closed`;
+        }
+        await this.haClient.turnOff(dev.entityId);
+        return `${dev.name}: turned OFF`;
+      }
+      case 'cover_open': {
+        if (typeof this.haClient.openCover === 'function') {
+          await this.haClient.openCover(dev.entityId);
+        } else {
+          await this.haClient.turnOn(dev.entityId);
+        }
+        return `${dev.name}: opened`;
+      }
+      case 'cover_close': {
+        if (typeof this.haClient.closeCover === 'function') {
+          await this.haClient.closeCover(dev.entityId);
+        } else {
+          await this.haClient.turnOff(dev.entityId);
+        }
+        return `${dev.name}: closed`;
+      }
+      case 'cover_stop': {
+        if (typeof this.haClient.stopCover === 'function') {
+          await this.haClient.stopCover(dev.entityId);
+        }
+        return `${dev.name}: stopped`;
+      }
+      case 'cover_position': {
+        if (typeof this.haClient.setCoverPosition === 'function') {
+          await this.haClient.setCoverPosition(dev.entityId, action.position);
+        }
+        return `${dev.name}: position set to ${action.position}%`;
+      }
+      case 'light_brightness': {
+        if (typeof this.haClient.setLight === 'function') {
+          await this.haClient.setLight(dev.entityId, { brightness_pct: action.pct });
+        } else {
+          await this.haClient.turnOn(dev.entityId, { brightness_pct: action.pct });
+        }
+        return `${dev.name}: brightness set to ${action.pct}%`;
+      }
+      case 'light_color': {
+        if (typeof this.haClient.setLight === 'function') {
+          await this.haClient.setLight(dev.entityId, { color_name: action.color });
+        } else {
+          await this.haClient.turnOn(dev.entityId, { color_name: action.color });
+        }
+        return `${dev.name}: color set to ${action.color}`;
+      }
+      case 'light_temp': {
+        if (typeof this.haClient.setLight === 'function') {
+          await this.haClient.setLight(dev.entityId, { color_temp_kelvin: action.kelvin });
+        } else {
+          await this.haClient.turnOn(dev.entityId, { color_temp_kelvin: action.kelvin });
+        }
+        const label = action.label || `${action.kelvin}K`;
+        return `${dev.name}: warmth set to ${label}`;
+      }
+      case 'climate_temp': {
+        if (typeof this.haClient.setClimate === 'function') {
+          await this.haClient.setClimate(dev.entityId, { temperature: action.temp });
+        }
+        return `${dev.name}: temperature set to ${action.temp}°C`;
+      }
+      case 'climate_mode': {
+        if (typeof this.haClient.setClimate === 'function') {
+          await this.haClient.setClimate(dev.entityId, {
+            hvac_mode: action.mode,
+            temperature: action.temp,
+          });
+        }
+        return `${dev.name}: set to ${action.mode.toUpperCase()}${action.temp ? ` at ${action.temp}°C` : ''}`;
+      }
+      default: {
+        await this.haClient.turnOn(dev.entityId);
+        return `${dev.name}: updated`;
+      }
+    }
   }
 
   // ==========================================

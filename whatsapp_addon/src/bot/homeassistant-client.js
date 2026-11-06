@@ -194,16 +194,86 @@ class HomeAssistantClient {
     }
   }
 
-  async turnOn(entityId) {
+  async turnOn(entityId, attributes = {}) {
     if (!entityId) throw new Error('entity_id is required');
     const domain = entityId.split('.')[0] || 'homeassistant';
-    return this.callService(domain, 'turn_on', { entity_id: entityId });
+    return this.callService(domain, 'turn_on', { entity_id: entityId, ...attributes });
   }
 
   async turnOff(entityId) {
     if (!entityId) throw new Error('entity_id is required');
     const domain = entityId.split('.')[0] || 'homeassistant';
     return this.callService(domain, 'turn_off', { entity_id: entityId });
+  }
+
+  /**
+   * Curtains / Blinds / Covers (cover domain)
+   */
+  async openCover(entityId) {
+    if (!entityId) throw new Error('entity_id is required');
+    return this.callService('cover', 'open_cover', { entity_id: entityId });
+  }
+
+  async closeCover(entityId) {
+    if (!entityId) throw new Error('entity_id is required');
+    return this.callService('cover', 'close_cover', { entity_id: entityId });
+  }
+
+  async stopCover(entityId) {
+    if (!entityId) throw new Error('entity_id is required');
+    return this.callService('cover', 'stop_cover', { entity_id: entityId });
+  }
+
+  async setCoverPosition(entityId, position) {
+    if (!entityId) throw new Error('entity_id is required');
+    const pct = Math.max(0, Math.min(100, Math.round(Number(position))));
+    return this.callService('cover', 'set_cover_position', {
+      entity_id: entityId,
+      position: pct,
+    });
+  }
+
+  /**
+   * Light Brightness, Color & Temperature (light domain)
+   */
+  async setLight(entityId, options = {}) {
+    if (!entityId) throw new Error('entity_id is required');
+    const serviceData = { entity_id: entityId };
+
+    if (options.brightness_pct !== undefined) {
+      serviceData.brightness_pct = Math.max(0, Math.min(100, Math.round(Number(options.brightness_pct))));
+    }
+    if (options.color_name) {
+      serviceData.color_name = String(options.color_name).toLowerCase().trim();
+    }
+    if (options.color_temp_kelvin !== undefined) {
+      serviceData.color_temp_kelvin = Math.round(Number(options.color_temp_kelvin));
+    }
+    if (options.rgb_color && Array.isArray(options.rgb_color)) {
+      serviceData.rgb_color = options.rgb_color;
+    }
+
+    return this.callService('light', 'turn_on', serviceData);
+  }
+
+  /**
+   * Climate / AC / Thermostat (climate domain)
+   */
+  async setClimate(entityId, options = {}) {
+    if (!entityId) throw new Error('entity_id is required');
+    if (options.hvac_mode) {
+      await this.callService('climate', 'set_hvac_mode', {
+        entity_id: entityId,
+        hvac_mode: String(options.hvac_mode).toLowerCase().trim(),
+      });
+    }
+    if (options.temperature !== undefined) {
+      await this.callService('climate', 'set_temperature', {
+        entity_id: entityId,
+        temperature: Number(options.temperature),
+      });
+    }
+    return { success: true };
   }
 
   /**

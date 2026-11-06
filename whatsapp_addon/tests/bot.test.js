@@ -171,6 +171,11 @@ test('InteractiveBot: Full /remote and /cast conversational state machine', asyn
       entityId: 'fan.living_room_fan',
       type: 'fan',
     });
+    await configMgr.addDevice(livingRoom.id, {
+      name: 'Main Curtain',
+      entityId: 'cover.living_room_curtain',
+      type: 'cover',
+    });
 
     const bedroom = await configMgr.addRoom('Master Bedroom');
     await configMgr.addDevice(bedroom.id, {
@@ -193,6 +198,7 @@ test('InteractiveBot: Full /remote and /cast conversational state machine', asyn
       'light.living_room_light': 'off',
       'light.reading_lamp': 'on',
       'fan.living_room_fan': 'off',
+      'cover.living_room_curtain': 'closed',
       'climate.bedroom_ac': 'off',
     };
 
@@ -202,16 +208,45 @@ test('InteractiveBot: Full /remote and /cast conversational state machine', asyn
       getEntityState: async (entityId) => ({
         entity_id: entityId,
         state: statesMap[entityId] || 'off',
-        attributes: {},
+        attributes: entityId === 'cover.living_room_curtain' ? { current_position: statesMap[entityId] === 'open' ? 100 : 0 } : {},
       }),
-      turnOn: async (entityId) => {
+      turnOn: async (entityId, attributes = {}) => {
         statesMap[entityId] = 'on';
-        mockHaClient.serviceCalls.push({ action: 'turn_on', entityId });
+        mockHaClient.serviceCalls.push({ action: 'turn_on', entityId, attributes });
         return { success: true };
       },
       turnOff: async (entityId) => {
         statesMap[entityId] = 'off';
         mockHaClient.serviceCalls.push({ action: 'turn_off', entityId });
+        return { success: true };
+      },
+      openCover: async (entityId) => {
+        statesMap[entityId] = 'open';
+        mockHaClient.serviceCalls.push({ action: 'open_cover', entityId });
+        return { success: true };
+      },
+      closeCover: async (entityId) => {
+        statesMap[entityId] = 'closed';
+        mockHaClient.serviceCalls.push({ action: 'close_cover', entityId });
+        return { success: true };
+      },
+      stopCover: async (entityId) => {
+        mockHaClient.serviceCalls.push({ action: 'stop_cover', entityId });
+        return { success: true };
+      },
+      setCoverPosition: async (entityId, position) => {
+        statesMap[entityId] = 'open';
+        mockHaClient.serviceCalls.push({ action: 'set_cover_position', entityId, position });
+        return { success: true };
+      },
+      setLight: async (entityId, options) => {
+        statesMap[entityId] = 'on';
+        mockHaClient.serviceCalls.push({ action: 'set_light', entityId, options });
+        return { success: true };
+      },
+      setClimate: async (entityId, options) => {
+        statesMap[entityId] = options.hvac_mode || 'cool';
+        mockHaClient.serviceCalls.push({ action: 'set_climate', entityId, options });
         return { success: true };
       },
       playMedia: async (entityId, mediaUrl) => {
@@ -320,6 +355,75 @@ test('InteractiveBot: Full /remote and /cast conversational state machine', asyn
     assert.equal(statesMap['light.living_room_light'], 'off');
     assert.equal(statesMap['light.reading_lamp'], 'off');
 
+    // Step D2: Curtain control: open 4, pos 4 60%, close 4
+    await bot.handleIncomingMessage({
+      clientId: 'c1',
+      sender: '917904598574',
+      text: 'open 4',
+      messageType: 'text',
+    });
+    assert.match(sentReplies[sentReplies.length - 1].text, /Main Curtain: opened/i);
+    assert.equal(statesMap['cover.living_room_curtain'], 'open');
+
+    await bot.handleIncomingMessage({
+      clientId: 'c1',
+      sender: '917904598574',
+      text: 'pos 4 60%',
+      messageType: 'text',
+    });
+    assert.match(sentReplies[sentReplies.length - 1].text, /Main Curtain: position set to 60%/i);
+
+    // Step D3: Light brightness, color & warmth: dim 1 45%, color 1 blue, warm 1
+    await bot.handleIncomingMessage({
+      clientId: 'c1',
+      sender: '917904598574',
+      text: 'dim 1 45%',
+      messageType: 'text',
+    });
+    assert.match(sentReplies[sentReplies.length - 1].text, /Ceiling Light: brightness set to 45%/i);
+
+    await bot.handleIncomingMessage({
+      clientId: 'c1',
+      sender: '917904598574',
+      text: 'color 1 blue',
+      messageType: 'text',
+    });
+    assert.match(sentReplies[sentReplies.length - 1].text, /Ceiling Light: color set to blue/i);
+
+    await bot.handleIncomingMessage({
+      clientId: 'c1',
+      sender: '917904598574',
+      text: 'warm 1',
+      messageType: 'text',
+    });
+    assert.match(sentReplies[sentReplies.length - 1].text, /Ceiling Light: warmth set to Warm White/i);
+
+    // Step D4: Drilldown Sub-menu: reply "4" (Main Curtain), then "50%", then "/back"
+    await bot.handleIncomingMessage({
+      clientId: 'c1',
+      sender: '917904598574',
+      text: '4',
+      messageType: 'text',
+    });
+    assert.match(sentReplies[sentReplies.length - 1].text, /Main Curtain/i);
+    assert.match(sentReplies[sentReplies.length - 1].text, /Controls for this device/i);
+
+    await bot.handleIncomingMessage({
+      clientId: 'c1',
+      sender: '917904598574',
+      text: '50%',
+      messageType: 'text',
+    });
+    assert.match(sentReplies[sentReplies.length - 1].text, /Main Curtain: position set to 50%/i);
+
+    await bot.handleIncomingMessage({
+      clientId: 'c1',
+      sender: '917904598574',
+      text: '/back',
+      messageType: 'text',
+    });
+    assert.match(sentReplies[sentReplies.length - 1].text, /Living Room Devices/i);
+
     // Step E: Navigation /back returns to room list
     await bot.handleIncomingMessage({
       clientId: 'c1',
@@ -327,9 +431,8 @@ test('InteractiveBot: Full /remote and /cast conversational state machine', asyn
       text: '/back',
       messageType: 'text',
     });
-    assert.equal(sentReplies.length, 5);
-    assert.match(sentReplies[4].text, /LUMI SMART HOME REMOTE/i);
-    assert.match(sentReplies[4].text, /Living Room/);
+    assert.match(sentReplies[sentReplies.length - 1].text, /LUMI SMART HOME REMOTE/i);
+    assert.match(sentReplies[sentReplies.length - 1].text, /Living Room/);
 
     // Step F: /end exits session
     await bot.handleIncomingMessage({
@@ -338,8 +441,7 @@ test('InteractiveBot: Full /remote and /cast conversational state machine', asyn
       text: '/end',
       messageType: 'text',
     });
-    assert.equal(sentReplies.length, 6);
-    assert.match(sentReplies[5].text, /Session Ended/i);
+    assert.match(sentReplies[sentReplies.length - 1].text, /Session Ended/i);
 
     // ─────────────────────────────────────────────────────────
     // SCENARIO 3: Authorized user /cast flow
