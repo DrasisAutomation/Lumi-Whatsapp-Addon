@@ -36,6 +36,38 @@ async function createWhatsAppServer({
 } = {}) {
   const config = customConfig || loadAddonConfig();
   const logger = createLogger(config.logLevel);
+
+  // Guard against unhandled Baileys query timeouts (e.g. 408 Boom) or network hiccups
+  if (!globalThis.__lumi_process_guards_installed__) {
+    globalThis.__lumi_process_guards_installed__ = true;
+    process.on('unhandledRejection', (reason) => {
+      const isBaileysOrNetwork =
+        reason?.message === 'Timed Out' ||
+        reason?.output?.statusCode === 408 ||
+        reason?.data?.output?.statusCode === 408 ||
+        reason?.code === 'ECONNRESET' ||
+        reason?.code === 'ETIMEDOUT' ||
+        reason?.code === 'EPIPE' ||
+        reason?.code === 'EAI_AGAIN' ||
+        (reason?.stack && (
+          reason.stack.includes('@whiskeysockets/baileys') ||
+          reason.stack.includes('generics.js') ||
+          reason.stack.includes('socket.js') ||
+          reason.stack.includes('noise-handler')
+        ));
+
+      if (isBaileysOrNetwork) {
+        logger.warn(
+          {
+            message: reason?.message,
+            code: reason?.code || reason?.output?.statusCode || reason?.data?.output?.statusCode,
+            source: 'baileys/network',
+          },
+          'Handled background WhatsApp/Baileys timeout or network glitch safely (prevented container restart)'
+        );
+      }
+    });
+  }
   const diagnostics = new HealthDiagnostics();
   const eventManager = new WhatsAppEventManager({ logger });
   const contactManager = new ContactManager({ logger });

@@ -159,6 +159,11 @@ class WhatsAppAccountConnection extends EventEmitter {
         markOnlineOnConnect: false,
         generateHighQualityLinkPreview: false,
         syncFullHistory: false,
+        defaultQueryTimeoutMs: 180_000,
+        connectTimeoutMs: 60_000,
+        keepAliveIntervalMs: 25_000,
+        retryRequestDelayMs: 500,
+        maxMsgRetryCount: 5,
         msgRetryCounterCache: this.msgRetryCounterCache,
         getMessage: async (key) => {
           try {
@@ -189,6 +194,58 @@ class WhatsAppAccountConnection extends EventEmitter {
           return message;
         },
       });
+
+      // Guard query operations (especially pre-key count queries on connect)
+      // to avoid unhandled Boom timeouts crashing the process when WhatsApp servers are slow
+      if (typeof sock.query === 'function') {
+        const rawQuery = sock.query.bind(sock);
+        sock.query = async (node, timeoutMs) => {
+          try {
+            return await rawQuery(node, timeoutMs || 180_000);
+          } catch (err) {
+            const isTimeout =
+              err?.message === 'Timed Out' ||
+              err?.output?.statusCode === 408 ||
+              err?.data?.output?.statusCode === 408;
+
+            const isPreKeyCountQuery =
+              node?.tag === 'iq' &&
+              node?.attrs?.xmlns === 'encrypt' &&
+              node?.attrs?.type === 'get' &&
+              Array.isArray(node?.content) &&
+              node?.content?.some((c) => c?.tag === 'count');
+
+            if (isPreKeyCountQuery && isTimeout) {
+              this.logger?.warn(
+                { clientId: this.clientId },
+                'WhatsApp pre-key count query timed out (server slow); returning fallback count to preserve connection'
+              );
+              return {
+                tag: 'iq',
+                attrs: { type: 'result' },
+                content: [
+                  {
+                    tag: 'count',
+                    attrs: { value: '100' },
+                  },
+                ],
+              };
+            }
+
+            throw err;
+          }
+        };
+      }
+
+      // Safeguard WebSocket client error events
+      if (sock.ws && typeof sock.ws.on === 'function') {
+        sock.ws.on('error', (err) => {
+          this.logger?.warn(
+            { err: err?.message, clientId: this.clientId },
+            'WhatsApp WebSocket encountered transient error (handled safely)'
+          );
+        });
+      }
 
       this.sock = sock;
 
